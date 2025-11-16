@@ -49,10 +49,10 @@ def dashboard():
     hoy = datetime.now().date()
     citas_hoy = Cita.query.filter_by(
         veterinario_id=current_user.id,
-        estado='aceptada'
+        estado='pendiente'
     ).filter(
-        db.func.cast(Cita.fecha_hora, db.Date) == hoy
-    ).order_by(Cita.fecha_hora.asc()).all()
+        db.func.cast(Cita.fecha, db.Date) == hoy
+    ).order_by(Cita.fecha.asc()).all()
 
     return render_template('veterinario/dashboard.html',
                          citas_pendientes=citas_pendientes,
@@ -65,7 +65,7 @@ def dashboard():
 @veterinario_required
 def citas_pendientes():
     """Ver citas pendientes"""
-    citas = Cita.query.filter_by(estado='pendiente').order_by(Cita.fecha_hora.asc()).all()
+    citas = Cita.query.filter_by(estado='pendiente').order_by(Cita.fecha.asc()).all()
     return render_template('veterinario/citas_pendientes.html', citas=citas)
 
 
@@ -74,8 +74,8 @@ def citas_pendientes():
 def mis_citas():
     """Ver mis citas aceptadas y atendidas"""
     citas = Cita.query.filter_by(veterinario_id=current_user.id).filter(
-        Cita.estado.in_(['aceptada', 'atendida'])
-    ).order_by(Cita.fecha_hora.desc()).all()
+        Cita.estado.in_(['completada', 'pendiente'])
+    ).order_by(Cita.fecha.desc()).all()
 
     return render_template('veterinario/mis_citas.html', citas=citas)
 
@@ -130,7 +130,10 @@ def posponer_cita(id):
                 return render_template('veterinario/posponer_cita.html', cita=cita)
 
         try:
-            cita.posponer(motivo, nueva_fecha_hora)
+            if nueva_fecha_hora:
+                cita.fecha = nueva_fecha_hora
+            cita.estado = 'pendiente'
+            cita.razon_cancelacion = f"Pospuesta: {motivo}"
             db.session.commit()
             flash('Cita pospuesta. El tutor será notificado.', 'success')
             return redirect(url_for('veterinario.citas_pendientes'))

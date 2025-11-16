@@ -39,10 +39,10 @@ def dashboard():
     ).count()
     citas_proximas = Cita.query.filter_by(
         tutor_id=current_user.id,
-        estado='aceptada'
+        estado='pendiente'
     ).filter(
-        Cita.fecha_hora >= datetime.now()
-    ).order_by(Cita.fecha_hora.asc()).limit(5).all()
+        Cita.fecha >= datetime.now()
+    ).order_by(Cita.fecha.asc()).limit(5).all()
 
     return render_template('tutor/dashboard.html',
                          total_mascotas=total_mascotas,
@@ -142,7 +142,7 @@ def ver_mascota(id):
         return redirect(url_for('tutor.mascotas'))
 
     # Obtener historial de citas
-    citas = Cita.query.filter_by(mascota_id=id).order_by(Cita.fecha_hora.desc()).all()
+    citas = Cita.query.filter_by(mascota_id=id).order_by(Cita.fecha.desc()).all()
 
     return render_template('tutor/ver_mascota.html', mascota=mascota, citas=citas)
 
@@ -200,7 +200,7 @@ def editar_mascota(id):
 @tutor_required
 def citas():
     """Lista de citas del tutor"""
-    mis_citas = Cita.query.filter_by(tutor_id=current_user.id).order_by(Cita.fecha_hora.desc()).all()
+    mis_citas = Cita.query.filter_by(tutor_id=current_user.id).order_by(Cita.fecha.desc()).all()
     return render_template('tutor/citas.html', citas=mis_citas)
 
 
@@ -259,7 +259,8 @@ def nueva_cita():
             mascota_id=mascota_id,
             tutor_id=current_user.id,
             veterinario_id=veterinario_id,
-            fecha_hora=fecha_hora,
+            fecha=fecha_hora,
+            tipo='Consulta',
             motivo=motivo,
             estado='pendiente'
         )

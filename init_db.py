@@ -251,44 +251,47 @@ def init_database():
         cita1 = Cita(
             mascota_id=mascota1.id,
             tutor_id=tutor1.id,
-            fecha_hora=datetime.now() + timedelta(days=2, hours=10),
+            fecha=datetime.now() + timedelta(days=2, hours=10),
+            tipo='Consulta',
             motivo='Revisión general y vacunación',
             estado='pendiente'
         )
-        
+
         # Cita aceptada
         cita2 = Cita(
             mascota_id=mascota3.id,
             tutor_id=tutor2.id,
-            fecha_hora=datetime.now() + timedelta(days=1, hours=15),
+            fecha=datetime.now() + timedelta(days=1, hours=15),
+            tipo='Control',
             motivo='Control post-operatorio',
-            estado='aceptada',
+            estado='pendiente',
             veterinario_id=vet2.id
         )
-        
-        # Cita atendida
+
+        # Cita completada
         cita3 = Cita(
             mascota_id=mascota2.id,
             tutor_id=tutor1.id,
-            fecha_hora=datetime.now() - timedelta(days=5),
+            fecha=datetime.now() - timedelta(days=5),
+            tipo='Vacunación',
             motivo='Vacunación antirrábica',
-            estado='atendida',
+            estado='completada',
             veterinario_id=vet1.id,
             diagnostico='Mascota en buen estado de salud',
             tratamiento='Vacunación antirrábica administrada',
             observaciones='Próxima vacunación en 1 año',
-            fecha_atencion=datetime.now() - timedelta(days=5)
+            fecha_fin_atencion=datetime.now() - timedelta(days=5)
         )
-        
+
         # Cita pospuesta
         cita4 = Cita(
             mascota_id=mascota4.id,
             tutor_id=tutor2.id,
-            fecha_hora=datetime.now() + timedelta(days=3),
+            fecha=datetime.now() + timedelta(days=3),
+            tipo='Cirugía',
             motivo='Esterilización',
-            estado='pospuesta',
-            motivo_posposicion='Cirugías reprogramadas por mantenimiento de sala',
-            nueva_fecha_sugerida=datetime.now() + timedelta(days=10)
+            estado='pendiente',
+            razon_cancelacion='Pospuesta: Cirugías reprogramadas por mantenimiento de sala'
         )
         
         db.session.add_all([cita1, cita2, cita3, cita4])
