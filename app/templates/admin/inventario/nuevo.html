@@ -1,82 +1,136 @@
 {% extends "base.html" %}
 {% block title %}Nuevo Medicamento{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-plus-circle me-2"></i> Nuevo Medicamento
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('inventario.lista') }}">Inventario</a></li>
+    <li class="breadcrumb-item active">Nuevo</li>
+</ol>
+{% endblock %}
+
 {% block content %}
-<h1 style="margin-bottom: 2rem;">➕ Nuevo Medicamento</h1>
 <div class="card">
+    <div class="card-header"><h5 class="mb-0">Registrar Medicamento</h5></div>
     <div class="card-body">
         <form method="POST">
-            <div class="form-group">
-                <label class="form-label">Nombre del Medicamento *</label>
-                <input type="text" class="form-control" name="nombre" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Descripción</label>
-                <textarea class="form-control" name="descripcion" rows="3"></textarea>
-            </div>
+            <h6 class="border-bottom pb-2 mb-3">Información Básica</h6>
             <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Principio Activo</label>
-                        <input type="text" class="form-control" name="principio_activo">
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="codigo">Código</label>
+                    <input type="text" class="form-control" id="codigo" name="codigo">
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Presentación</label>
-                        <input type="text" class="form-control" name="presentacion" placeholder="Ej: Tabletas, Jarabe">
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="nombre">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Stock Inicial</label>
-                        <input type="number" class="form-control" name="stock" value="0" min="0">
-                    </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="principio_activo">Principio Activo</label>
+                    <input type="text" class="form-control" id="principio_activo" name="principio_activo">
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Stock Mínimo</label>
-                        <input type="number" class="form-control" name="stock_minimo" value="10" min="0">
-                    </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="presentacion">Presentación</label>
+                    <input type="text" class="form-control" id="presentacion" name="presentacion" placeholder="Tabletas, Jarabe, etc.">
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Unidad</label>
-                        <input type="text" class="form-control" name="unidad_medida" value="unidades">
-                    </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="concentracion">Concentración</label>
+                    <input type="text" class="form-control" id="concentracion" name="concentracion" placeholder="500mg, 10ml, etc.">
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Lote</label>
-                        <input type="text" class="form-control" name="lote">
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="categoria">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option value="">Seleccione...</option>
+                        <option value="antibiotico">Antibiótico</option>
+                        <option value="analgesico">Analgésico</option>
+                        <option value="antiinflamatorio">Antiinflamatorio</option>
+                        <option value="vacuna">Vacuna</option>
+                        <option value="antiparasitario">Antiparasitario</option>
+                        <option value="vitamina">Vitamina</option>
+                        <option value="suplemento">Suplemento</option>
+                        <option value="otro">Otro</option>
+                    </select>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Fecha de Vencimiento</label>
-                        <input type="date" class="form-control" name="fecha_vencimiento">
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="via_administracion">Vía de Administración</label>
+                    <select class="form-select" id="via_administracion" name="via_administracion">
+                        <option value="">Seleccione...</option>
+                        <option value="oral">Oral</option>
+                        <option value="inyectable">Inyectable</option>
+                        <option value="topico">Tópico</option>
+                        <option value="oftalmico">Oftálmico</option>
+                        <option value="otico">Ótico</option>
+                    </select>
+                </div>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Stock y Precios</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="stock_actual">Stock Inicial</label>
+                    <input type="number" class="form-control" id="stock_actual" name="stock_actual" value="0" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="stock_minimo">Stock Mínimo</label>
+                    <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" value="5" min="0">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="unidad_medida">Unidad</label>
+                    <input type="text" class="form-control" id="unidad_medida" name="unidad_medida" value="unid">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="precio_compra">Precio Compra (Bs.)</label>
+                    <input type="number" class="form-control" id="precio_compra" name="precio_compra" step="0.01" min="0">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="precio_venta">Precio Venta (Bs.)</label>
+                    <input type="number" class="form-control" id="precio_venta" name="precio_venta" step="0.01" min="0">
+                </div>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Información Adicional</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="laboratorio">Laboratorio</label>
+                    <input type="text" class="form-control" id="laboratorio" name="laboratorio">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="lote">Lote</label>
+                    <input type="text" class="form-control" id="lote" name="lote">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="fecha_vencimiento">Fecha de Vencimiento</label>
+                    <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento">
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Proveedor</label>
-                        <input type="text" class="form-control" name="proveedor">
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="ubicacion_almacen">Ubicación en Almacén</label>
+                    <input type="text" class="form-control" id="ubicacion_almacen" name="ubicacion_almacen" placeholder="Ej: Estante A, Nivel 2">
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Precio Unitario</label>
-                        <input type="number" class="form-control" name="precio" step="0.01" min="0">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="requiere_receta" name="requiere_receta">
+                        <label class="form-check-label" for="requiere_receta">Requiere Receta</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="controlado" name="controlado">
+                        <label class="form-check-label" for="controlado">Medicamento Controlado</label>
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success">Crear Medicamento</button>
-            <a href="{{ url_for('admin.inventario') }}" class="btn btn-secondary">Cancelar</a>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i> Crear Medicamento</button>
+                <a href="{{ url_for('inventario.lista') }}" class="btn btn-secondary"><i class="bi bi-x-circle me-1"></i> Cancelar</a>
+            </div>
         </form>
     </div>
 </div>

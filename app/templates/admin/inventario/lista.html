@@ -1,45 +1,155 @@
 {% extends "base.html" %}
-{% block title %}Inventario{% endblock %}
+{% block title %}Gestión de Inventario{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-box-seam-fill me-2"></i> Gestión de Inventario
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Inventario</li>
+</ol>
+{% endblock %}
+
 {% block content %}
-<h1 style="margin-bottom: 2rem;">💊 Gestión de Inventario</h1>
-<div style="margin-bottom: 1rem;">
-    <a href="{{ url_for('admin.nuevo_medicamento') }}" class="btn btn-success">+ Nuevo Medicamento</a>
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Total Medicamentos</div>
+                        <div class="h3 mb-0">{{ stats.total }}</div>
+                    </div>
+                    <i class="bi bi-box-seam fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-warning text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Bajo Stock</div>
+                        <div class="h3 mb-0">{{ stats.bajo_stock }}</div>
+                    </div>
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Por Vencer</div>
+                        <div class="h3 mb-0">{{ stats.por_vencer }}</div>
+                    </div>
+                    <i class="bi bi-clock fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-danger text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Vencidos</div>
+                        <div class="h3 mb-0">{{ stats.vencidos }}</div>
+                    </div>
+                    <i class="bi bi-x-circle fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="card">
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-1"></i> Filtros
+    </div>
     <div class="card-body">
-        <table class="table">
+        <form method="GET" action="{{ url_for('inventario.lista') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Buscar..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="categoria">
+                    <option value="">Todas las Categorías</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="estado">
+                    <option value="">Todos los Estados</option>
+                    <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
+                    <option value="bajo_stock" {% if estado == 'bajo_stock' %}selected{% endif %}>Bajo Stock</option>
+                    <option value="por_vencer" {% if estado == 'por_vencer' %}selected{% endif %}>Por Vencer</option>
+                    <option value="vencido" {% if estado == 'vencido' %}selected{% endif %}>Vencidos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i> Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div><i class="bi bi-table me-1"></i> Lista de Medicamentos</div>
+        <div>
+            <a href="{{ url_for('inventario.alertas') }}" class="btn btn-warning btn-sm me-2"><i class="bi bi-bell me-1"></i> Alertas</a>
+            <a href="{{ url_for('inventario.nuevo') }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle me-1"></i> Nuevo</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped table-hover datatable">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Código</th>
                     <th>Nombre</th>
-                    <th>Presentación</th>
-                    <th>Stock Actual</th>
-                    <th>Stock Mínimo</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                    <th>Precio</th>
+                    <th>Vencimiento</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for med in medicamentos %}
-                <tr {% if med.necesita_reposicion %}style="background-color: #fee2e2;"{% endif %}>
-                    <td>{{ med.id }}</td>
-                    <td>{{ med.nombre }}</td>
-                    <td>{{ med.presentacion or 'N/A' }}</td>
-                    <td><strong>{{ med.stock }}</strong> {{ med.unidad_medida }}</td>
-                    <td>{{ med.stock_minimo }}</td>
-                    <td>
-                        {% if med.necesita_reposicion %}
-                        <span class="badge badge-danger">⚠️ Stock Bajo</span>
-                        {% else %}
-                        <span class="badge badge-success">✓ OK</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('admin.ver_medicamento', id=med.id) }}" class="btn btn-sm btn-primary">Ver</a>
-                        <a href="{{ url_for('admin.editar_medicamento', id=med.id) }}" class="btn btn-sm btn-secondary">Editar</a>
-                    </td>
-                </tr>
-                {% endfor %}
+                {% if medicamentos and medicamentos.items %}
+                    {% for med in medicamentos.items %}
+                    <tr class="{% if med.esta_vencido %}table-danger{% elif med.esta_por_vencer %}table-warning{% elif med.necesita_restock %}table-info{% endif %}">
+                        <td>{{ med.codigo or 'N/A' }}</td>
+                        <td>{{ med.nombre }}</td>
+                        <td>{{ med.categoria or 'N/A' }}</td>
+                        <td>{{ med.stock_actual }} {{ med.unidad_medida or 'unid' }}
+                            {% if med.necesita_restock %}<span class="badge bg-warning">Bajo</span>{% endif %}
+                        </td>
+                        <td>{{ med.precio_venta|currency }}</td>
+                        <td>
+                            {% if med.fecha_vencimiento %}{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                                {% if med.esta_vencido %}<span class="badge bg-danger">Vencido</span>
+                                {% elif med.esta_por_vencer %}<span class="badge bg-warning">Por vencer</span>{% endif %}
+                            {% else %}N/A{% endif %}
+                        </td>
+                        <td>{% if med.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                        <td>
+                            <a href="{{ url_for('inventario.ver', med_id=med.id) }}" class="btn btn-sm btn-primary" title="Ver"><i class="bi bi-eye"></i></a>
+                            <a href="{{ url_for('inventario.editar', med_id=med.id) }}" class="btn btn-sm btn-secondary" title="Editar"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="8" class="text-center">No hay medicamentos registrados.</td></tr>
+                {% endif %}
             </tbody>
         </table>
     </div>

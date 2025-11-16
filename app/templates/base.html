@@ -82,13 +82,13 @@
                                         <div class="sb-nav-link-icon"><i class="bi bi-person-badge-fill"></i></div>
                                         Veterinarios
                                     </a>
-                                    <a class="nav-link" href="#!">
+                                    <a class="nav-link {% if request.endpoint and 'inventario' in request.endpoint %}active{% endif %}" href="{{ url_for('inventario.lista') }}">
                                         <div class="sb-nav-link-icon"><i class="bi bi-box-seam-fill"></i></div>
-                                        Inventario (Próximamente)
+                                        Inventario
                                     </a>
-                                    <a class="nav-link" href="#!">
+                                    <a class="nav-link {% if request.endpoint and 'reportes' in request.endpoint %}active{% endif %}" href="{{ url_for('reportes.dashboard') }}">
                                         <div class="sb-nav-link-icon"><i class="bi bi-bar-chart-fill"></i></div>
-                                        Reportes (Próximamente)
+                                        Reportes
                                     </a>
 
                                 {% elif current_user.is_veterinario() %}
