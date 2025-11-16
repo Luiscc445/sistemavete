@@ -211,9 +211,28 @@
 
             // Inicializar DataTables (para tablas bonitas)
             $(document).ready(function() {
-                $('.datatable').DataTable({
-                    language: {
-                        url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                $('.datatable').each(function() {
+                    // Solo inicializar DataTables si la tabla tiene al menos una fila de datos válida
+                    var $table = $(this);
+                    var $rows = $table.find('tbody tr');
+                    var hasValidData = false;
+
+                    $rows.each(function() {
+                        // Verificar que la fila tenga el mismo número de celdas que columnas
+                        var cells = $(this).find('td').length;
+                        var headers = $table.find('thead th').length;
+                        if (cells === headers) {
+                            hasValidData = true;
+                            return false; // break
+                        }
+                    });
+
+                    if (hasValidData) {
+                        $table.DataTable({
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                            }
+                        });
                     }
                 });
             });
