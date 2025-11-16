@@ -177,7 +177,7 @@
                         <tbody>
                             {% for vet in top_veterinarios %}
                             <tr>
-                                <td>{{ vet.nombre_completo }}</td>
+                                <td>{{ vet.nombre }} {{ vet.apellido }}</td>
                                 <td class="text-end"><strong>{{ vet.total_citas }}</strong></td>
                             </tr>
                             {% endfor %}

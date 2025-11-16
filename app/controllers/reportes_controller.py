@@ -81,7 +81,8 @@ def dashboard():
     # Top 5 veterinarios más activos
     top_veterinarios = db.session.query(
         Usuario.id,
-        Usuario.nombre_completo,
+        Usuario.nombre,
+        Usuario.apellido,
         func.count(Cita.id).label('total_citas')
     ).join(Cita, Usuario.id == Cita.veterinario_id).filter(
         and_(
@@ -89,7 +90,7 @@ def dashboard():
             func.date(Cita.fecha) >= fecha_inicio,
             func.date(Cita.fecha) <= fecha_fin
         )
-    ).group_by(Usuario.id, Usuario.nombre_completo).order_by(func.count(Cita.id).desc()).limit(5).all()
+    ).group_by(Usuario.id, Usuario.nombre, Usuario.apellido).order_by(func.count(Cita.id).desc()).limit(5).all()
 
     # Medicamentos con bajo stock
     medicamentos_bajo_stock = Medicamento.query.filter(
