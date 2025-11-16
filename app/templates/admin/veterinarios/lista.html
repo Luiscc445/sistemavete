@@ -1,0 +1,89 @@
+﻿{% extends "base.html" %}
+{% block title %}Gestión de Veterinarios{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-person-badge-fill me-2"></i> Gestión de Veterinarios
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Veterinarios</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-table me-1"></i>
+            Lista de Veterinarios
+        </div>
+        <a href="{{ url_for('admin.nuevo_veterinario') }}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Veterinario
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Añadimos la clase 'datatable' -->
+        <table class="table table-striped table-hover datatable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Especialidad</th>
+                    <th>Email</th>
+                    <th>Citas Atendidas</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 
+                  El objeto 'veterinarios' es un objeto de paginación, 
+                  por eso accedemos a él con '.items' 
+                -->
+                {% if veterinarios and veterinarios.items %}
+                    {% for vet in veterinarios.items %}
+                    <tr>
+                        <td>{{ vet.id }}</td>
+                        <td>{{ vet.nombre_completo }}</td>
+                        <td>{{ vet.especialidad or 'N/A' }}</td>
+                        <td>{{ vet.email }}</td>
+                        <!-- Asumimos que 'vet.stats' existe como en tu controlador -->
+                        <td>{{ vet.stats.citas_completadas if vet.stats else '0' }}</td>
+                        <td>
+                            {% if vet.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- 
+                              CORRECCIÓN CLAVE 1: 
+                              Cambiamos 'id=vet.id' por 'vet_id=vet.id' 
+                            -->
+                            <a href="{{ url_for('admin.ver_veterinario', vet_id=vet.id) }}" class="btn btn-sm btn-primary" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <!-- 
+                              CORRECCIÓN CLAVE 2: 
+                              Cambiamos 'id=vet.id' por 'vet_id=vet.id' 
+                            -->
+                            <a href="{{ url_for('admin.editar_veterinario', vet_id=vet.id) }}" class="btn btn-sm btn-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay veterinarios registrados.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% endblock %}

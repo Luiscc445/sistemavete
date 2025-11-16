@@ -1,0 +1,40 @@
+# Framework Principal
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+Flask-Migrate==4.0.5
+
+# Base de datos (sin drivers nativos que requieren compilador)
+SQLAlchemy==2.0.36
+python-dotenv==1.0.0
+# psycopg2-binary==2.9.9   # PostgreSQL (requiere compilador C en Windows)
+# pyodbc==5.1.0            # SQL Server / ODBC (requiere compilador C en Windows)
+
+# Formularios y validación
+WTForms==3.1.1
+email-validator==2.1.0
+
+# Seguridad
+Werkzeug==3.0.1
+Flask-Bcrypt==1.0.1
+
+# Utilidades de fechas y zonas horarias
+python-dateutil==2.9.0.post0
+pytz==2024.2
+
+# Notificaciones y mensajes
+# Flask-Mail==0.9.1  # Puedes reactivarlo si te instala bien
+Flask-Toastr==0.5.8
+
+# APIs y JSON
+Flask-RESTful==0.3.10
+marshmallow==3.20.1
+
+# Gráficos y reportes / manejo de Excel
+pandas==2.2.3
+openpyxl==3.1.2
+
+# Testing (opcional)
+pytest==7.4.3
+pytest-flask==1.3.0

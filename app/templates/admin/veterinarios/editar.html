@@ -1,0 +1,130 @@
+﻿{% extends "base.html" %}
+{% block title %}Editar Veterinario{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-pencil-square me-2"></i> Editar Veterinario
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.veterinarios') }}">Veterinarios</a></li>
+    <li class="breadcrumb-item active">Editar</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Editando a {{ veterinario.nombre_completo }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="form-veterinario-editar">
+            <h6 class="border-bottom pb-2 mb-3">Información Personal</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="nombre">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ veterinario.nombre }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="apellido">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" name="apellido" value="{{ veterinario.apellido }}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="email">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ veterinario.email }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="telefono">Teléfono</label>
+                    <input type="text" class="form-control" id="telefono" name="telefono" value="{{ veterinario.telefono or '' }}">
+                </div>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Información Profesional</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="especialidad">Especialidad</label>
+                    <select class="form-select" id="especialidad" name="especialidad">
+                        <option value="">-- Seleccione una --</option>
+                        {% for esp in especialidades %}
+                            <option value="{{ esp }}" {% if veterinario.especialidad == esp %}selected{% endif %}>{{ esp }}</option>
+                        {% endfor %}
+                        
+                        {# Si la especialidad actual no está en la lista, añadirla como 'Otra' seleccionada #}
+                        {% if veterinario.especialidad and veterinario.especialidad not in especialidades %}
+                            <option value="otra" selected>Otra...</option>
+                        {% else %}
+                            <option value="otra">Otra...</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3" id="campo-otra-especialidad" style="display: none;">
+                    <label class="form-label" for="especialidad_otra">Especificar Otra</label>
+                    <input type="text" class="form-control" id="especialidad_otra" name="especialidad_otra" 
+                           value="{% if veterinario.especialidad and veterinario.especialidad not in especialidades %}{{ veterinario.especialidad }}{% endif %}">
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label" for="licencia_profesional">Licencia Profesional</label>
+                <input type="text" class="form-control" id="licencia_profesional" name="licencia_profesional" value="{{ veterinario.licencia_profesional or '' }}">
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Administración</h6>
+            <div class="col-md-12 mb-3">
+                <label class="form-label" for="nueva_password">Nueva Contraseña</label>
+                <input type="password" class="form-control" id="nueva_password" name="nueva_password">
+                <small class="form-text text-muted">Dejar en blanco para no cambiar la contraseña.</small>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if veterinario.activo %}checked{% endif %}>
+                <label class="form-check-label" for="activo">
+                    Cuenta Activa
+                </label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('admin.veterinarios') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleOtraEspecialidad() {
+        var select = document.getElementById('especialidad');
+        var campoOtra = document.getElementById('campo-otra-especialidad');
+        var inputOtra = document.getElementById('especialidad_otra');
+        
+        if (select.value === 'otra') {
+            campoOtra.style.display = 'block';
+            inputOtra.setAttribute('required', 'required');
+        } else {
+            campoOtra.style.display = 'none';
+            inputOtra.removeAttribute('required');
+            // No limpiar el valor, para que se mantenga si ya estaba guardado
+        }
+    }
+    
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', toggleOtraEspecialidad);
+    
+    // Ejecutar al cambiar la selección
+    document.getElementById('especialidad').addEventListener('change', toggleOtraEspecialidad);
+</script>
+{% endblock %}
+                {% endif %}
+                           {% endif %}
+                            {% endif %}
+                        {% endfor %}
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,143 @@
+﻿{% extends "base.html" %}
+{% block title %}Nuevo Veterinario{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-person-plus-fill me-2"></i> Nuevo Veterinario
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.veterinarios') }}">Veterinarios</a></li>
+    <li class="breadcrumb-item active">Nuevo</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Formulario de Registro</h5>
+    </div>
+    <div class="card-body">
+        <!-- El 'id' del formulario es útil para el JS -->
+        <form method="POST" id="form-veterinario">
+            
+            <h6 class="border-bottom pb-2 mb-3">Información Personal</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="nombre">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="apellido">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" name="apellido" required>
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label" for="telefono">Teléfono</label>
+                <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ej: 71234567">
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Credenciales de Acceso</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="username">Nombre de Usuario *</label>
+                    <input type="text" class="form-control" id="username" name="username" required placeholder="Ej: j.perez.vet">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="email">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" required placeholder="ejemplo@veterinaria.com">
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label" for="password">Contraseña *</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+                <small class="form-text text-muted">La contraseña se guardará de forma segura (hash).</small>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Información Profesional</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <!-- 
+                      NUEVA LÓGICA: 
+                      Lista desplegable de especialidades 
+                    -->
+                    <label class="form-label" for="especialidad">Especialidad</label>
+                    <select class="form-select" id="especialidad" name="especialidad">
+                        <option value="">-- Seleccione una --</option>
+                        <!-- 
+                          Iteramos sobre la lista 'especialidades' 
+                          que pasamos desde el controlador 
+                        -->
+                        {% if especialidades %}
+                            {% for esp in especialidades %}
+                            <option value="{{ esp }}">{{ esp }}</option>
+                            {% endfor %}
+                        {% endif %}
+                        <!-- Opción para agregar una nueva -->
+                        <option value="otra">Otra...</option>
+                    </select>
+                </div>
+                <!-- 
+                  NUEVA LÓGICA: 
+                  Campo de texto que aparece solo si seleccionan "Otra" 
+                -->
+                <div class="col-md-6 mb-3" id="campo-otra-especialidad" style="display: none;">
+                    <label class="form-label" for="especialidad_otra">Especificar Otra *</label>
+                    <input type="text" class="form-control" id="especialidad_otra" name="especialidad_otra">
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label" for="licencia_profesional">Licencia Profesional</label>
+                <input type="text" class="form-control" id="licencia_profesional" name="licencia_profesional" placeholder="Ej: MV-12345">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i> Crear Veterinario
+                </button>
+                <a href="{{ url_for('admin.veterinarios') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 
+  Este bloque de JavaScript maneja la lógica 
+  para mostrar/ocultar el campo "Otra" 
+-->
+<script>
+    // Esperar a que la página cargue
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Función para mostrar u ocultar el campo "Otra"
+        function toggleOtra() {
+            var select = document.getElementById('especialidad');
+            var campoOtra = document.getElementById('campo-otra-especialidad');
+            var inputOtra = document.getElementById('especialidad_otra');
+            
+            if (select.value === 'otra') {
+                // Mostrar el campo y hacerlo requerido
+                campoOtra.style.display = 'block';
+                inputOtra.setAttribute('required', 'required');
+            } else {
+                // Ocultar el campo, quitar 'required' y limpiarlo
+                campoOtra.style.display = 'none';
+                inputOtra.removeAttribute('required');
+                inputOtra.value = '';
+            }
+        }
+        
+        // Escuchar cambios en el 'select' de especialidad
+        document.getElementById('especialidad').addEventListener('change', toggleOtra);
+        
+        // (Opcional) Ejecutar una vez al cargar por si hay datos pre-cargados
+        toggleOtra(); 
+    });
+</script>
+{% endblock %}
+{% endblock %}

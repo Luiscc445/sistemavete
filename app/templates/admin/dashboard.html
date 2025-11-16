@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Administrador{% endblock %}
+
+{# Esto reemplaza el título 'Bienvenido' en la plantilla base #}
+{% block page_title %}Dashboard del Administrador{% endblock %}
+
+{# Esto reemplaza las 'migas de pan' en la plantilla base #}
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item active">Dashboard</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-5 fw-light">Tutores Registrados</div>
+                        <div class="fs-1 fw-bold">{{ stats.total_tutores }}</div>
+                    </div>
+                    <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-5 fw-light">Veterinarios</div>
+                        <div class="fs-1 fw-bold">{{ stats.total_veterinarios }}</div>
+                    </div>
+                    <i class="bi bi-person-badge-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-5 fw-light">Mascotas</div>
+                        <div class="fs-1 fw-bold">{{ stats.total_mascotas }}</div>
+                    </div>
+                    <i class="bi bi-heart-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-danger text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-5 fw-light">Stock Bajo</div>
+                        <div class="fs-1 fw-bold">{{ stats.medicamentos_bajo_stock }}</div>
+                    </div>
+                    <i class="bi bi-box-seam-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-1"></i>
+                Próximas Citas (Hoy)
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for cita in proximas_citas %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                           <strong>{{ cita.mascota.nombre }}</strong> ({{ cita.tutor.nombre_completo }})
+                           <br><small class="text-muted">{{ cita.motivo }}</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ cita.fecha.strftime('%H:%M') }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item">No hay citas programadas para hoy.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person-plus-fill me-1"></i>
+                Últimos Tutores Registrados
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for tutor in ultimos_tutores %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ tutor.nombre_completo }}
+                        <span class="text-muted small">{{ tutor.fecha_registro.strftime('%d/%m/%Y') }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item">No hay tutores registrados recientemente.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}{% endblock %}
+{% endblock %}

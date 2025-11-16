@@ -1,0 +1,89 @@
+﻿{% extends "base.html" %}
+{% block title %}Gestión de Tutores{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-people-fill me-2"></i> Gestión de Tutores
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Tutores</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-table me-1"></i>
+            Lista de Tutores Registrados
+        </div>
+        <a href="{{ url_for('admin.nuevo_tutor') }}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Tutor
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Añadimos la clase 'datatable' para que las tablas se vean bien -->
+        <table class="table table-striped table-hover datatable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Mascotas</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 
+                  El objeto 'tutores' es un objeto de paginación, 
+                  por eso accedemos a él con '.items' 
+                -->
+                {% if tutores and tutores.items %}
+                    {% for tutor in tutores.items %}
+                    <tr>
+                        <td>{{ tutor.id }}</td>
+                        <td>{{ tutor.nombre_completo }}</td>
+                        <td>{{ tutor.username }}</td>
+                        <td>{{ tutor.email }}</td>
+                        <td>{{ tutor.telefono or 'N/A' }}</td>
+                        <td>{{ tutor.total_mascotas }}</td>
+                        <td>
+                            {% if tutor.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- 
+                              CORRECCIÓN CLAVE 1: 
+                              Cambiamos 'id=tutor.id' por 'tutor_id=tutor.id' 
+                            -->
+                            <a href="{{ url_for('admin.ver_tutor', tutor_id=tutor.id) }}" class="btn btn-sm btn-primary" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <!-- 
+                              CORRECCIÓN CLAVE 2: 
+                              Cambiamos 'id=tutor.id' por 'tutor_id=tutor.id' 
+                            -->
+                            <a href="{{ url_for('admin.editar_tutor', tutor_id=tutor.id) }}" class="btn btn-sm btn-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+                <!-- 
+                  <!-- El bloque '{% else %}' se elimina para -->
+                  arreglar el error de JavaScript de DataTables.
+                -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}{% endblock %}
