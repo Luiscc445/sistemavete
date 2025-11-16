@@ -9,6 +9,4 @@
 <td>{% if c.estado == 'aceptada' %}<a href="{{ url_for('veterinario.atender_cita', id=c.id) }}" class="btn btn-sm btn-primary">Atender</a>{% endif %}</td></tr>
 {% endfor %}
 </tbody></table>
-{% endblock %}{% endif %}
-{% endfor %}
 {% endblock %}
