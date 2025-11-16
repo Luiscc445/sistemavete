@@ -6,7 +6,7 @@
 <tbody>
 {% for c in citas %}
 <tr><td>{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ c.mascota.nombre }}</td><td>{{ c.estado }}</td>
-<td>{% if c.estado == 'aceptada' %}<a href="{{ url_for('veterinario.atender_cita', id=c.id) }}" class="btn btn-sm btn-primary">Atender</a>{% endif %}</td></tr>
+<td>{% if c.estado in ['confirmada', 'pendiente', 'en_progreso'] %}<a href="{{ url_for('veterinario.atender_cita', id=c.id) }}" class="btn btn-sm btn-primary">Atender</a>{% endif %}</td></tr>
 {% endfor %}
 </tbody></table>
 {% endblock %}

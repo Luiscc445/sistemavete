@@ -91,8 +91,10 @@ def aceptar_cita(id):
         return redirect(url_for('veterinario.citas_pendientes'))
 
     try:
-        cita.aceptar(current_user.id)
-        db.session.commit()
+        # Asignar veterinario y confirmar la cita
+        if not cita.veterinario_id:
+            cita.veterinario_id = current_user.id
+        cita.confirmar()
         flash('Cita aceptada exitosamente.', 'success')
     except Exception as e:
         db.session.rollback()
@@ -150,12 +152,12 @@ def atender_cita(id):
     """Atender una cita"""
     cita = Cita.query.get_or_404(id)
 
-    # Verificar que la cita está aceptada y asignada a este veterinario
+    # Verificar que la cita está confirmada y asignada a este veterinario
     if cita.veterinario_id != current_user.id:
         flash('No tienes permiso para atender esta cita.', 'danger')
         return redirect(url_for('veterinario.mis_citas'))
 
-    if cita.estado != 'aceptada':
+    if cita.estado not in ['confirmada', 'pendiente']:
         flash('Esta cita no puede ser atendida.', 'warning')
         return redirect(url_for('veterinario.mis_citas'))
 
@@ -173,8 +175,14 @@ def atender_cita(id):
             return render_template('veterinario/atender_cita.html', cita=cita, medicamentos=medicamentos)
 
         try:
-            # Atender la cita
-            cita.atender(diagnostico, tratamiento, observaciones)
+            # Iniciar atención si aún no se ha iniciado
+            if cita.estado == 'confirmada' or cita.estado == 'pendiente':
+                cita.iniciar_atencion()
+
+            # Registrar datos de la consulta
+            cita.diagnostico = diagnostico
+            cita.tratamiento = tratamiento
+            cita.observaciones = observaciones
 
             # Procesar medicamentos recetados
             medicamentos_ids = request.form.getlist('medicamento_id[]')
@@ -208,7 +216,8 @@ def atender_cita(id):
                         # Reducir stock automáticamente
                         medicamento.reducir_stock(cantidad)
 
-            db.session.commit()
+            # Completar la cita
+            cita.completar()
             flash('Cita atendida exitosamente. Stock actualizado.', 'success')
             return redirect(url_for('veterinario.mis_citas'))
 
