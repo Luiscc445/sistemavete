@@ -74,7 +74,7 @@ def citas_pendientes():
 def mis_citas():
     """Ver mis citas aceptadas y atendidas"""
     citas = Cita.query.filter_by(veterinario_id=current_user.id).filter(
-        Cita.estado.in_(['completada', 'pendiente'])
+        Cita.estado.in_(['confirmada', 'en_progreso', 'completada', 'pendiente'])
     ).order_by(Cita.fecha.desc()).all()
 
     return render_template('veterinario/mis_citas.html', citas=citas)
