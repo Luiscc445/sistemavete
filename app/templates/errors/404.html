@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Error 404 - Página No Encontrada{% endblock %}
+
+{% block page_title %}Error 404{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+    <li class="breadcrumb-item active">Error 404</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="text-center mt-5">
+            <h1 class="display-1">404</h1>
+            <p class="lead">Página No Encontrada</p>
+            <p>Lo sentimos, la página que estás buscando no existe.</p>
+            <div class="mt-4">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 5rem; color: var(--warning-color);"></i>
+            </div>
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary">
+                    <i class="bi bi-house-fill me-2"></i>Volver al Inicio
+                </a>
+                {% if current_user.is_authenticated %}
+                    <a href="/{{ current_user.rol }}/dashboard" class="btn btn-secondary">
+                        <i class="bi bi-speedometer2 me-2"></i>Ir al Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
