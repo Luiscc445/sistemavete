@@ -1,40 +1,118 @@
 {% extends "base.html" %}
 {% block title %}Ver Medicamento{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-eye me-2"></i> Detalles del Medicamento
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('inventario.lista') }}">Inventario</a></li>
+    <li class="breadcrumb-item active">Ver</li>
+</ol>
+{% endblock %}
+
 {% block content %}
-<h1 style="margin-bottom: 2rem;">💊 Detalles del Medicamento</h1>
 <div class="card">
-    <div class="card-header">{{ medicamento.nombre }}</div>
+    <div class="card-header">
+        <h5 class="mb-0">{{ medicamento.nombre }}</h5>
+    </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
+                <h6 class="border-bottom pb-2 mb-3">Información General</h6>
+                <p><strong>Código:</strong> {{ medicamento.codigo or 'N/A' }}</p>
+                <p><strong>Nombre:</strong> {{ medicamento.nombre }}</p>
                 <p><strong>Principio Activo:</strong> {{ medicamento.principio_activo or 'N/A' }}</p>
                 <p><strong>Presentación:</strong> {{ medicamento.presentacion or 'N/A' }}</p>
                 <p><strong>Concentración:</strong> {{ medicamento.concentracion or 'N/A' }}</p>
-                <p><strong>Stock Actual:</strong> {{ medicamento.stock }} {{ medicamento.unidad_medida }}</p>
-                <p><strong>Stock Mínimo:</strong> {{ medicamento.stock_minimo }}</p>
+                <p><strong>Categoría:</strong> {{ medicamento.categoria|title if medicamento.categoria else 'N/A' }}</p>
+                <p><strong>Vía Administración:</strong> {{ medicamento.via_administracion|title if medicamento.via_administracion else 'N/A' }}</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Lote:</strong> {{ medicamento.lote or 'N/A' }}</p>
-                <p><strong>Vencimiento:</strong> {{ medicamento.fecha_vencimiento.strftime('%d/%m/%Y') if medicamento.fecha_vencimiento else 'N/A' }}</p>
-                <p><strong>Proveedor:</strong> {{ medicamento.proveedor or 'N/A' }}</p>
-                <p><strong>Precio:</strong> Bs. {{ medicamento.precio_unitario or 'N/A' }}</p>
-                <p><strong>Estado:</strong> 
-                    {% if medicamento.necesita_reposicion %}
-                    <span class="badge badge-danger">⚠️ Requiere Reposición</span>
+                <h6 class="border-bottom pb-2 mb-3">Stock y Precios</h6>
+                <p><strong>Stock Actual:</strong> {{ medicamento.stock_actual }} {{ medicamento.unidad_medida }}</p>
+                <p><strong>Stock Mínimo:</strong> {{ medicamento.stock_minimo }} {{ medicamento.unidad_medida }}</p>
+                <p><strong>Precio Compra:</strong> {{ medicamento.precio_compra|currency }}</p>
+                <p><strong>Precio Venta:</strong> {{ medicamento.precio_venta|currency }}</p>
+                <p><strong>Estado Stock:</strong>
+                    {% if medicamento.necesita_restock %}
+                    <span class="badge bg-warning">⚠️ Bajo Stock</span>
                     {% else %}
-                    <span class="badge badge-success">✓ Stock OK</span>
+                    <span class="badge bg-success">✓ Stock OK</span>
                     {% endif %}
                 </p>
             </div>
         </div>
-        {% if medicamento.descripcion %}
-        <p><strong>Descripción:</strong></p>
-        <p>{{ medicamento.descripcion }}</p>
-        {% endif %}
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h6 class="border-bottom pb-2 mb-3">Información Adicional</h6>
+                <p><strong>Laboratorio:</strong> {{ medicamento.laboratorio or 'N/A' }}</p>
+                <p><strong>Lote:</strong> {{ medicamento.lote or 'N/A' }}</p>
+                <p><strong>Vencimiento:</strong>
+                    {% if medicamento.fecha_vencimiento %}
+                        {{ medicamento.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                        {% if medicamento.esta_vencido %}
+                            <span class="badge bg-danger">Vencido</span>
+                        {% elif medicamento.esta_por_vencer %}
+                            <span class="badge bg-warning">Por vencer</span>
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+                <p><strong>Ubicación:</strong> {{ medicamento.ubicacion_almacen or 'N/A' }}</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="border-bottom pb-2 mb-3">Control</h6>
+                <p><strong>Requiere Receta:</strong> {% if medicamento.requiere_receta %}<span class="badge bg-info">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</p>
+                <p><strong>Controlado:</strong> {% if medicamento.controlado %}<span class="badge bg-warning">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</p>
+                <p><strong>Estado:</strong> {% if medicamento.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</p>
+            </div>
+        </div>
     </div>
 </div>
-<div style="margin-top: 1rem;">
-    <a href="{{ url_for('admin.editar_medicamento', id=medicamento.id) }}" class="btn btn-primary">Editar</a>
-    <a href="{{ url_for('admin.inventario') }}" class="btn btn-secondary">Volver</a>
+
+<!-- Formulario de ajuste de stock -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="mb-0">Ajustar Stock</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('inventario.ajustar_stock', med_id=medicamento.id) }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de Ajuste</label>
+                    <select class="form-select" name="tipo_ajuste" required>
+                        <option value="entrada">Entrada (Agregar)</option>
+                        <option value="salida">Salida (Retirar)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" name="cantidad" min="1" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Motivo</label>
+                    <input type="text" class="form-control" name="motivo" placeholder="Ej: Compra, Venta, Vencimiento">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">Ajustar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('inventario.editar', med_id=medicamento.id) }}" class="btn btn-secondary">
+        <i class="bi bi-pencil me-1"></i> Editar
+    </a>
+    <a href="{{ url_for('inventario.lista') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Volver
+    </a>
 </div>
 {% endblock %}
