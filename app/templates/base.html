@@ -74,11 +74,11 @@
                                 
                                 {% if current_user.is_admin() %}
                                     <div class="sb-sidenav-menu-heading">Gestión</div>
-                                    <a class="nav-link {% if 'tutor' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.tutores') }}">
+                                    <a class="nav-link {% if request.endpoint and 'tutor' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.tutores') }}">
                                         <div class="sb-nav-link-icon"><i class="bi bi-people-fill"></i></div>
                                         Tutores y Mascotas
                                     </a>
-                                    <a class="nav-link {% if 'veterinario' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.veterinarios') }}">
+                                    <a class="nav-link {% if request.endpoint and 'veterinario' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.veterinarios') }}">
                                         <div class="sb-nav-link-icon"><i class="bi bi-person-badge-fill"></i></div>
                                         Veterinarios
                                     </a>

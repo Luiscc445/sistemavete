@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
 from sqlalchemy import func, and_
 from app import db
+from app.models.cita import Cita
 
 class Usuario(UserMixin, db.Model):
     """Modelo de Usuario con soporte para múltiples roles y estadísticas"""
