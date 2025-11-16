@@ -198,8 +198,8 @@ def atender_cita(id):
 
                     if medicamento and cantidad > 0:
                         # Verificar stock
-                        if medicamento.stock < cantidad:
-                            flash(f'Stock insuficiente de {medicamento.nombre}. Disponible: {medicamento.stock}', 'warning')
+                        if medicamento.stock_actual < cantidad:
+                            flash(f'Stock insuficiente de {medicamento.nombre}. Disponible: {medicamento.stock_actual}', 'warning')
                             continue
 
                         # Crear receta
@@ -214,9 +214,10 @@ def atender_cita(id):
                         db.session.add(receta)
 
                         # Reducir stock automáticamente
-                        medicamento.reducir_stock(cantidad)
+                        if not medicamento.reducir_stock(cantidad):
+                            flash(f'Error al reducir stock de {medicamento.nombre}', 'warning')
 
-            # Completar la cita
+            # Completar la cita y guardar todos los cambios
             cita.completar()
             flash('Cita atendida exitosamente. Stock actualizado.', 'success')
             return redirect(url_for('veterinario.mis_citas'))
