@@ -140,8 +140,8 @@ def tutores():
             mascotas_list.append({
                 'nombre': mascota.nombre,
                 'especie': mascota.especie,
-                'raza': mascota.raza,
-                'edad': mascota.calcular_edad() if hasattr(mascota, 'calcular_edad') else 'N/A',
+                'raza': mascota.raza or 'N/A',
+                'edad': mascota.edad_detallada,
                 'total_citas': total_citas
             })
 
