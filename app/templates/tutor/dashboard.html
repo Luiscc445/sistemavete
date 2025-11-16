@@ -114,8 +114,8 @@
                         <tbody>
                             {% for cita in citas_proximas %}
                             <tr>
-                                <td>{{ cita.fecha_hora.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ cita.fecha_hora.strftime('%H:%M') }}</td>
+                                <td>{{ cita.fecha.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ cita.fecha.strftime('%H:%M') }}</td>
                                 <td>{{ cita.mascota.nombre }}</td>
                                 <td>{{ cita.motivo|truncate(50) }}</td>
                                 <td>
