@@ -122,10 +122,16 @@ def tutores():
         )
     
     tutores = query.order_by(Usuario.nombre.asc()).paginate(page=page, per_page=10, error_out=False)
-    
-    for tutor in tutores.items:
-        tutor.total_mascotas = tutor.mascotas.count()
-    
+
+    # Calcular total de mascotas de forma segura
+    if tutores.items:
+        for tutor in tutores.items:
+            try:
+                tutor.total_mascotas = tutor.mascotas.count()
+            except Exception as e:
+                print(f"Error al contar mascotas del tutor {tutor.id}: {e}")
+                tutor.total_mascotas = 0
+
     return render_template('admin/tutores/lista.html', tutores=tutores, search=search)
 
 @admin_bp.route('/tutor/<int:tutor_id>')
@@ -254,10 +260,20 @@ def veterinarios():
     veterinarios = Usuario.query.filter_by(rol='veterinario').paginate(
         page=page, per_page=10, error_out=False
     )
-    
-    for vet in veterinarios.items:
-        vet.stats = vet.get_estadisticas_veterinario()
-    
+
+    # Obtener estadísticas de forma segura
+    if veterinarios.items:
+        for vet in veterinarios.items:
+            try:
+                vet.stats = vet.get_estadisticas_veterinario()
+            except Exception as e:
+                print(f"Error al obtener estadísticas del veterinario {vet.id}: {e}")
+                vet.stats = {
+                    'citas_completadas': 0,
+                    'citas_pendientes': 0,
+                    'total_citas': 0
+                }
+
     return render_template('admin/veterinarios/lista.html', veterinarios=veterinarios)
 
 @admin_bp.route('/veterinario/nuevo', methods=['GET', 'POST'])
