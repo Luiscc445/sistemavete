@@ -78,7 +78,7 @@ def nueva_mascota():
         peso = request.form.get('peso')
         esterilizado = request.form.get('esterilizado') == 'on'
         chip = request.form.get('chip')
-        observaciones = request.form.get('observaciones')
+        notas_comportamiento = request.form.get('notas_comportamiento') or request.form.get('observaciones')
 
         # Validaciones
         if not nombre or not especie:
@@ -115,7 +115,7 @@ def nueva_mascota():
             peso=peso_float,
             esterilizado=esterilizado,
             chip_identificacion=chip,
-            observaciones=observaciones
+            notas_comportamiento=notas_comportamiento
         )
 
         try:
@@ -167,7 +167,7 @@ def editar_mascota(id):
         mascota.color = request.form.get('color')
         mascota.esterilizado = request.form.get('esterilizado') == 'on'
         mascota.chip_identificacion = request.form.get('chip')
-        mascota.observaciones = request.form.get('observaciones')
+        mascota.notas_comportamiento = request.form.get('notas_comportamiento') or request.form.get('observaciones')
 
         # Fecha de nacimiento
         fecha_nacimiento = request.form.get('fecha_nacimiento')
