@@ -77,11 +77,11 @@
                         </td>
                     </tr>
                     {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No hay tutores registrados.</td>
+                    </tr>
                 {% endif %}
-                <!-- 
-                  <!-- El bloque '{% else %}' se elimina para -->
-                  arreglar el error de JavaScript de DataTables.
-                -->
             </tbody>
         </table>
     </div>
