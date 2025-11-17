@@ -63,12 +63,14 @@ class Pago(db.Model):
 
     # Relaciones
     cita_id = db.Column(db.Integer, db.ForeignKey('citas.id'))
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # Quien paga
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # Quien paga (tutor)
+    veterinario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))  # Veterinario que atendió
     procesado_por_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))  # Quien procesó el pago
 
     # Relación con cita
     cita = db.relationship('Cita', backref=db.backref('pagos', lazy='dynamic'))
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref=db.backref('pagos_realizados', lazy='dynamic'))
+    veterinario = db.relationship('Usuario', foreign_keys=[veterinario_id], backref=db.backref('pagos_recibidos', lazy='dynamic'))
     procesado_por = db.relationship('Usuario', foreign_keys=[procesado_por_id], backref=db.backref('pagos_procesados', lazy='dynamic'))
 
     @property

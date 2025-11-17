@@ -36,6 +36,10 @@ def ejecutar_migracion():
 
         # Lista de columnas a agregar
         columnas_nuevas = {
+            'veterinario_id': {
+                'sql': "ALTER TABLE pagos ADD veterinario_id INT NULL",
+                'descripcion': 'ID del veterinario que atendió'
+            },
             'porcentaje_empresa': {
                 'sql': "ALTER TABLE pagos ADD porcentaje_empresa FLOAT DEFAULT 57.14",
                 'descripcion': 'Porcentaje para la empresa'
@@ -79,6 +83,20 @@ def ejecutar_migracion():
             print("=" * 60)
 
             try:
+                # Actualizar veterinario_id de pagos existentes basándose en citas
+                if 'veterinario_id' in columnas_agregadas or 'veterinario_id' in columnas_existentes:
+                    update_vet_sql = """
+                    UPDATE p
+                    SET p.veterinario_id = c.veterinario_id
+                    FROM pagos p
+                    INNER JOIN citas c ON p.cita_id = c.id
+                    WHERE p.veterinario_id IS NULL
+                      AND c.veterinario_id IS NOT NULL
+                    """
+                    result_vet = db.session.execute(text(update_vet_sql))
+                    db.session.commit()
+                    print(f"✓  {result_vet.rowcount} pagos actualizados con veterinario_id")
+
                 # Actualizar monto_empresa y monto_veterinario basados en los porcentajes
                 update_sql = """
                 UPDATE pagos

@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% block title %}¡Pago Exitoso!{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Tarjeta de Éxito -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <!-- Icono de Éxito Animado -->
+                    <div class="mb-4">
+                        <div class="success-checkmark">
+                            <div class="check-icon">
+                                <span class="icon-line line-tip"></span>
+                                <span class="icon-line line-long"></span>
+                                <div class="icon-circle"></div>
+                                <div class="icon-fix"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de Éxito -->
+                    <h1 class="text-success mb-3">
+                        <i class="bi bi-check-circle-fill"></i> ¡Pago Exitoso!
+                    </h1>
+                    <h4 class="mb-4">Tu cita ha sido reservada</h4>
+
+                    <div class="alert alert-success border-success mb-4">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            Detalles del Pago
+                        </h5>
+                        <hr>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Monto Pagado:</strong><br>
+                                    <span class="fs-4 text-success">Bs. {{ "%.2f"|format(pago.monto) }}</span>
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Método de Pago:</strong><br>
+                                    {% if pago.metodo_pago == 'efectivo' %}
+                                        💵 Efectivo
+                                    {% elif pago.metodo_pago == 'tarjeta_credito' %}
+                                        💳 Tarjeta de Crédito
+                                    {% elif pago.metodo_pago == 'tarjeta_debito' %}
+                                        💳 Tarjeta de Débito
+                                    {% elif 'qr' in pago.metodo_pago %}
+                                        📱 Código QR
+                                    {% elif pago.metodo_pago == 'transferencia' %}
+                                        🏦 Transferencia Bancaria
+                                    {% else %}
+                                        {{ pago.metodo_pago }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Código de Pago:</strong><br>
+                                    <code class="fs-6">{{ pago.codigo_pago }}</code>
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Fecha:</strong><br>
+                                    {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') if pago.fecha_pago else 'Ahora' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de la Cita -->
+                    {% if pago.cita %}
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-calendar-check-fill me-2"></i>
+                                Información de la Cita
+                            </h5>
+                            <hr>
+                            <div class="row text-start">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <i class="bi bi-calendar3 me-2 text-primary"></i>
+                                        <strong>Fecha y Hora:</strong><br>
+                                        {{ pago.cita.fecha.strftime('%d/%m/%Y a las %H:%M') }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-clipboard2-pulse me-2 text-primary"></i>
+                                        <strong>Tipo de Consulta:</strong><br>
+                                        {{ pago.cita.tipo }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <i class="bi bi-person-badge me-2 text-primary"></i>
+                                        <strong>Veterinario:</strong><br>
+                                        Dr(a). {{ pago.cita.veterinario.nombre_completo }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-heart-pulse me-2 text-primary"></i>
+                                        <strong>Mascota:</strong><br>
+                                        {{ pago.cita.mascota.nombre }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <small>
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Estado:</strong> <span class="badge bg-success">Confirmada</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Mensajes Importantes -->
+                    <div class="alert alert-warning border-warning mb-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Importante
+                        </h6>
+                        <ul class="text-start mb-0">
+                            <li>Llega 10 minutos antes de tu cita</li>
+                            <li>Trae el carnet de vacunación de tu mascota (si lo tienes)</li>
+                            <li>Si necesitas cancelar, hazlo con al menos 24 horas de anticipación</li>
+                            <li>Guarda el código de pago: <strong>{{ pago.codigo_pago }}</strong></li>
+                        </ul>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('tutor.ver_cita', id=pago.cita_id) }}"
+                           class="btn btn-primary btn-lg">
+                            <i class="bi bi-eye me-2"></i>
+                            Ver Detalles de la Cita
+                        </a>
+                        <a href="{{ url_for('tutor.citas') }}"
+                           class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-calendar-week me-2"></i>
+                            Ver Todas Mis Citas
+                        </a>
+                        <a href="{{ url_for('tutor.dashboard') }}"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-house-door me-2"></i>
+                            Ir al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos para la animación del checkmark -->
+<style>
+/* Animación del checkmark de éxito */
+.success-checkmark {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.success-checkmark .check-icon {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    border-radius: 50%;
+    box-sizing: content-box;
+    border: 4px solid #198754;
+    animation: scaleIn 0.5s ease-in-out;
+}
+
+.success-checkmark .check-icon::before {
+    top: 3px;
+    left: -2px;
+    width: 30px;
+    transform-origin: 100% 50%;
+    border-radius: 100px 0 0 100px;
+}
+
+.success-checkmark .check-icon::after {
+    top: 0;
+    left: 30px;
+    width: 60px;
+    transform-origin: 0 50%;
+    border-radius: 0 100px 100px 0;
+    animation: rotateCircle 4.25s ease-in;
+}
+
+.success-checkmark .check-icon::before,
+.success-checkmark .check-icon::after {
+    content: '';
+    height: 100px;
+    position: absolute;
+    background: #fff;
+    transform: rotate(-45deg);
+}
+
+.success-checkmark .icon-line {
+    height: 5px;
+    background-color: #198754;
+    display: block;
+    border-radius: 2px;
+    position: absolute;
+    z-index: 10;
+}
+
+.success-checkmark .icon-line.line-tip {
+    top: 46px;
+    left: 14px;
+    width: 25px;
+    transform: rotate(45deg);
+    animation: tipInPlace 0.75s 0.3s ease-in-out;
+    animation-fill-mode: forwards;
+    opacity: 0;
+}
+
+.success-checkmark .icon-line.line-long {
+    top: 38px;
+    right: 8px;
+    width: 47px;
+    transform: rotate(-45deg);
+    animation: longInPlace 0.75s 0.15s ease-in-out;
+    animation-fill-mode: forwards;
+    opacity: 0;
+}
+
+.success-checkmark .icon-circle {
+    top: -4px;
+    left: -4px;
+    z-index: 10;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    position: absolute;
+    box-sizing: content-box;
+    border: 4px solid rgba(25, 135, 84, .5);
+}
+
+.success-checkmark .icon-fix {
+    top: 8px;
+    width: 5px;
+    left: 26px;
+    z-index: 1;
+    height: 85px;
+    position: absolute;
+    transform: rotate(-45deg);
+    background-color: #fff;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes rotateCircle {
+    0% {
+        transform: rotate(-45deg);
+    }
+    5% {
+        transform: rotate(-45deg);
+    }
+    12% {
+        transform: rotate(-405deg);
+    }
+    100% {
+        transform: rotate(-405deg);
+    }
+}
+
+@keyframes tipInPlace {
+    0% {
+        width: 0;
+        left: 1px;
+        top: 19px;
+        opacity: 0;
+    }
+    54% {
+        width: 0;
+        left: 1px;
+        top: 19px;
+        opacity: 1;
+    }
+    70% {
+        width: 25px;
+        left: 14px;
+        top: 46px;
+        opacity: 1;
+    }
+    100% {
+        width: 25px;
+        left: 14px;
+        top: 46px;
+        opacity: 1;
+    }
+}
+
+@keyframes longInPlace {
+    0% {
+        width: 0;
+        right: 46px;
+        top: 54px;
+        opacity: 0;
+    }
+    65% {
+        width: 0;
+        right: 46px;
+        top: 54px;
+        opacity: 1;
+    }
+    84% {
+        width: 47px;
+        right: 8px;
+        top: 38px;
+        opacity: 1;
+    }
+    100% {
+        width: 47px;
+        right: 8px;
+        top: 38px;
+        opacity: 1;
+    }
+}
+
+/* Efecto de entrada suave para la card */
+.card {
+    animation: fadeInUp 0.6s ease-in-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<!-- Script para confetti (opcional) -->
+<script>
+// Efecto de confetti al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Reproducir sonido de éxito (opcional)
+    // const audio = new Audio('/static/sounds/success.mp3');
+    // audio.play();
+
+    // Aquí podrías agregar una librería de confetti como canvas-confetti
+    console.log('¡Pago procesado exitosamente!');
+});
+</script>
+
+{% endblock %}

@@ -339,7 +339,7 @@ def pagar_cita(cita_id):
             metodo_pago=metodo_pago,
             estado='completado',  # Pago simulado, automáticamente completado
             descripcion=f'Pago de cita #{cita_id} - {cita.tipo}',
-            tutor_id=current_user.id,
+            usuario_id=current_user.id,  # Tutor que paga
             cita_id=cita_id,
             veterinario_id=cita.veterinario_id
         )
@@ -359,13 +359,27 @@ def pagar_cita(cita_id):
 
             db.session.commit()
 
-            flash(f'¡Pago de Bs. {monto_float:.2f} procesado exitosamente! Tu cita ha sido confirmada.', 'success')
-            return redirect(url_for('tutor.ver_cita', id=cita_id))
+            # Redirigir a página de éxito con el ID del pago
+            return redirect(url_for('tutor.pago_exitoso', pago_id=nuevo_pago.id))
         except Exception as e:
             db.session.rollback()
             flash(f'Error al procesar el pago: {str(e)}', 'danger')
 
     return render_template('tutor/pagar_cita.html', cita=cita)
+
+
+@tutor_bp.route('/pago-exitoso/<int:pago_id>')
+@tutor_required
+def pago_exitoso(pago_id):
+    """Página de confirmación de pago exitoso"""
+    pago = Pago.query.get_or_404(pago_id)
+
+    # Verificar que el pago pertenece al usuario
+    if pago.usuario_id != current_user.id:
+        flash('No tienes permiso para ver este pago.', 'danger')
+        return redirect(url_for('tutor.citas'))
+
+    return render_template('tutor/pago_exitoso.html', pago=pago)
 
 
 @tutor_bp.route('/perfil', methods=['GET', 'POST'])
