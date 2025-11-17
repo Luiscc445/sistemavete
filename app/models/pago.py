@@ -181,6 +181,13 @@ class Pago(db.Model):
         Calcula automáticamente la división de ingresos entre empresa y veterinario
         Ejemplo: Si monto=35, empresa=20 (57.14%), veterinario=15 (42.86%)
         """
+        # Asignar valores por defecto si son None
+        if self.porcentaje_empresa is None:
+            self.porcentaje_empresa = 57.14
+        if self.porcentaje_veterinario is None:
+            self.porcentaje_veterinario = 42.86
+
+        # Calcular montos
         self.monto_empresa = round(self.monto * (self.porcentaje_empresa / 100), 2)
         self.monto_veterinario = round(self.monto * (self.porcentaje_veterinario / 100), 2)
         return (self.monto_empresa, self.monto_veterinario)

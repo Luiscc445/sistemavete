@@ -341,8 +341,14 @@ def pagar_cita(cita_id):
             descripcion=f'Pago de cita #{cita_id} - {cita.tipo}',
             usuario_id=current_user.id,  # Tutor que paga
             cita_id=cita_id,
-            veterinario_id=cita.veterinario_id
+            veterinario_id=cita.veterinario_id,
+            porcentaje_empresa=57.14,  # Porcentaje para la empresa
+            porcentaje_veterinario=42.86,  # Porcentaje para el veterinario
+            fecha_pago=datetime.now()  # Fecha del pago
         )
+
+        # Generar código de pago único
+        nuevo_pago.generar_codigo_pago()
 
         # Calcular división de ingresos (empresa vs veterinario)
         nuevo_pago.calcular_division_ingresos()
