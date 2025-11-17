@@ -102,7 +102,7 @@ def dashboard():
     ingresos_por_mes = db.session.query(
         extract('year', Cita.fecha).label('año'),
         extract('month', Cita.fecha).label('mes'),
-        func.sum(Cita.costo).label('total')
+        func.sum(func.cast(Cita.costo, db.Numeric(10, 2))).label('total')
     ).filter(
         and_(
             func.cast(Cita.fecha, db.Date) >= hace_6_meses,
@@ -280,7 +280,7 @@ def citas():
 
     # Ingresos totales
     ingresos_totales = db.session.query(
-        func.sum(Cita.costo)
+        func.sum(func.cast(Cita.costo, db.Numeric(10, 2)))
     ).filter(
         and_(
             func.cast(Cita.fecha, db.Date) >= fecha_inicio,

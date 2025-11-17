@@ -82,7 +82,7 @@
                            <strong>{{ cita.mascota.nombre }}</strong> ({{ cita.tutor.nombre_completo }})
                            <br><small class="text-muted">{{ cita.motivo }}</small>
                         </div>
-                        <span class="badge bg-primary rounded-pill">{{ cita.fecha.strftime('%H:%M') }}</span>
+                        <span class="badge bg-primary rounded-pill">{% if cita.fecha.strftime is defined %}{{ cita.fecha.strftime('%H:%M') }}{% else %}{{ cita.fecha[:16].split(' ')[1][:5] if ' ' in cita.fecha else 'N/A' }}{% endif %}</span>
                     </li>
                     {% else %}
                     <li class="list-group-item">No hay citas programadas para hoy.</li>
@@ -102,7 +102,7 @@
                     {% for tutor in ultimos_tutores %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ tutor.nombre_completo }}
-                        <span class="text-muted small">{{ tutor.fecha_registro.strftime('%d/%m/%Y') }}</span>
+                        <span class="text-muted small">{% if tutor.fecha_registro.strftime is defined %}{{ tutor.fecha_registro.strftime('%d/%m/%Y') }}{% else %}{{ tutor.fecha_registro[:10] if tutor.fecha_registro else 'N/A' }}{% endif %}</span>
                     </li>
                     {% else %}
                     <li class="list-group-item">No hay tutores registrados recientemente.</li>

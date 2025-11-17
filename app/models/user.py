@@ -119,7 +119,7 @@ class Usuario(UserMixin, db.Model):
         
         # Citas hoy
         citas_hoy = self.citas_como_veterinario.filter(
-            func.date(Cita.fecha) == hoy
+            func.cast(Cita.fecha, db.Date) == hoy
         ).count()
         
         # Citas completadas
@@ -134,7 +134,7 @@ class Usuario(UserMixin, db.Model):
         ).scalar()
         
         # Ingresos generados (si se maneja facturación)
-        ingresos_mes = db.session.query(func.sum(Cita.costo)).filter(
+        ingresos_mes = db.session.query(func.sum(func.cast(Cita.costo, db.Numeric(10, 2)))).filter(
             Cita.veterinario_id == self.id,
             Cita.estado == 'completada',
             func.extract('month', Cita.fecha) == hoy.month,
