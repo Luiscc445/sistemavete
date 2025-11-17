@@ -75,20 +75,20 @@ def dashboard():
             'total_veterinarios': Usuario.query.filter_by(rol='veterinario').count(),
             'total_tutores': Usuario.query.filter_by(rol='tutor').count(),
             'total_mascotas': Mascota.query.filter_by(activo=True).count(),
-            'citas_hoy': Cita.query.filter(func.date(Cita.fecha) == date.today()).count(), # CORREGIDO: Usa Cita.fecha
+            'citas_hoy': Cita.query.filter(func.cast(Cita.fecha, db.Date) == date.today()).count(),
             'citas_pendientes': Cita.query.filter_by(estado='pendiente').count(),
             'medicamentos_bajo_stock': Medicamento.query.filter(
                 Medicamento.stock_actual <= Medicamento.stock_minimo
             ).count()
         }
-        
+
         # Últimos tutores
         ultimos_tutores = Usuario.query.filter_by(rol='tutor').order_by(Usuario.fecha_registro.desc()).limit(5).all()
 
         # Próximas citas de hoy
         proximas_citas = Cita.query.filter(
-            func.date(Cita.fecha) == date.today(), # CORREGIDO: Usa Cita.fecha
-            Cita.estado.in_(['pendiente', 'aceptada']) # 'aceptada' es el estado correcto
+            func.cast(Cita.fecha, db.Date) == date.today(),
+            Cita.estado.in_(['pendiente', 'confirmada'])
         ).order_by(Cita.fecha).limit(10).all()
 
     except Exception as e:

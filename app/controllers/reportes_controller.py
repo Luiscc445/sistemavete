@@ -47,8 +47,8 @@ def dashboard():
         'total_mascotas': Mascota.query.filter_by(activo=True).count(),
         'total_citas': Cita.query.filter(
             and_(
-                func.date(Cita.fecha) >= fecha_inicio,
-                func.date(Cita.fecha) <= fecha_fin
+                func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+                func.cast(Cita.fecha, db.Date) <= fecha_fin
             )
         ).count(),
         'total_medicamentos': Medicamento.query.filter_by(activo=True).count(),
@@ -63,8 +63,8 @@ def dashboard():
         func.count(Cita.id)
     ).filter(
         and_(
-            func.date(Cita.fecha) >= fecha_inicio,
-            func.date(Cita.fecha) <= fecha_fin
+            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+            func.cast(Cita.fecha, db.Date) <= fecha_fin
         )
     ).group_by(Cita.estado).all()
 
@@ -75,7 +75,7 @@ def dashboard():
         extract('month', Cita.fecha).label('mes'),
         func.count(Cita.id).label('total')
     ).filter(
-        func.date(Cita.fecha) >= hace_6_meses
+        func.cast(Cita.fecha, db.Date) >= hace_6_meses
     ).group_by('año', 'mes').order_by('año', 'mes').all()
 
     # Top 5 veterinarios más activos
@@ -87,8 +87,8 @@ def dashboard():
     ).join(Cita, Usuario.id == Cita.veterinario_id).filter(
         and_(
             Usuario.rol == 'veterinario',
-            func.date(Cita.fecha) >= fecha_inicio,
-            func.date(Cita.fecha) <= fecha_fin
+            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+            func.cast(Cita.fecha, db.Date) <= fecha_fin
         )
     ).group_by(Usuario.id, Usuario.nombre, Usuario.apellido).order_by(func.count(Cita.id).desc()).limit(5).all()
 
@@ -105,7 +105,7 @@ def dashboard():
         func.sum(Cita.costo).label('total')
     ).filter(
         and_(
-            func.date(Cita.fecha) >= hace_6_meses,
+            func.cast(Cita.fecha, db.Date) >= hace_6_meses,
             Cita.estado == 'completada'
         )
     ).group_by('año', 'mes').order_by('año', 'mes').all()
@@ -262,8 +262,8 @@ def citas():
     # Estadísticas de citas
     total_citas = Cita.query.filter(
         and_(
-            func.date(Cita.fecha) >= fecha_inicio,
-            func.date(Cita.fecha) <= fecha_fin
+            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+            func.cast(Cita.fecha, db.Date) <= fecha_fin
         )
     ).count()
 
@@ -273,8 +273,8 @@ def citas():
         func.count(Cita.id).label('cantidad')
     ).filter(
         and_(
-            func.date(Cita.fecha) >= fecha_inicio,
-            func.date(Cita.fecha) <= fecha_fin
+            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+            func.cast(Cita.fecha, db.Date) <= fecha_fin
         )
     ).group_by(Cita.estado).all()
 
@@ -283,8 +283,8 @@ def citas():
         func.sum(Cita.costo)
     ).filter(
         and_(
-            func.date(Cita.fecha) >= fecha_inicio,
-            func.date(Cita.fecha) <= fecha_fin,
+            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
+            func.cast(Cita.fecha, db.Date) <= fecha_fin,
             Cita.estado == 'completada'
         )
     ).scalar() or 0
