@@ -98,17 +98,18 @@ def dashboard():
         Medicamento.activo == True
     ).count()
 
-    # Ingresos por mes (si hay campo de costo en citas)
+    # Ingresos por mes (desde tabla de pagos - datos reales)
+    from app.models import Pago
     ingresos_por_mes = db.session.query(
-        extract('year', Cita.fecha).label('año'),
-        extract('month', Cita.fecha).label('mes'),
-        func.sum(func.cast(Cita.costo, db.Numeric(10, 2))).label('total')
+        extract('year', Pago.fecha_pago).label('año'),
+        extract('month', Pago.fecha_pago).label('mes'),
+        func.sum(Pago.monto).label('total')
     ).filter(
         and_(
-            func.cast(Cita.fecha, db.Date) >= hace_6_meses,
-            Cita.estado == 'completada'
+            func.cast(Pago.fecha_pago, db.Date) >= hace_6_meses,
+            Pago.estado == 'completado'
         )
-    ).group_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).order_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).all()
+    ).group_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).order_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).all()
 
     return render_template(
         'admin/reportes/dashboard.html',
@@ -278,14 +279,14 @@ def citas():
         )
     ).group_by(Cita.estado).all()
 
-    # Ingresos totales
+    # Ingresos totales (desde tabla de pagos - datos reales)
     ingresos_totales = db.session.query(
-        func.sum(func.cast(Cita.costo, db.Numeric(10, 2)))
+        func.sum(Pago.monto)
     ).filter(
         and_(
-            func.cast(Cita.fecha, db.Date) >= fecha_inicio,
-            func.cast(Cita.fecha, db.Date) <= fecha_fin,
-            Cita.estado == 'completada'
+            func.cast(Pago.fecha_pago, db.Date) >= fecha_inicio,
+            func.cast(Pago.fecha_pago, db.Date) <= fecha_fin,
+            Pago.estado == 'completado'
         )
     ).scalar() or 0
 
