@@ -46,9 +46,12 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
     import json
     try:
         # Convertir datos a JSON string si no son None (SQL Server compatibility)
-        # Usar string vacío en lugar de None para evitar error de precisión en pyodbc
-        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else ''
-        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else ''
+        # Para None, usar None explícitamente (columnas marcadas como nullable en el modelo)
+        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else None
+        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else None
+
+        # Obtener user agent (puede ser None)
+        user_agent = request.headers.get('User-Agent') if request and hasattr(request, 'headers') else None
 
         auditoria = AuditoriaAccion(
             usuario_id=current_user.id,
@@ -58,8 +61,8 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
             descripcion=descripcion,
             datos_anteriores=datos_ant_str,
             datos_nuevos=datos_new_str,
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get('User-Agent')
+            ip_address=request.remote_addr if request and hasattr(request, 'remote_addr') else None,
+            user_agent=user_agent
         )
         db.session.add(auditoria)
         # El commit se hará junto con la operación principal

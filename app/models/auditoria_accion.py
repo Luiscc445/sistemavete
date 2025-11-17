@@ -16,11 +16,11 @@ class AuditoriaAccion(db.Model):
     entidad = db.Column(db.String(50))  # usuario, mascota, cita, etc.
     entidad_id = db.Column(db.Integer)
 
-    descripcion = db.Column(db.Text)
-    datos_anteriores = db.Column(db.Text)  # Cambiado de JSON a Text para SQL Server
-    datos_nuevos = db.Column(db.Text)  # Cambiado de JSON a Text para SQL Server
+    descripcion = db.Column(db.Text, nullable=False)
+    datos_anteriores = db.Column(db.Text, nullable=True)  # Cambiado de JSON a Text para SQL Server
+    datos_nuevos = db.Column(db.Text, nullable=True)  # Cambiado de JSON a Text para SQL Server
 
-    ip_address = db.Column(db.String(45))
-    user_agent = db.Column(db.String(200))
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)  # Cambiado a Text para user-agents largos
 
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
