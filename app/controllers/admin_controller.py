@@ -43,15 +43,20 @@ def admin_required(f):
 def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anteriores=None, datos_nuevos=None):
     """Registra una acción en el sistema de auditoría"""
     # Esta función es importante para el control
+    import json
     try:
+        # Convertir datos a JSON string si no son None (SQL Server compatibility)
+        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else None
+        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else None
+
         auditoria = AuditoriaAccion(
             usuario_id=current_user.id,
             accion=accion,
             entidad=entidad,
             entidad_id=entidad_id,
             descripcion=descripcion,
-            datos_anteriores=datos_anteriores,
-            datos_nuevos=datos_nuevos,
+            datos_anteriores=datos_ant_str,
+            datos_nuevos=datos_new_str,
             ip_address=request.remote_addr,
             user_agent=request.headers.get('User-Agent')
         )

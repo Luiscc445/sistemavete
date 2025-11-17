@@ -17,8 +17,8 @@ class AuditoriaAccion(db.Model):
     entidad_id = db.Column(db.Integer)
 
     descripcion = db.Column(db.Text)
-    datos_anteriores = db.Column(db.JSON)
-    datos_nuevos = db.Column(db.JSON)
+    datos_anteriores = db.Column(db.Text)  # Cambiado de JSON a Text para SQL Server
+    datos_nuevos = db.Column(db.Text)  # Cambiado de JSON a Text para SQL Server
 
     ip_address = db.Column(db.String(45))
     user_agent = db.Column(db.String(200))
