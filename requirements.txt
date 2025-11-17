@@ -35,6 +35,10 @@ marshmallow==3.20.1
 pandas==2.2.3
 openpyxl==3.1.2
 
+# Generación de códigos QR para pagos
+qrcode==7.4.2
+Pillow==10.4.0
+
 # Testing (opcional)
 pytest==7.4.3
 pytest-flask==1.3.0

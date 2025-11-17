@@ -48,6 +48,7 @@ def create_app(config_name='default'):
     from app.controllers.tutor_controller import tutor_bp
     from app.controllers.inventario_controller import inventario_bp
     from app.controllers.reportes_controller import reportes_bp
+    from app.controllers.pagos_controller import pagos_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -55,6 +56,7 @@ def create_app(config_name='default'):
     app.register_blueprint(tutor_bp, url_prefix='/tutor')
     app.register_blueprint(inventario_bp, url_prefix='/inventario')
     app.register_blueprint(reportes_bp, url_prefix='/reportes')
+    app.register_blueprint(pagos_bp, url_prefix='/pagos')
     
     # Ruta principal (Landing Page)
     @app.route('/')
