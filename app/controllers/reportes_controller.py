@@ -76,7 +76,7 @@ def dashboard():
         func.count(Cita.id).label('total')
     ).filter(
         func.cast(Cita.fecha, db.Date) >= hace_6_meses
-    ).group_by('año', 'mes').order_by('año', 'mes').all()
+    ).group_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).order_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).all()
 
     # Top 5 veterinarios más activos
     top_veterinarios = db.session.query(
@@ -108,7 +108,7 @@ def dashboard():
             func.cast(Cita.fecha, db.Date) >= hace_6_meses,
             Cita.estado == 'completada'
         )
-    ).group_by('año', 'mes').order_by('año', 'mes').all()
+    ).group_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).order_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).all()
 
     return render_template(
         'admin/reportes/dashboard.html',

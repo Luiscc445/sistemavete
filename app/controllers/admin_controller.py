@@ -257,7 +257,7 @@ def editar_tutor(tutor_id):
 def veterinarios():
     """Lista de veterinarios con estadísticas"""
     page = request.args.get('page', 1, type=int)
-    veterinarios = Usuario.query.filter_by(rol='veterinario').paginate(
+    veterinarios = Usuario.query.filter_by(rol='veterinario').order_by(Usuario.nombre).paginate(
         page=page, per_page=10, error_out=False
     )
 
