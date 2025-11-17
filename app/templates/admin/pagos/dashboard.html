@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Dashboard de Pagos e Ingresos{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-cash-coin me-2"></i> Dashboard de Pagos e Ingresos
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Pagos</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+
+<!-- Panel de Controles -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-sliders me-2"></i> Panel de Controles
+    </div>
+    <div class="card-body">
+        <div class="row align-items-end">
+            <!-- Filtros de Fecha -->
+            <div class="col-md-8">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar3 me-1"></i> Fecha Inicio
+                        </label>
+                        <input type="date" class="form-control" name="fecha_inicio"
+                               value="{{ fecha_inicio }}" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-check me-1"></i> Fecha Fin
+                        </label>
+                        <input type="date" class="form-control" name="fecha_fin"
+                               value="{{ fecha_fin }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-search me-1"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('pagos.crear') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i> Nuevo Pago
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <!-- Ingresos Totales -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white mb-4 shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Ingresos Totales</div>
+                        <div class="h3 mb-0 fw-bold">{{ stats.ingresos_totales|currency }}</div>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <span class="small text-white">Período actual</span>
+                <div class="small text-white"><i class="bi bi-arrow-up-circle"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos Completados -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4 shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Pagos Completados</div>
+                        <div class="h3 mb-0 fw-bold">{{ stats.total_pagos_completados }}</div>
+                    </div>
+                    <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="{{ url_for('pagos.listar', estado='completado') }}">
+                    Ver Lista
+                </a>
+                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos Pendientes -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-warning text-white mb-4 shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Pagos Pendientes</div>
+                        <div class="h3 mb-0 fw-bold">{{ stats.total_pagos_pendientes }}</div>
+                    </div>
+                    <i class="bi bi-clock-history fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="{{ url_for('pagos.listar', estado='pendiente') }}">
+                    Ver Pendientes
+                </a>
+                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monto Pendiente -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-danger text-white mb-4 shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Monto Pendiente</div>
+                        <div class="h3 mb-0 fw-bold">{{ stats.pendientes_total|currency }}</div>
+                    </div>
+                    <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <span class="small text-white">Requiere atención</span>
+                <div class="small text-white">
+                    <i class="bi bi-bell"></i> {{ stats.total_vencidos }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <!-- Ingresos por Día -->
+    <div class="col-xl-8 col-lg-8">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                <strong>Ingresos por Día (Últimos 30 Días)</strong>
+            </div>
+            <div class="card-body" style="height: 400px;">
+                <canvas id="ingresosDiaChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métodos de Pago -->
+    <div class="col-xl-4 col-lg-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-pie-chart-fill me-2"></i>
+                <strong>Métodos de Pago</strong>
+            </div>
+            <div class="card-body" style="height: 400px;">
+                <canvas id="metodosPagoChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagos Recientes y Top Pagos -->
+<div class="row mb-4">
+    <!-- Pagos Recientes -->
+    <div class="col-xl-7 col-lg-7">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-clock-history me-2"></i>
+                <strong>Pagos Recientes</strong>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Monto</th>
+                                <th>Método</th>
+                                <th class="text-center">Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in pagos_recientes %}
+                            <tr>
+                                <td>
+                                    <strong>{{ pago.codigo_pago }}</strong>
+                                </td>
+                                <td>{{ pago.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ pago.usuario.nombre_completo }}</td>
+                                <td class="fw-bold">{{ pago.monto|currency }}</td>
+                                <td>
+                                    <small class="text-muted">{{ pago.metodo_pago_label }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ pago.estado_badge_class }}">
+                                        {{ pago.estado|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('pagos.ver', pago_id=pago.id) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{{ url_for('pagos.listar') }}" class="btn btn-sm btn-primary">
+                    Ver Todos los Pagos <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Pagos Más Grandes -->
+    <div class="col-xl-5 col-lg-5">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-trophy-fill me-2"></i>
+                <strong>Top 10 Pagos Más Grandes</strong>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th class="text-end">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in top_pagos %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <small>{{ pago.usuario.nombre_completo }}</small>
+                                    <br>
+                                    <span class="text-muted" style="font-size: 0.75rem;">
+                                        {{ pago.codigo_pago }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">{{ pago.monto|currency }}</strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Datos de Ingresos por Día
+const ingresosDiaLabels = [
+    {% for fecha, total in ingresos_por_dia %}
+        '{{ fecha }}'{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+const ingresosDiaData = [
+    {% for fecha, total in ingresos_por_dia %}
+        {{ total }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Gráfico de Ingresos por Día
+const ctxDia = document.getElementById('ingresosDiaChart').getContext('2d');
+const ingresosDiaChart = new Chart(ctxDia, {
+    type: 'line',
+    data: {
+        labels: ingresosDiaLabels,
+        datasets: [{
+            label: 'Ingresos Diarios (Bs.)',
+            data: ingresosDiaData,
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#198754',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                callbacks: {
+                    label: function(context) {
+                        return 'Ingresos: Bs. ' + context.parsed.y.toFixed(2);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'Bs. ' + value;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Datos de Métodos de Pago
+const metodosLabels = [
+    {% for metodo, cantidad, total in ingresos_por_metodo %}
+        '{{ metodo }}'{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+const metodosData = [
+    {% for metodo, cantidad, total in ingresos_por_metodo %}
+        {{ total }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Gráfico de Métodos de Pago
+const ctxMetodos = document.getElementById('metodosPagoChart').getContext('2d');
+const metodosPagoChart = new Chart(ctxMetodos, {
+    type: 'doughnut',
+    data: {
+        labels: metodosLabels,
+        datasets: [{
+            data: metodosData,
+            backgroundColor: [
+                '#198754',  // Verde - efectivo
+                '#0d6efd',  // Azul - tarjeta_credito
+                '#6f42c1',  // Morado - tarjeta_debito
+                '#fd7e14',  // Naranja - transferencia
+                '#20c997',  // Turquesa - qr_simple
+                '#d63384',  // Rosa - qr_tigo_money
+                '#0dcaf0'   // Cyan - qr_banco
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const value = context.parsed;
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return context.label + ': Bs. ' + value.toFixed(2) + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

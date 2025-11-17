@@ -11,6 +11,7 @@ from .servicio import Servicio
 from .notificacion import Notificacion
 from .configuracion_sistema import ConfiguracionSistema
 from .auditoria_accion import AuditoriaAccion
+from .pago import Pago, HistorialPago
 
 __all__ = [
     'Usuario',
@@ -26,5 +27,7 @@ __all__ = [
     'Servicio',
     'Notificacion',
     'ConfiguracionSistema',
-    'AuditoriaAccion'
+    'AuditoriaAccion',
+    'Pago',
+    'HistorialPago'
 ]

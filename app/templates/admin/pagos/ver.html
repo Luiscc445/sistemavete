@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% block title %}Pago {{ pago.codigo_pago }}{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-receipt me-2"></i> Detalle de Pago
+{% endblock %}
+
+{% block breadcrumb %}
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('pagos.dashboard') }}">Pagos</a></li>
+    <li class="breadcrumb-item active">{{ pago.codigo_pago }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+
+<!-- Información Principal del Pago -->
+<div class="row">
+    <div class="col-xl-8">
+        <!-- Detalles del Pago -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-receipt me-2"></i>
+                    <strong>{{ pago.codigo_pago }}</strong>
+                </div>
+                <span class="badge bg-{{ pago.estado_badge_class }} fs-6">
+                    {{ pago.estado|title }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="text-success">Monto Total</h5>
+                        <h2 class="display-4">{{ pago.monto|currency }}</h2>
+
+                        {% if pago.saldo_pendiente > 0 and pago.estado != 'completado' %}
+                        <div class="mt-3">
+                            <strong class="text-warning">Pagado:</strong> {{ pago.monto_pagado|currency }}<br>
+                            <strong class="text-danger">Pendiente:</strong> {{ pago.saldo_pendiente|currency }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <th class="text-muted">Método de Pago:</th>
+                                <td class="fw-bold">{{ pago.metodo_pago_label }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Cliente:</th>
+                                <td>
+                                    <a href="{{ url_for('admin.ver_tutor', tutor_id=pago.usuario_id) }}">
+                                        {{ pago.usuario.nombre_completo }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% if pago.cita_id %}
+                            <tr>
+                                <th class="text-muted">Cita Asociada:</th>
+                                <td>
+                                    <a href="{{ url_for('admin.detalle_cita', cita_id=pago.cita_id) }}">
+                                        Cita #{{ pago.cita_id }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th class="text-muted">Fecha Creación:</th>
+                                <td>{{ pago.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                            </tr>
+                            {% if pago.fecha_pago %}
+                            <tr>
+                                <th class="text-muted">Fecha de Pago:</th>
+                                <td class="text-success fw-bold">
+                                    {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') }}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+
+                {% if pago.descripcion %}
+                <div class="mb-3">
+                    <strong>Descripción:</strong>
+                    <p class="text-muted">{{ pago.descripcion }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Información de Transacción -->
+                {% if pago.numero_transaccion or pago.numero_autorizacion or pago.banco %}
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Información de Transacción</h6>
+                    {% if pago.numero_transaccion %}
+                    <p class="mb-1"><strong>Nº Transacción:</strong> {{ pago.numero_transaccion }}</p>
+                    {% endif %}
+                    {% if pago.numero_autorizacion %}
+                    <p class="mb-1"><strong>Nº Autorización:</strong> {{ pago.numero_autorizacion }}</p>
+                    {% endif %}
+                    {% if pago.banco %}
+                    <p class="mb-1"><strong>Banco:</strong> {{ pago.banco }}</p>
+                    {% endif %}
+                    {% if pago.ultimos_digitos_tarjeta %}
+                    <p class="mb-0"><strong>Tarjeta:</strong> **** **** **** {{ pago.ultimos_digitos_tarjeta }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Información de Factura -->
+                {% if pago.requiere_factura %}
+                <div class="alert alert-secondary">
+                    <h6 class="alert-heading"><i class="bi bi-file-earmark-text me-2"></i>Información de Facturación</h6>
+                    {% if pago.numero_factura %}
+                    <p class="mb-1"><strong>Nº Factura:</strong> {{ pago.numero_factura }}</p>
+                    {% endif %}
+                    {% if pago.nit_cliente %}
+                    <p class="mb-1"><strong>NIT:</strong> {{ pago.nit_cliente }}</p>
+                    {% endif %}
+                    {% if pago.razon_social_cliente %}
+                    <p class="mb-0"><strong>Razón Social:</strong> {{ pago.razon_social_cliente }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Historial del Pago -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-clock-history me-2"></i>
+                <strong>Historial de Cambios</strong>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for item in historial %}
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <div class="timeline-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ item.accion|title }}</strong>
+                                    <small class="text-muted">{{ item.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
+                                </div>
+                                <p class="text-muted mb-0">{{ item.descripcion }}</p>
+                                {% if item.estado_anterior and item.estado_nuevo %}
+                                <small class="text-muted">
+                                    <span class="badge bg-secondary">{{ item.estado_anterior }}</span>
+                                    <i class="bi bi-arrow-right mx-1"></i>
+                                    <span class="badge bg-primary">{{ item.estado_nuevo }}</span>
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Lateral -->
+    <div class="col-xl-4">
+        <!-- Código QR (solo si aplica) -->
+        {% if 'qr' in pago.metodo_pago and pago.qr_code_image %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-qr-code me-2"></i>
+                <strong>Código QR para Pago</strong>
+            </div>
+            <div class="card-body text-center">
+                {% if pago.qr_esta_vencido %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Este QR ha expirado
+                </div>
+                {% endif %}
+
+                <img src="{{ url_for('pagos.obtener_qr_image', pago_id=pago.id) }}"
+                     alt="QR Code"
+                     class="img-fluid mb-3"
+                     style="max-width: 300px;">
+
+                <p class="text-muted small mb-2">
+                    <i class="bi bi-clock me-1"></i>
+                    Expira: {{ pago.qr_vencimiento.strftime('%d/%m/%Y %H:%M') if pago.qr_vencimiento else 'N/A' }}
+                </p>
+
+                {% if pago.estado == 'pendiente' %}
+                <form action="{{ url_for('pagos.regenerar_qr', pago_id=pago.id) }}" method="POST">
+                    <button type="submit" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Regenerar QR
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acciones -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <i class="bi bi-gear me-2"></i>
+                <strong>Acciones</strong>
+            </div>
+            <div class="card-body">
+                {% if pago.estado == 'pendiente' %}
+                <!-- Procesar Pago -->
+                <button type="button" class="btn btn-success w-100 mb-2"
+                        data-bs-toggle="modal" data-bs-target="#procesarPagoModal">
+                    <i class="bi bi-check-circle me-2"></i> Marcar como Completado
+                </button>
+
+                <!-- Pago Parcial -->
+                <button type="button" class="btn btn-warning w-100 mb-2"
+                        data-bs-toggle="modal" data-bs-target="#pagoParcialModal">
+                    <i class="bi bi-coin me-2"></i> Registrar Pago Parcial
+                </button>
+                {% endif %}
+
+                {% if pago.estado == 'completado' %}
+                <!-- Reembolsar -->
+                <button type="button" class="btn btn-danger w-100 mb-2"
+                        data-bs-toggle="modal" data-bs-target="#reembolsarModal">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i> Procesar Reembolso
+                </button>
+                {% endif %}
+
+                <!-- Volver a Lista -->
+                <a href="{{ url_for('pagos.listar') }}" class="btn btn-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i> Volver a Lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Procesar Pago -->
+<div class="modal fade" id="procesarPagoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('pagos.procesar', pago_id=pago.id) }}">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Procesar Pago</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Número de Transacción (Opcional)</label>
+                        <input type="text" class="form-control" name="numero_transaccion">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número de Autorización (Opcional)</label>
+                        <input type="text" class="form-control" name="numero_autorizacion">
+                    </div>
+                    {% if 'tarjeta' in pago.metodo_pago %}
+                    <div class="mb-3">
+                        <label class="form-label">Banco</label>
+                        <input type="text" class="form-control" name="banco">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Últimos 4 dígitos</label>
+                        <input type="text" class="form-control" name="ultimos_digitos_tarjeta" maxlength="4">
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-2"></i> Marcar como Completado
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Pago Parcial -->
+<div class="modal fade" id="pagoParcialModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('pagos.pago_parcial', pago_id=pago.id) }}">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title">Registrar Pago Parcial</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Saldo Pendiente:</strong> {{ pago.saldo_pendiente|currency }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto a Pagar</label>
+                        <input type="number" step="0.01" class="form-control" name="monto_parcial"
+                               max="{{ pago.saldo_pendiente }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-coin me-2"></i> Registrar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Reembolsar -->
+<div class="modal fade" id="reembolsarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('pagos.reembolsar', pago_id=pago.id) }}">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Procesar Reembolso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Esta acción reembolsará <strong>{{ pago.monto|currency }}</strong> al cliente.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Razón del Reembolso</label>
+                        <textarea class="form-control" name="razon_reembolso" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i> Procesar Reembolso
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
