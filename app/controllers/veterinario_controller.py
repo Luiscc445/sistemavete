@@ -65,7 +65,6 @@ def dashboard():
     ).scalar() or 0.0
 
     # Ingresos del mes actual
-    from datetime import datetime
     primer_dia_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     ingresos_mes = db.session.query(
         func.sum(Pago.monto_veterinario)

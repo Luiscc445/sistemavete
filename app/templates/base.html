@@ -90,6 +90,10 @@
                                         <div class="sb-nav-link-icon"><i class="bi bi-bar-chart-fill"></i></div>
                                         Reportes
                                     </a>
+                                    <a class="nav-link {% if request.endpoint and 'pagos' in request.endpoint %}active{% endif %}" href="{{ url_for('pagos.dashboard') }}">
+                                        <div class="sb-nav-link-icon"><i class="bi bi-cash-coin"></i></div>
+                                        Pagos
+                                    </a>
 
                                 {% elif current_user.is_veterinario() %}
                                     <div class="sb-sidenav-menu-heading">Médico</div>
