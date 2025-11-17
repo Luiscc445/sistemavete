@@ -39,7 +39,7 @@
                             <td>{{ med.codigo or 'N/A' }}</td>
                             <td>{{ med.nombre }}</td>
                             <td>{{ med.lote or 'N/A' }}</td>
-                            <td>{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}</td>
+                            <td>{% if med.fecha_vencimiento.strftime is defined %}{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ med.fecha_vencimiento[:10] if med.fecha_vencimiento else 'N/A' }}{% endif %}</td>
                             <td>{{ med.stock_actual }} {{ med.unidad_medida }}</td>
                             <td>
                                 <a href="{{ url_for('inventario.ver', med_id=med.id) }}" class="btn btn-sm btn-primary">Ver</a>
@@ -80,7 +80,7 @@
                             <td>{{ med.codigo or 'N/A' }}</td>
                             <td>{{ med.nombre }}</td>
                             <td>{{ med.lote or 'N/A' }}</td>
-                            <td>{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}</td>
+                            <td>{% if med.fecha_vencimiento.strftime is defined %}{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ med.fecha_vencimiento[:10] if med.fecha_vencimiento else 'N/A' }}{% endif %}</td>
                             <td>{{ med.stock_actual }} {{ med.unidad_medida }}</td>
                             <td>
                                 <a href="{{ url_for('inventario.ver', med_id=med.id) }}" class="btn btn-sm btn-primary">Ver</a>

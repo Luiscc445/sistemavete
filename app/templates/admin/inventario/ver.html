@@ -53,7 +53,7 @@
                 <p><strong>Lote:</strong> {{ medicamento.lote or 'N/A' }}</p>
                 <p><strong>Vencimiento:</strong>
                     {% if medicamento.fecha_vencimiento %}
-                        {{ medicamento.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                        {% if medicamento.fecha_vencimiento.strftime is defined %}{{ medicamento.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ medicamento.fecha_vencimiento[:10] if medicamento.fecha_vencimiento else 'N/A' }}{% endif %}
                         {% if medicamento.esta_vencido %}
                             <span class="badge bg-danger">Vencido</span>
                         {% elif medicamento.esta_por_vencer %}

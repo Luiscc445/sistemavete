@@ -49,7 +49,7 @@
                             <strong>Teléfono:</strong> {{ tutor.telefono }}
                         </div>
                         <div class="col-md-4">
-                            <strong>Registro:</strong> {{ tutor.fecha_registro.strftime('%d/%m/%Y') if tutor.fecha_registro else 'N/A' }}
+                            <strong>Registro:</strong> {% if tutor.fecha_registro %}{% if tutor.fecha_registro.strftime is defined %}{{ tutor.fecha_registro.strftime('%d/%m/%Y') }}{% else %}{{ tutor.fecha_registro[:10] }}{% endif %}{% else %}N/A{% endif %}
                         </div>
                     </div>
 

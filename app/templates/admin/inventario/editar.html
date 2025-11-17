@@ -109,7 +109,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label" for="fecha_vencimiento">Fecha de Vencimiento</label>
-                    <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="{{ medicamento.fecha_vencimiento.strftime('%Y-%m-%d') if medicamento.fecha_vencimiento else '' }}">
+                    <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="{% if medicamento.fecha_vencimiento %}{% if medicamento.fecha_vencimiento.strftime is defined %}{{ medicamento.fecha_vencimiento.strftime('%Y-%m-%d') }}{% else %}{{ medicamento.fecha_vencimiento[:10] }}{% endif %}{% endif %}">
                 </div>
             </div>
             <div class="row">

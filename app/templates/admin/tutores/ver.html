@@ -103,7 +103,7 @@
                         <p><strong>Próxima Cita:</strong></p>
                         {% if stats.proxima_cita %}
                             <!-- CORRECCIÓN: Usar .fecha, no .fecha_hora -->
-                            <p class="text-muted">{{ stats.proxima_cita.fecha.strftime('%d/%m/%Y') }} - {{ stats.proxima_cita.motivo }}</p>
+                            <p class="text-muted">{% if stats.proxima_cita.fecha.strftime is defined %}{{ stats.proxima_cita.fecha.strftime('%d/%m/%Y') }}{% else %}{{ stats.proxima_cita.fecha[:10] if stats.proxima_cita.fecha else 'N/A' }}{% endif %} - {{ stats.proxima_cita.motivo }}</p>
                         {% else %}
                             <p class="text-muted">No hay citas próximas.</p>
                         {% endif %}

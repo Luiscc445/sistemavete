@@ -135,7 +135,7 @@
                         </td>
                         <td>{{ med.precio_venta|currency }}</td>
                         <td>
-                            {% if med.fecha_vencimiento %}{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                            {% if med.fecha_vencimiento %}{% if med.fecha_vencimiento.strftime is defined %}{{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ med.fecha_vencimiento[:10] if med.fecha_vencimiento else 'N/A' }}{% endif %}
                                 {% if med.esta_vencido %}<span class="badge bg-danger">Vencido</span>
                                 {% elif med.esta_por_vencer %}<span class="badge bg-warning">Por vencer</span>{% endif %}
                             {% else %}N/A{% endif %}
