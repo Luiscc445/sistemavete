@@ -57,22 +57,48 @@
     </div>
 </div>
 
+<!-- Información sobre División de Ingresos -->
+<div class="alert alert-info shadow-sm mb-4">
+    <h5 class="alert-heading">
+        <i class="bi bi-info-circle me-2"></i>División de Ingresos
+    </h5>
+    <p class="mb-2">
+        <strong>Los montos mostrados representan únicamente la porción de la empresa</strong>
+        (generalmente 57.14% de cada pago).
+    </p>
+    <hr>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <small class="text-muted">Total Recibido (Bruto)</small>
+            <div class="h4 mb-0">{{ stats.ingresos_totales_brutos|currency }}</div>
+        </div>
+        <div class="col-md-4">
+            <small class="text-muted">Porción de la Empresa</small>
+            <div class="h4 mb-0 text-success">{{ stats.ingresos_totales|currency }}</div>
+        </div>
+        <div class="col-md-4">
+            <small class="text-muted">Porción de Veterinarios</small>
+            <div class="h4 mb-0 text-primary">{{ stats.ingresos_veterinarios|currency }}</div>
+        </div>
+    </div>
+</div>
+
 <!-- Estadísticas Generales -->
 <div class="row mb-4">
-    <!-- Ingresos Totales -->
+    <!-- Ingresos Totales (Empresa) -->
     <div class="col-xl-3 col-md-6">
         <div class="card bg-success text-white mb-4 shadow">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="small">Ingresos Totales</div>
+                        <div class="small">Ingresos Empresa</div>
                         <div class="h3 mb-0 fw-bold">{{ stats.ingresos_totales|currency }}</div>
                     </div>
                     <i class="bi bi-cash-stack fs-1 opacity-50"></i>
                 </div>
             </div>
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <span class="small text-white">Período actual</span>
+                <span class="small text-white">Tu porcentaje (57.14%)</span>
                 <div class="small text-white"><i class="bi bi-arrow-up-circle"></i></div>
             </div>
         </div>

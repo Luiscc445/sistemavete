@@ -40,10 +40,21 @@ def dashboard():
     if request.args.get('fecha_fin'):
         fecha_fin = datetime.strptime(request.args.get('fecha_fin'), '%Y-%m-%d').date()
 
-    # Estadísticas de pagos
+    # Estadísticas de pagos (SOLO PORCIÓN DE LA EMPRESA)
     stats = {
-        # Total de ingresos completados
+        # Total de ingresos para la empresa (solo monto_empresa, no el total)
         'ingresos_totales': db.session.query(
+            func.sum(Pago.monto_empresa)
+        ).filter(
+            and_(
+                func.cast(Pago.fecha_pago, db.Date) >= fecha_inicio,
+                func.cast(Pago.fecha_pago, db.Date) <= fecha_fin,
+                Pago.estado == 'completado'
+            )
+        ).scalar() or 0,
+
+        # Monto total de pagos (para referencia)
+        'ingresos_totales_brutos': db.session.query(
             func.sum(Pago.monto)
         ).filter(
             and_(
@@ -53,9 +64,20 @@ def dashboard():
             )
         ).scalar() or 0,
 
-        # Pagos pendientes
+        # Total destinado a veterinarios
+        'ingresos_veterinarios': db.session.query(
+            func.sum(Pago.monto_veterinario)
+        ).filter(
+            and_(
+                func.cast(Pago.fecha_pago, db.Date) >= fecha_inicio,
+                func.cast(Pago.fecha_pago, db.Date) <= fecha_fin,
+                Pago.estado == 'completado'
+            )
+        ).scalar() or 0,
+
+        # Pagos pendientes (monto empresa)
         'pendientes_total': db.session.query(
-            func.sum(Pago.monto - Pago.monto_pagado)
+            func.sum(Pago.monto_empresa)
         ).filter(
             Pago.estado == 'pendiente'
         ).scalar() or 0,
@@ -81,11 +103,11 @@ def dashboard():
         ).count(),
     }
 
-    # Ingresos por método de pago
+    # Ingresos por método de pago (SOLO PORCIÓN DE LA EMPRESA)
     ingresos_por_metodo = db.session.query(
         Pago.metodo_pago,
         func.count(Pago.id).label('cantidad'),
-        func.sum(Pago.monto).label('total')
+        func.sum(Pago.monto_empresa).label('total')
     ).filter(
         and_(
             func.cast(Pago.fecha_pago, db.Date) >= fecha_inicio,
@@ -94,10 +116,10 @@ def dashboard():
         )
     ).group_by(Pago.metodo_pago).all()
 
-    # Ingresos por día (últimos 30 días)
+    # Ingresos por día (últimos 30 días) - SOLO PORCIÓN DE LA EMPRESA
     ingresos_por_dia = db.session.query(
         func.cast(Pago.fecha_pago, db.Date).label('fecha'),
-        func.sum(Pago.monto).label('total')
+        func.sum(Pago.monto_empresa).label('total')
     ).filter(
         and_(
             func.cast(Pago.fecha_pago, db.Date) >= fecha_inicio,

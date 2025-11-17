@@ -8,7 +8,9 @@ from functools import wraps
 from app import db
 from app.models.cita import Cita
 from app.models.medicamento import Medicamento, Receta
+from app.models.pago import Pago
 from datetime import datetime
+from sqlalchemy import func
 
 veterinario_bp = Blueprint('veterinario', __name__)
 
@@ -54,11 +56,39 @@ def dashboard():
         db.func.cast(Cita.fecha, db.Date) == hoy
     ).order_by(Cita.fecha.asc()).all()
 
+    # Ingresos del veterinario (su porcentaje de los pagos)
+    ingresos_totales = db.session.query(
+        func.sum(Pago.monto_veterinario)
+    ).filter(
+        Pago.veterinario_id == current_user.id,
+        Pago.estado == 'completado'
+    ).scalar() or 0.0
+
+    # Ingresos del mes actual
+    from datetime import datetime
+    primer_dia_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    ingresos_mes = db.session.query(
+        func.sum(Pago.monto_veterinario)
+    ).filter(
+        Pago.veterinario_id == current_user.id,
+        Pago.estado == 'completado',
+        Pago.fecha_pago >= primer_dia_mes
+    ).scalar() or 0.0
+
+    # Número de pagos recibidos
+    total_pagos = Pago.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='completado'
+    ).count()
+
     return render_template('veterinario/dashboard.html',
                          citas_pendientes=citas_pendientes,
                          citas_aceptadas=citas_aceptadas,
                          total_atendidas=total_atendidas,
-                         citas_hoy=citas_hoy)
+                         citas_hoy=citas_hoy,
+                         ingresos_totales=ingresos_totales,
+                         ingresos_mes=ingresos_mes,
+                         total_pagos=total_pagos)
 
 
 @veterinario_bp.route('/citas/pendientes')

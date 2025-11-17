@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Pagar Cita{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h1>💳 Pagar Cita</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('tutor.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('tutor.citas') }}">Mis Citas</a></li>
+            <li class="breadcrumb-item active">Pagar Cita</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Información de la Cita -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Detalles de la Cita</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Fecha:</strong> {{ cita.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+                <p><strong>Tipo:</strong> {{ cita.tipo }}</p>
+                <p><strong>Mascota:</strong> {{ cita.mascota.nombre }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Veterinario:</strong> Dr(a). {{ cita.veterinario.nombre_completo }}</p>
+                <p><strong>Motivo:</strong> {{ cita.motivo }}</p>
+                <p><strong>Estado:</strong>
+                    <span class="badge bg-warning">{{ cita.estado }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de Pago -->
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-credit-card"></i> Procesar Pago</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="pagoForm">
+            <h6 class="border-bottom pb-2 mb-3">Método de Pago</h6>
+            <div class="mb-4">
+                <label class="form-label">Selecciona el método de pago *</label>
+                <select class="form-select" name="metodo_pago" id="metodo_pago" required>
+                    <option value="">Seleccione un método...</option>
+                    <option value="efectivo">💵 Efectivo</option>
+                    <option value="tarjeta_credito">💳 Tarjeta de Crédito (Simulado)</option>
+                    <option value="tarjeta_debito">💳 Tarjeta de Débito (Simulado)</option>
+                    <option value="qr_simple">📱 Código QR Simple</option>
+                    <option value="qr_tigo">📱 Tigo Money QR</option>
+                    <option value="qr_bancario">📱 QR Bancario</option>
+                    <option value="transferencia">🏦 Transferencia Bancaria</option>
+                </select>
+                <small class="form-text text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Los pagos con tarjeta y QR son simulados (aceptan cualquier valor)
+                </small>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Monto a Pagar</h6>
+            <div class="mb-4">
+                <label class="form-label">Monto (Bs.) *</label>
+                <div class="input-group">
+                    <span class="input-group-text">Bs.</span>
+                    <input type="number" class="form-control" name="monto" id="monto"
+                           step="0.01" min="0.01" required
+                           placeholder="Ej: 35.00">
+                </div>
+                <small class="form-text text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Ingresa el monto total de la consulta
+                </small>
+            </div>
+
+            <!-- Información adicional para tarjeta (simulado) -->
+            <div id="tarjetaInfo" style="display: none;">
+                <h6 class="border-bottom pb-2 mb-3 mt-4">Información de Tarjeta (Simulado)</h6>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Modo Simulación:</strong> Esta es una simulación de pago. No se procesará ninguna transacción real.
+                    Puedes ingresar cualquier valor en los campos.
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label">Número de Tarjeta</label>
+                            <input type="text" class="form-control" id="numero_tarjeta"
+                                   placeholder="1234 5678 9012 3456" maxlength="19">
+                            <small class="text-muted">Simulado - cualquier valor</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">CVV</label>
+                            <input type="text" class="form-control" id="cvv"
+                                   placeholder="123" maxlength="4">
+                            <small class="text-muted">Simulado</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Vencimiento</label>
+                            <input type="text" class="form-control" id="fecha_vencimiento"
+                                   placeholder="MM/YY">
+                            <small class="text-muted">Simulado</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre en la Tarjeta</label>
+                            <input type="text" class="form-control" id="nombre_tarjeta"
+                                   placeholder="JUAN PEREZ">
+                            <small class="text-muted">Simulado</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información para QR -->
+            <div id="qrInfo" style="display: none;">
+                <h6 class="border-bottom pb-2 mb-3 mt-4">Pago con Código QR</h6>
+                <div class="alert alert-info">
+                    <i class="bi bi-qr-code"></i>
+                    <strong>Instrucciones:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Ingresa el monto a pagar arriba</li>
+                        <li>Al confirmar, se generará un código QR</li>
+                        <li>Escanea el QR con tu aplicación de pagos</li>
+                        <li>El pago se completará automáticamente (simulado)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert alert-success mt-4">
+                <i class="bi bi-check-circle"></i>
+                <strong>Al completar el pago:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>Tu cita será confirmada automáticamente</li>
+                    <li>El veterinario será notificado</li>
+                    <li>Recibirás un comprobante de pago</li>
+                    <li>El monto se dividirá entre la empresa y el veterinario</li>
+                </ul>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-check-circle"></i> Confirmar Pago
+                </button>
+                <a href="{{ url_for('tutor.citas') }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const metodoPago = document.getElementById('metodo_pago');
+    const tarjetaInfo = document.getElementById('tarjetaInfo');
+    const qrInfo = document.getElementById('qrInfo');
+
+    metodoPago.addEventListener('change', function() {
+        const valor = this.value;
+
+        // Ocultar todos primero
+        tarjetaInfo.style.display = 'none';
+        qrInfo.style.display = 'none';
+
+        // Mostrar según el método
+        if (valor.includes('tarjeta')) {
+            tarjetaInfo.style.display = 'block';
+        } else if (valor.includes('qr')) {
+            qrInfo.style.display = 'block';
+        }
+    });
+
+    // Formatear número de tarjeta
+    const numeroTarjeta = document.getElementById('numero_tarjeta');
+    if (numeroTarjeta) {
+        numeroTarjeta.addEventListener('input', function(e) {
+            let valor = e.target.value.replace(/\s/g, '');
+            let formateado = valor.match(/.{1,4}/g);
+            e.target.value = formateado ? formateado.join(' ') : valor;
+        });
+    }
+
+    // Validación del formulario
+    document.getElementById('pagoForm').addEventListener('submit', function(e) {
+        const monto = document.getElementById('monto').value;
+        const metodo = metodoPago.value;
+
+        if (!monto || parseFloat(monto) <= 0) {
+            e.preventDefault();
+            alert('Por favor ingresa un monto válido mayor a 0');
+            return false;
+        }
+
+        if (!metodo) {
+            e.preventDefault();
+            alert('Por favor selecciona un método de pago');
+            return false;
+        }
+
+        // Confirmación
+        const montoFloat = parseFloat(monto).toFixed(2);
+        const confirmar = confirm(
+            `¿Confirmar pago de Bs. ${montoFloat}?\n\n` +
+            `Método: ${metodo}\n` +
+            `Tu cita será confirmada automáticamente.`
+        );
+
+        if (!confirmar) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -9,7 +9,9 @@ from app import db
 from app.models.user import Usuario
 from app.models.mascota import Mascota
 from app.models.cita import Cita
+from app.models.pago import Pago
 from datetime import datetime
+import base64
 
 tutor_bp = Blueprint('tutor', __name__)
 
@@ -268,8 +270,9 @@ def nueva_cita():
         try:
             db.session.add(nueva_cita)
             db.session.commit()
-            flash(f'¡Cita solicitada exitosamente con Dr(a). {veterinario.nombre_completo}! Espera la confirmación.', 'success')
-            return redirect(url_for('tutor.citas'))
+            # Redirigir a página de pago para confirmar la cita
+            flash(f'Cita creada. Ahora procede con el pago para confirmarla.', 'info')
+            return redirect(url_for('tutor.pagar_cita', cita_id=nueva_cita.id))
         except Exception as e:
             db.session.rollback()
             flash(f'Error al solicitar cita: {str(e)}', 'danger')
@@ -289,6 +292,80 @@ def ver_cita(id):
         return redirect(url_for('tutor.citas'))
 
     return render_template('tutor/ver_cita.html', cita=cita)
+
+
+@tutor_bp.route('/pagar-cita/<int:cita_id>', methods=['GET', 'POST'])
+@tutor_required
+def pagar_cita(cita_id):
+    """Procesar pago de una cita"""
+    cita = Cita.query.get_or_404(cita_id)
+
+    # Verificar que la cita pertenece al tutor
+    if cita.tutor_id != current_user.id:
+        flash('No tienes permiso para pagar esta cita.', 'danger')
+        return redirect(url_for('tutor.citas'))
+
+    # Verificar si ya tiene un pago completado
+    pago_existente = Pago.query.filter_by(
+        cita_id=cita_id,
+        estado='completado'
+    ).first()
+
+    if pago_existente:
+        flash('Esta cita ya fue pagada.', 'info')
+        return redirect(url_for('tutor.ver_cita', id=cita_id))
+
+    if request.method == 'POST':
+        metodo_pago = request.form.get('metodo_pago')
+        monto = request.form.get('monto')
+
+        # Validaciones
+        if not metodo_pago or not monto:
+            flash('Por favor complete todos los campos.', 'danger')
+            return render_template('tutor/pagar_cita.html', cita=cita)
+
+        try:
+            monto_float = float(monto)
+            if monto_float <= 0:
+                flash('El monto debe ser mayor a 0.', 'danger')
+                return render_template('tutor/pagar_cita.html', cita=cita)
+        except ValueError:
+            flash('Monto inválido.', 'danger')
+            return render_template('tutor/pagar_cita.html', cita=cita)
+
+        # Crear el pago
+        nuevo_pago = Pago(
+            monto=monto_float,
+            metodo_pago=metodo_pago,
+            estado='completado',  # Pago simulado, automáticamente completado
+            descripcion=f'Pago de cita #{cita_id} - {cita.tipo}',
+            tutor_id=current_user.id,
+            cita_id=cita_id,
+            veterinario_id=cita.veterinario_id
+        )
+
+        # Calcular división de ingresos (empresa vs veterinario)
+        nuevo_pago.calcular_division_ingresos()
+
+        # Si es método QR, generar código QR
+        if 'qr' in metodo_pago.lower():
+            nuevo_pago.generar_qr()
+
+        try:
+            db.session.add(nuevo_pago)
+
+            # Confirmar automáticamente la cita
+            cita.estado = 'confirmada'
+
+            db.session.commit()
+
+            flash(f'¡Pago de Bs. {monto_float:.2f} procesado exitosamente! Tu cita ha sido confirmada.', 'success')
+            return redirect(url_for('tutor.ver_cita', id=cita_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al procesar el pago: {str(e)}', 'danger')
+
+    return render_template('tutor/pagar_cita.html', cita=cita)
 
 
 @tutor_bp.route('/perfil', methods=['GET', 'POST'])

@@ -15,8 +15,14 @@ class Pago(db.Model):
 
     # Información básica del pago
     codigo_pago = db.Column(db.String(50), unique=True, nullable=False)  # Ej: PAG-20251117-001
-    monto = db.Column(db.Float, nullable=False)
+    monto = db.Column(db.Float, nullable=False)  # Monto total que paga el cliente
     monto_pagado = db.Column(db.Float, default=0)  # Para pagos parciales
+
+    # División de ingresos (Empresa vs Veterinario)
+    porcentaje_empresa = db.Column(db.Float, default=57.14)  # % para la empresa (ej: 57.14% de 35 = 20)
+    porcentaje_veterinario = db.Column(db.Float, default=42.86)  # % para el veterinario (ej: 42.86% de 35 = 15)
+    monto_empresa = db.Column(db.Float, default=0)  # Monto que va para la empresa
+    monto_veterinario = db.Column(db.Float, default=0)  # Monto que va para el veterinario
 
     # Método de pago
     metodo_pago = db.Column(db.String(50), nullable=False)
@@ -167,6 +173,15 @@ class Pago(db.Model):
         # Convertir a string para QR
         import json
         return json.dumps(datos, ensure_ascii=False)
+
+    def calcular_division_ingresos(self):
+        """
+        Calcula automáticamente la división de ingresos entre empresa y veterinario
+        Ejemplo: Si monto=35, empresa=20 (57.14%), veterinario=15 (42.86%)
+        """
+        self.monto_empresa = round(self.monto * (self.porcentaje_empresa / 100), 2)
+        self.monto_veterinario = round(self.monto * (self.porcentaje_veterinario / 100), 2)
+        return (self.monto_empresa, self.monto_veterinario)
 
     def marcar_como_completado(self, numero_transaccion=None, procesado_por=None):
         """Marca el pago como completado"""

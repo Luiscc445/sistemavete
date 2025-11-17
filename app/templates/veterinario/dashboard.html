@@ -1,8 +1,157 @@
 {% extends "base.html" %}
+{% block title %}Dashboard Veterinario{% endblock %}
 {% block content %}
-<h1>👨‍⚕️ Dashboard</h1>
-<div class="row">
-<div class="col-md-4"><div class="stat-card"><div class="stat-number">{{ citas_pendientes }}</div><div class="stat-label">Pendientes</div></div></div>
+<div class="mb-4">
+    <h1>👨‍⚕️ Dashboard del Veterinario</h1>
+    <p class="text-muted">Bienvenido, Dr(a). {{ current_user.nombre_completo }}</p>
 </div>
-<a href="{{ url_for('veterinario.citas_pendientes') }}" class="btn btn-warning">Ver Pendientes</a>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <!-- Citas Pendientes -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-warning">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ citas_pendientes }}</h3>
+                <p class="mb-0">Citas Pendientes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Citas Aceptadas -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-info">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ citas_aceptadas }}</h3>
+                <p class="mb-0">Citas Confirmadas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Atendidas -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ total_atendidas }}</h3>
+                <p class="mb-0">Citas Atendidas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Pagos -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-primary">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ total_pagos }}</h3>
+                <p class="mb-0">Pagos Recibidos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ingresos del Veterinario -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> Mis Ingresos Totales</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-success mb-0">Bs. {{ "%.2f"|format(ingresos_totales) }}</h2>
+                <small class="text-muted">Total acumulado (tu porcentaje)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-month"></i> Ingresos del Mes</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-info mb-0">Bs. {{ "%.2f"|format(ingresos_mes) }}</h2>
+                <small class="text-muted">Mes actual (tu porcentaje)</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información sobre División de Ingresos -->
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    <strong>Sobre tus ingresos:</strong>
+    Los montos mostrados representan tu porcentaje de los pagos realizados (generalmente 42.86% del total).
+    El resto se destina a la empresa para cubrir gastos operativos.
+</div>
+
+<!-- Citas de Hoy -->
+{% if citas_hoy %}
+<div class="card mb-4 shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Citas de Hoy</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Mascota</th>
+                        <th>Tutor</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas_hoy %}
+                    <tr>
+                        <td>{{ cita.fecha.strftime('%H:%M') }}</td>
+                        <td>{{ cita.mascota.nombre }}</td>
+                        <td>{{ cita.tutor.nombre_completo }}</td>
+                        <td>{{ cita.motivo[:50] }}...</td>
+                        <td>
+                            <span class="badge bg-{{ 'warning' if cita.estado == 'pendiente' else 'info' }}">
+                                {{ cita.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('veterinario.ver_cita', id=cita.id) }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-secondary">
+    <i class="bi bi-calendar-x"></i> No tienes citas programadas para hoy.
+</div>
+{% endif %}
+
+<!-- Acciones Rápidas -->
+<div class="card shadow">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Acciones Rápidas</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('veterinario.citas_pendientes') }}" class="btn btn-warning">
+                <i class="bi bi-clock-history"></i> Ver Citas Pendientes
+            </a>
+            <a href="{{ url_for('veterinario.mis_citas') }}" class="btn btn-info">
+                <i class="bi bi-calendar-check"></i> Mis Citas
+            </a>
+            <a href="{{ url_for('veterinario.perfil') }}" class="btn btn-secondary">
+                <i class="bi bi-person-circle"></i> Mi Perfil
+            </a>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
