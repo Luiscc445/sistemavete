@@ -2,7 +2,7 @@
 {% block title %}Reportes y Estadísticas{% endblock %}
 
 {% block page_title %}
-    <i class="bi bi-bar-chart-fill me-2"></i> Reportes y Estadísticas
+    <i class="bi bi-bar-chart-fill me-2"></i> Dashboard de Reportes y Estadísticas
 {% endblock %}
 
 {% block breadcrumb %}
@@ -13,286 +13,691 @@
 {% endblock %}
 
 {% block content %}
-<!-- Filtro de Fechas -->
-<div class="card mb-4">
-    <div class="card-header"><i class="bi bi-calendar3 me-1"></i> Rango de Fechas</div>
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Fecha Inicio</label>
-                <input type="date" class="form-control" name="fecha_inicio" value="{{ fecha_inicio }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Fecha Fin</label>
-                <input type="date" class="form-control" name="fecha_fin" value="{{ fecha_fin }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">&nbsp;</label>
-                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i> Filtrar</button>
-            </div>
-        </form>
-    </div>
-</div>
 
-<!-- Estadísticas Generales -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-primary text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Total Tutores</div>
-                        <div class="h3 mb-0">{{ stats.total_tutores }}</div>
-                    </div>
-                    <i class="bi bi-people fs-1"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="{{ url_for('reportes.tutores') }}">Ver Detalles</a>
-                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-success text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Total Veterinarios</div>
-                        <div class="h3 mb-0">{{ stats.total_veterinarios }}</div>
-                    </div>
-                    <i class="bi bi-person-badge fs-1"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="{{ url_for('reportes.veterinarios') }}">Ver Detalles</a>
-                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-warning text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Total Mascotas</div>
-                        <div class="h3 mb-0">{{ stats.total_mascotas }}</div>
-                    </div>
-                    <i class="bi bi-heart-fill fs-1"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-info text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Citas (Período)</div>
-                        <div class="h3 mb-0">{{ stats.total_citas }}</div>
-                    </div>
-                    <i class="bi bi-calendar-check fs-1"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="{{ url_for('reportes.citas') }}">Ver Detalles</a>
-                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-secondary text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Medicamentos</div>
-                        <div class="h3 mb-0">{{ stats.total_medicamentos }}</div>
-                    </div>
-                    <i class="bi bi-capsule fs-1"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="{{ url_for('reportes.inventario') }}">Ver Detalles</a>
-                <div class="small text-white"><i class="bi bi-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card bg-dark text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small">Valor Inventario</div>
-                        <div class="h3 mb-0">{{ stats.valor_inventario|currency }}</div>
-                    </div>
-                    <i class="bi bi-cash-stack fs-1"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Gráficas -->
-<div class="row">
-    <div class="col-xl-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-pie-chart me-1"></i> Citas por Estado
-            </div>
-            <div class="card-body">
-                <canvas id="citasEstadoChart" width="100%" height="40"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-graph-up me-1"></i> Citas por Mes
-            </div>
-            <div class="card-body">
-                <canvas id="citasMesChart" width="100%" height="40"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-xl-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-trophy me-1"></i> Top 5 Veterinarios Más Activos
-            </div>
-            <div class="card-body">
-                {% if top_veterinarios %}
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Veterinario</th>
-                                <th class="text-end">Total Citas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for vet in top_veterinarios %}
-                            <tr>
-                                <td>{{ vet.nombre }} {{ vet.apellido }}</td>
-                                <td class="text-end"><strong>{{ vet.total_citas }}</strong></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p class="text-muted mb-0">No hay datos disponibles</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-currency-dollar me-1"></i> Ingresos por Mes
-            </div>
-            <div class="card-body">
-                <canvas id="ingresosMesChart" width="100%" height="40"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Accesos Rápidos a Reportes -->
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="bi bi-file-earmark-text me-1"></i> Reportes Disponibles
+<!-- ========================================
+     TARJETA DE CONTROLES SUPERIOR
+     ======================================== -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-sliders me-2"></i> Panel de Controles
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <a href="{{ url_for('reportes.tutores') }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-people me-2"></i> Reporte de Tutores
-                </a>
+        <div class="row align-items-end">
+            <!-- Filtros de Fecha -->
+            <div class="col-md-8">
+                <form method="GET" id="filtrosForm" class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar3 me-1"></i> Fecha Inicio
+                        </label>
+                        <input type="date" class="form-control" name="fecha_inicio"
+                               value="{{ fecha_inicio }}" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-check me-1"></i> Fecha Fin
+                        </label>
+                        <input type="date" class="form-control" name="fecha_fin"
+                               value="{{ fecha_fin }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="col-md-4 mb-3">
-                <a href="{{ url_for('reportes.veterinarios') }}" class="btn btn-outline-success w-100">
-                    <i class="bi bi-person-badge me-2"></i> Desempeño de Veterinarios
-                </a>
-            </div>
-            <div class="col-md-4 mb-3">
-                <a href="{{ url_for('reportes.inventario') }}" class="btn btn-outline-warning w-100">
-                    <i class="bi bi-box-seam me-2"></i> Reporte de Inventario
-                </a>
+
+            <!-- Botón de Exportar PDF -->
+            <div class="col-md-4 text-end">
+                <button id="exportarPDF" class="btn btn-danger btn-lg">
+                    <i class="bi bi-file-pdf me-2"></i> Exportar a PDF
+                </button>
+                <!-- Indicador de carga (inicialmente oculto) -->
+                <div id="loadingIndicator" class="mt-2" style="display: none;">
+                    <div class="spinner-border spinner-border-sm text-danger me-2" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="text-muted">Generando PDF...</span>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ========================================
+     CONTENEDOR PRINCIPAL DEL DASHBOARD
+     (Este div se capturará para el PDF)
+     ======================================== -->
+<div id="dashboard-content">
+
+    <!-- Encabezado del Reporte (para el PDF) -->
+    <div class="d-none d-print-block mb-4 text-center">
+        <h2>Sistema Veterinario - Reporte de Estadísticas</h2>
+        <p class="text-muted">Período: {{ fecha_inicio }} a {{ fecha_fin }}</p>
+    </div>
+
+    <!-- ========================================
+         ESTADÍSTICAS GENERALES - TARJETAS
+         ======================================== -->
+    <div class="row mb-4">
+        <!-- Total Tutores -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Total Tutores</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.total_tutores }}</div>
+                        </div>
+                        <i class="bi bi-people fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('reportes.tutores') }}">
+                        Ver Detalles
+                    </a>
+                    <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Veterinarios -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Total Veterinarios</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.total_veterinarios }}</div>
+                        </div>
+                        <i class="bi bi-person-badge fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('reportes.veterinarios') }}">
+                        Ver Detalles
+                    </a>
+                    <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Mascotas -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Total Mascotas</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.total_mascotas }}</div>
+                        </div>
+                        <i class="bi bi-heart-fill fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Citas -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Citas (Período)</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.total_citas }}</div>
+                        </div>
+                        <i class="bi bi-calendar-check fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('reportes.citas') }}">
+                        Ver Detalles
+                    </a>
+                    <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda fila de estadísticas -->
+    <div class="row mb-4">
+        <!-- Total Medicamentos -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-secondary text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Medicamentos</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.total_medicamentos }}</div>
+                        </div>
+                        <i class="bi bi-capsule fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('reportes.inventario') }}">
+                        Ver Detalles
+                    </a>
+                    <div class="small text-white"><i class="bi bi-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Valor Inventario -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-dark text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Valor Inventario</div>
+                            <div class="h3 mb-0 fw-bold">{{ stats.valor_inventario|currency }}</div>
+                        </div>
+                        <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicamentos Bajo Stock -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small">Bajo Stock</div>
+                            <div class="h3 mb-0 fw-bold">{{ medicamentos_bajo_stock }}</div>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         GRÁFICOS PRINCIPALES
+         ======================================== -->
+    <div class="row mb-4">
+        <!-- Gráfico de Torta: Citas por Estado -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-pie-chart-fill me-2"></i>
+                    <strong>Distribución de Citas por Estado</strong>
+                </div>
+                <div class="card-body" style="height: 400px;">
+                    <canvas id="citasEstadoChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Línea: Citas por Mes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-graph-up me-2"></i>
+                    <strong>Tendencia de Citas por Mes</strong>
+                </div>
+                <div class="card-body" style="height: 400px;">
+                    <canvas id="citasMesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Gráfico de Barras: Ingresos por Mes -->
+        <div class="col-xl-8 col-lg-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-currency-dollar me-2"></i>
+                    <strong>Ingresos Mensuales</strong>
+                </div>
+                <div class="card-body" style="height: 400px;">
+                    <canvas id="ingresosMesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla: Top 5 Veterinarios -->
+        <div class="col-xl-4 col-lg-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-trophy-fill me-2"></i>
+                    <strong>Top 5 Veterinarios Más Activos</strong>
+                </div>
+                <div class="card-body">
+                    {% if top_veterinarios %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Veterinario</th>
+                                        <th class="text-center">Citas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vet in top_veterinarios %}
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-person-circle me-1"></i>
+                                            {{ vet.nombre }} {{ vet.apellido }}
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">{{ vet.total_citas }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">
+                            <i class="bi bi-inbox me-2"></i>
+                            No hay datos disponibles
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         ACCESOS RÁPIDOS A REPORTES
+         ======================================== -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <i class="bi bi-file-earmark-text-fill me-2"></i>
+            <strong>Reportes Disponibles</strong>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('reportes.tutores') }}"
+                       class="btn btn-outline-primary w-100 py-3">
+                        <i class="bi bi-people me-2"></i>
+                        Reporte de Tutores
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('reportes.veterinarios') }}"
+                       class="btn btn-outline-success w-100 py-3">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Desempeño de Veterinarios
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('reportes.inventario') }}"
+                       class="btn btn-outline-warning w-100 py-3">
+                        <i class="bi bi-box-seam me-2"></i>
+                        Reporte de Inventario
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- Fin de #dashboard-content -->
+
 {% endblock %}
 
 {% block extra_js %}
+<!-- ========================================
+     CHART.JS - Gráficos Mejorados
+     ======================================== -->
 <script>
-// Gráfica de Citas por Estado
-var ctxEstado = document.getElementById('citasEstadoChart').getContext('2d');
-var citasEstadoChart = new Chart(ctxEstado, {
-    type: 'doughnut',
-    data: {
-        labels: [{% for estado, cantidad in citas_por_estado %}'{{ estado|title }}'{% if not loop.last %},{% endif %}{% endfor %}],
-        datasets: [{
-            data: [{% for estado, cantidad in citas_por_estado %}{{ cantidad }}{% if not loop.last %},{% endif %}{% endfor %}],
-            backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d']
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
-    }
-});
+// ========================================
+// DATOS DESDE EL BACKEND
+// ========================================
 
-// Gráfica de Citas por Mes
-var ctxMes = document.getElementById('citasMesChart').getContext('2d');
-var citasMesChart = new Chart(ctxMes, {
-    type: 'line',
+// Datos de Citas por Estado
+const citasEstadoLabels = [
+    {% for estado, cantidad in citas_por_estado %}
+        '{{ estado|title }}'{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+const citasEstadoData = [
+    {% for estado, cantidad in citas_por_estado %}
+        {{ cantidad }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Datos de Citas por Mes
+const citasMesLabels = [
+    {% for año, mes, total in citas_por_mes %}
+        '{{ mes }}/{{ año }}'{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+const citasMesData = [
+    {% for año, mes, total in citas_por_mes %}
+        {{ total }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Datos de Ingresos por Mes
+const ingresosMesLabels = [
+    {% for año, mes, total in ingresos_por_mes %}
+        '{{ mes }}/{{ año }}'{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+const ingresosMesData = [
+    {% for año, mes, total in ingresos_por_mes %}
+        {{ total or 0 }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// ========================================
+// GRÁFICO 1: CITAS POR ESTADO (PIE/DOUGHNUT)
+// ========================================
+const ctxEstado = document.getElementById('citasEstadoChart').getContext('2d');
+const citasEstadoChart = new Chart(ctxEstado, {
+    type: 'doughnut', // Cambiar a 'pie' si prefieres gráfico de torta completo
     data: {
-        labels: [{% for año, mes, total in citas_por_mes %}'{{ mes }}/{{ año }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        labels: citasEstadoLabels,
         datasets: [{
             label: 'Citas',
-            data: [{% for año, mes, total in citas_por_mes %}{{ total }}{% if not loop.last %},{% endif %}{% endfor %}],
-            borderColor: '#0d6efd',
-            backgroundColor: 'rgba(13, 110, 253, 0.1)',
-            tension: 0.4
+            data: citasEstadoData,
+            backgroundColor: [
+                '#0d6efd', // Azul - pendiente
+                '#198754', // Verde - completada
+                '#ffc107', // Amarillo - confirmada
+                '#dc3545', // Rojo - cancelada
+                '#6c757d'  // Gris - otros
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 10
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        family: "'Inter', sans-serif"
+                    },
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const value = context.parsed;
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return context.label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                }
             }
         }
     }
 });
 
-// Gráfica de Ingresos por Mes
-var ctxIngresos = document.getElementById('ingresosMesChart').getContext('2d');
-var ingresosMesChart = new Chart(ctxIngresos, {
-    type: 'bar',
+// ========================================
+// GRÁFICO 2: CITAS POR MES (LINE CHART)
+// ========================================
+const ctxMes = document.getElementById('citasMesChart').getContext('2d');
+const citasMesChart = new Chart(ctxMes, {
+    type: 'line',
     data: {
-        labels: [{% for año, mes, total in ingresos_por_mes %}'{{ mes }}/{{ año }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        labels: citasMesLabels,
         datasets: [{
-            label: 'Ingresos (Bs.)',
-            data: [{% for año, mes, total in ingresos_por_mes %}{{ total or 0 }}{% if not loop.last %},{% endif %}{% endfor %}],
-            backgroundColor: '#198754'
+            label: 'Número de Citas',
+            data: citasMesData,
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#0d6efd',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        family: "'Inter', sans-serif"
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                }
+            }
+        },
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                    font: {
+                        size: 11
+                    }
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                },
+                grid: {
+                    display: false
+                }
             }
         }
     }
+});
+
+// ========================================
+// GRÁFICO 3: INGRESOS POR MES (BAR CHART)
+// ========================================
+const ctxIngresos = document.getElementById('ingresosMesChart').getContext('2d');
+const ingresosMesChart = new Chart(ctxIngresos, {
+    type: 'bar',
+    data: {
+        labels: ingresosMesLabels,
+        datasets: [{
+            label: 'Ingresos (Bs.)',
+            data: ingresosMesData,
+            backgroundColor: '#198754',
+            borderColor: '#146c43',
+            borderWidth: 1,
+            borderRadius: 5,
+            hoverBackgroundColor: '#146c43'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        family: "'Inter', sans-serif"
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                callbacks: {
+                    label: function(context) {
+                        return 'Ingresos: Bs. ' + context.parsed.y.toFixed(2);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'Bs. ' + value.toFixed(0);
+                    },
+                    font: {
+                        size: 11
+                    }
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                },
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+</script>
+
+<!-- ========================================
+     EXPORTACIÓN A PDF - CLIENT SIDE
+     Usando jsPDF y html2canvas
+     ======================================== -->
+<!-- Importar librerías desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/**
+ * FUNCIONALIDAD DE EXPORTACIÓN A PDF
+ *
+ * Esta función captura todo el contenido del dashboard (#dashboard-content)
+ * y lo convierte en un archivo PDF usando html2canvas y jsPDF.
+ *
+ * Proceso:
+ * 1. Muestra indicador de carga
+ * 2. Captura el contenido HTML como imagen (html2canvas)
+ * 3. Crea un nuevo documento PDF (jsPDF)
+ * 4. Agrega la imagen al PDF con escala adecuada
+ * 5. Descarga el archivo PDF
+ * 6. Oculta indicador de carga
+ */
+document.getElementById('exportarPDF').addEventListener('click', function() {
+    // Mostrar indicador de carga
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const btnExportar = document.getElementById('exportarPDF');
+
+    loadingIndicator.style.display = 'block';
+    btnExportar.disabled = true;
+
+    // Obtener el elemento que contiene todo el dashboard
+    const dashboardContent = document.getElementById('dashboard-content');
+
+    // Configuración de html2canvas para mejor calidad
+    const options = {
+        scale: 2, // Mayor resolución (2x)
+        useCORS: true, // Permite imágenes de otros dominios
+        logging: false, // No mostrar logs en consola
+        backgroundColor: '#ffffff' // Fondo blanco
+    };
+
+    // Capturar el contenido como imagen
+    html2canvas(dashboardContent, options).then(function(canvas) {
+        // Obtener dimensiones de la imagen capturada
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210; // Ancho A4 en mm
+        const pageHeight = 297; // Alto A4 en mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Crear instancia de jsPDF
+        // 'p' = portrait (vertical), 'mm' = milímetros, 'a4' = tamaño de página
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Agregar la primera página
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        // Si el contenido es más largo que una página, agregar páginas adicionales
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        // Generar nombre de archivo con fecha actual
+        const fechaActual = new Date().toISOString().split('T')[0];
+        const nombreArchivo = 'reporte-veterinaria-' + fechaActual + '.pdf';
+
+        // Descargar el PDF
+        pdf.save(nombreArchivo);
+
+        // Ocultar indicador de carga y rehabilitar botón
+        loadingIndicator.style.display = 'none';
+        btnExportar.disabled = false;
+
+        // Mostrar mensaje de éxito (opcional)
+        console.log('✅ PDF generado exitosamente: ' + nombreArchivo);
+    }).catch(function(error) {
+        // Manejo de errores
+        console.error('❌ Error al generar PDF:', error);
+        alert('Hubo un error al generar el PDF. Por favor, intente nuevamente.');
+
+        // Ocultar indicador de carga y rehabilitar botón
+        loadingIndicator.style.display = 'none';
+        btnExportar.disabled = false;
+    });
 });
 </script>
 {% endblock %}
