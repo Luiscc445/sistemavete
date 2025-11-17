@@ -46,8 +46,9 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
     import json
     try:
         # Convertir datos a JSON string si no son None (SQL Server compatibility)
-        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else None
-        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else None
+        # Usar string vacío en lugar de None para evitar error de precisión en pyodbc
+        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else ''
+        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else ''
 
         auditoria = AuditoriaAccion(
             usuario_id=current_user.id,
