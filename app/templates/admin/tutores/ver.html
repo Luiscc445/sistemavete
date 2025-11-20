@@ -2,13 +2,13 @@
 {% block title %}Ver Tutor{% endblock %}
 
 {% block page_title %}
-    <i class="bi bi-person-fill me-2"></i> Detalles del Tutor
+<i class="bi bi-person-fill me-2"></i> Detalles del Tutor
 {% endblock %}
 
 {% block breadcrumb %}
 <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="{{ url_for('admin.tutores') }}">Tutores</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_tutores.lista') }}">Tutores</a></li>
     <li class="breadcrumb-item active">{{ tutor.nombre_completo }}</li>
 </ol>
 {% endblock %}
@@ -29,10 +29,10 @@
                       Cambiamos 'id=tutor.id' por 'tutor_id=tutor.id' 
                       Este es el error que te aparecía.
                     -->
-                    <a href="{{ url_for('admin.editar_tutor', tutor_id=tutor.id) }}" class="btn btn-primary">
+                    <a href="{{ url_for('admin_tutores.editar', tutor_id=tutor.id) }}" class="btn btn-primary">
                         <i class="bi bi-pencil me-1"></i> Editar
                     </a>
-                    <a href="{{ url_for('admin.tutores') }}" class="btn btn-outline-secondary">
+                    <a href="{{ url_for('admin_tutores.lista') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Volver
                     </a>
                 </div>
@@ -44,27 +44,45 @@
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-sm-3"><h6 class="mb-0">Nombre Completo</h6></div>
-                    <div class="col-sm-9"><p class="text-muted mb-0">{{ tutor.nombre_completo }}</p></div>
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Nombre Completo</h6>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{ tutor.nombre_completo }}</p>
+                    </div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-sm-3"><h6 class="mb-0">Email</h6></div>
-                    <div class="col-sm-9"><p class="text-muted mb-0">{{ tutor.email }}</p></div>
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Email</h6>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{ tutor.email }}</p>
+                    </div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-sm-3"><h6 class="mb-0">Teléfono</h6></div>
-                    <div class="col-sm-9"><p class="text-muted mb-0">{{ tutor.telefono or 'N/A' }}</p></div>
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Teléfono</h6>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{ tutor.telefono or 'N/A' }}</p>
+                    </div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-sm-3"><h6 class="mb-0">Dirección</h6></div>
-                    <div class="col-sm-9"><p class="text-muted mb-0">{{ tutor.direccion or 'N/A' }}</p></div>
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Dirección</h6>
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="text-muted mb-0">{{ tutor.direccion or 'N/A' }}</p>
+                    </div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-sm-3"><h6 class="mb-0">Estado</h6></div>
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Estado</h6>
+                    </div>
                     <div class="col-sm-9">
                         {% if tutor.activo %}
                         <span class="badge bg-success">Activo</span>
@@ -75,21 +93,22 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Tarjetas de Estadísticas -->
         <div class="row">
             <div class="col-md-6">
                 <div class="card mb-4 mb-md-0">
                     <div class="card-body">
-                        <h5 class="mb-4"><i class="bi bi-heart-fill me-2"></i> Mascotas ({{ stats.total_mascotas }})</h5>
+                        <h5 class="mb-4"><i class="bi bi-heart-fill me-2"></i> Mascotas ({{ stats.total_mascotas }})
+                        </h5>
                         <ul class="list-group list-group-flush">
                             {% for mascota in mascotas %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ mascota.nombre }}
-                                    <span class="badge bg-info">{{ mascota.especie }}</span>
-                                </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ mascota.nombre }}
+                                <span class="badge bg-info">{{ mascota.especie }}</span>
+                            </li>
                             {% else %}
-                                <li class="list-group-item">No tiene mascotas registradas.</li>
+                            <li class="list-group-item">No tiene mascotas registradas.</li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -98,14 +117,17 @@
             <div class="col-md-6">
                 <div class="card mb-4 mb-md-0">
                     <div class="card-body">
-                        <h5 class="mb-4"><i class="bi bi-calendar-check-fill me-2"></i> Citas ({{ stats.total_citas }})</h5>
+                        <h5 class="mb-4"><i class="bi bi-calendar-check-fill me-2"></i> Citas ({{ stats.total_citas }})
+                        </h5>
                         <p><strong>Completadas:</strong> {{ stats.citas_completadas }}</p>
                         <p><strong>Próxima Cita:</strong></p>
                         {% if stats.proxima_cita %}
-                            <!-- CORRECCIÓN: Usar .fecha, no .fecha_hora -->
-                            <p class="text-muted">{% if stats.proxima_cita.fecha.strftime is defined %}{{ stats.proxima_cita.fecha.strftime('%d/%m/%Y') }}{% else %}{{ stats.proxima_cita.fecha[:10] if stats.proxima_cita.fecha else 'N/A' }}{% endif %} - {{ stats.proxima_cita.motivo }}</p>
+                        <!-- CORRECCIÓN: Usar .fecha, no .fecha_hora -->
+                        <p class="text-muted">{% if stats.proxima_cita.fecha.strftime is defined %}{{
+                            stats.proxima_cita.fecha.strftime('%d/%m/%Y') }}{% else %}{{ stats.proxima_cita.fecha[:10]
+                            if stats.proxima_cita.fecha else 'N/A' }}{% endif %} - {{ stats.proxima_cita.motivo }}</p>
                         {% else %}
-                            <p class="text-muted">No hay citas próximas.</p>
+                        <p class="text-muted">No hay citas próximas.</p>
                         {% endif %}
                     </div>
                 </div>

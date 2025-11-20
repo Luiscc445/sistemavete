@@ -1,4 +1,4 @@
-﻿"""
+"""
 Controlador de Administrador con funcionalidades completas
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
@@ -42,16 +42,15 @@ def admin_required(f):
 
 def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anteriores=None, datos_nuevos=None):
     """Registra una acción en el sistema de auditoría"""
-    # Esta función es importante para el control
     import json
+    from datetime import datetime
     try:
         # Convertir datos a JSON string si no son None (SQL Server compatibility)
-        # Para None, usar None explícitamente (columnas marcadas como nullable en el modelo)
-        datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else None
-        datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else None
+        datos_ant_str = json.dumps(datos_anteriores, ensure_ascii=False) if datos_anteriores is not None else None
+        datos_new_str = json.dumps(datos_nuevos, ensure_ascii=False) if datos_nuevos is not None else None
 
-        # Obtener user agent (puede ser None)
-        user_agent = request.headers.get('User-Agent') if request and hasattr(request, 'headers') else None
+        # CORREGIDO: Fecha sin microsegundos para evitar error HY104 en SQL Server
+        fecha_actual = datetime.now().replace(microsecond=0)
 
         auditoria = AuditoriaAccion(
             usuario_id=current_user.id,
@@ -61,17 +60,18 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
             descripcion=descripcion,
             datos_anteriores=datos_ant_str,
             datos_nuevos=datos_new_str,
-            ip_address=request.remote_addr if request and hasattr(request, 'remote_addr') else None,
-            user_agent=user_agent
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent'),
+            fecha=fecha_actual  # CORREGIDO: Asignar explícitamente
         )
         db.session.add(auditoria)
         # El commit se hará junto con la operación principal
     except Exception as e:
         print(f"Error al registrar auditoria: {e}")
-
-
-@admin_bp.route('/dashboard')
-@admin_required
+        try:
+            db.session.rollback()
+        except:
+            pass
 def dashboard():
     """Dashboard principal del administrador con estadísticas"""
     stats = {}
@@ -352,24 +352,35 @@ def nuevo_veterinario():
 @admin_bp.route('/veterinario/<int:vet_id>')
 @admin_required
 def ver_veterinario(vet_id):
-    """Ver detalles de un veterinario y sus citas (Esta ruta faltaba)"""
-    veterinario = Usuario.query.get_or_404(vet_id)
-    
-    if not veterinario.is_veterinario():
-        flash('El usuario especificado no es un veterinario', 'warning')
+    """Ver detalles de un veterinario y sus citas"""
+    try:
+        veterinario = Usuario.query.get_or_404(vet_id)
+        
+        if not veterinario.is_veterinario():
+            flash('El usuario especificado no es un veterinario', 'warning')
+            return redirect(url_for('admin.veterinarios'))
+        
+        citas = veterinario.citas_como_veterinario.order_by(Cita.fecha.desc()).limit(10).all()
+        stats = veterinario.get_estadisticas_veterinario()
+        
+        # CORREGIDO: Manejo de auditoría con try-except separado
+        try:
+            registrar_auditoria('ver_veterinario', 'usuario', vet_id, 
+                              f'Visualización de veterinario: {veterinario.nombre_completo}')
+            db.session.commit()
+        except Exception as audit_error:
+            print(f"Error en auditoría (no crítico): {audit_error}")
+            db.session.rollback()
+        
+        return render_template('admin/veterinarios/ver.html',
+                             veterinario=veterinario,
+                             citas=citas,
+                             stats=stats)
+    except Exception as e:
+        print(f"Error en ver_veterinario: {e}")
+        db.session.rollback()
+        flash('Error al cargar información del veterinario', 'danger')
         return redirect(url_for('admin.veterinarios'))
-    
-    citas = veterinario.citas_como_veterinario.order_by(Cita.fecha.desc()).limit(10).all()
-    stats = veterinario.get_estadisticas_veterinario()
-    
-    registrar_auditoria('ver_veterinario', 'usuario', vet_id, f'Visualización de veterinario: {veterinario.nombre_completo}')
-    db.session.commit() # Commit de la auditoría
-    
-    return render_template('admin/veterinarios/ver.html',
-                         veterinario=veterinario,
-                         citas=citas,
-                         stats=stats)
-
 @admin_bp.route('/veterinario/<int:vet_id>/editar', methods=['GET', 'POST'])
 @admin_required
 def editar_veterinario(vet_id):

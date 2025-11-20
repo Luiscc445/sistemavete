@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #6C63FF;
+    /* Purple/Blue from image */
+    --primary-hover: #5a52d5;
+    --bg-color: #F0F2F5;
+    --text-color: #333;
+    --text-muted: #666;
+    --input-border: #ddd;
+    --white: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hide unwanted elements from base template if they leak */
+.sb-nav-fixed #layoutSidenav #layoutSidenav_nav,
+.sb-topnav,
+footer,
+.container-fluid h1.mt-4,
+.breadcrumb {
+    display: none !important;
+}
+
+.sb-nav-fixed #layoutSidenav #layoutSidenav_content {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    top: 0 !important;
+    background: transparent !important;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.illustration-container {
+    margin-bottom: 15px;
+}
+
+.illustration-container img {
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+}
+
+.login-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 20px;
+    border: 1px solid var(--input-border);
+    border-radius: 50px;
+    /* Fully rounded */
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-label {
+    display: none;
+    /* Hiding labels as placeholders are used in the design */
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 50px;
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.login-footer {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.create-account {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.create-account:hover {
+    text-decoration: underline;
+}
+
+/* Password toggle eye icon (if we add it later) */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999;
+}
+
+/* Checkbox style */
+.form-check {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    font-size: 13px;
+    color: var(--text-muted);
+}

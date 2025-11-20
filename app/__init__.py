@@ -43,45 +43,24 @@ def create_app(config_name='default'):
     
     # Registrar blueprints
     from app.controllers.auth_controller import auth_bp
-    from app.controllers.admin_controller import admin_bp
-    from app.controllers.veterinario_controller import veterinario_bp
-    from app.controllers.tutor_controller import tutor_bp
-    from app.controllers.inventario_controller import inventario_bp
-    from app.controllers.reportes_controller import reportes_bp
-    from app.controllers.pagos_controller import pagos_bp
+    from app.controllers.admin import register_admin_blueprints
+    from app.controllers.portal_veterinario_controller import veterinario_bp
+    from app.controllers.portal_tutor_controller import tutor_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(admin_bp, url_prefix='/admin')
+    register_admin_blueprints(app)
     app.register_blueprint(veterinario_bp, url_prefix='/veterinario')
     app.register_blueprint(tutor_bp, url_prefix='/tutor')
-    app.register_blueprint(inventario_bp, url_prefix='/inventario')
-    app.register_blueprint(reportes_bp, url_prefix='/reportes')
-    app.register_blueprint(pagos_bp, url_prefix='/pagos')
     
     # Ruta principal (Landing Page)
     @app.route('/')
     def index():
-        # --- NUEVA LÓGICA ---
         # Si el usuario ya está logueado, redirigir a su dashboard
         if current_user.is_authenticated:
             return redirect(url_for(f'{current_user.rol}.dashboard'))
         
         # Si no, mostrar la página de bienvenida
         return render_template('index.html')
-    
-    # Manejadores de errores
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template('errors/404.html'), 404
-    
-    @app.errorhandler(403)
-    def forbidden_error(error):
-        return render_template('errors/403.html'), 403
-    
-    @app.errorhandler(500)
-    def internal_error(error):
-        db.session.rollback()
-        return render_template('errors/500.html'), 500
     
     # Context processors
     @app.context_processor

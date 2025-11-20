@@ -11,7 +11,7 @@
         <p><strong>Teléfono:</strong> {{ veterinario.telefono or 'N/A' }}</p>
         <p><strong>Especialidad:</strong> {{ veterinario.especialidad or 'N/A' }}</p>
         <p><strong>Licencia:</strong> {{ veterinario.licencia_profesional or 'N/A' }}</p>
-        <p><strong>Estado:</strong> 
+        <p><strong>Estado:</strong>
             {% if veterinario.activo %}
             <span class="badge badge-success">Activo</span>
             {% else %}
@@ -21,7 +21,7 @@
     </div>
 </div>
 <div style="margin-top: 1rem;">
-    <a href="{{ url_for('admin.editar_veterinario', vet_id=veterinario.id) }}" class="btn btn-primary">Editar</a>
-    <a href="{{ url_for('admin.veterinarios') }}" class="btn btn-secondary">Volver</a>
+    <a href="{{ url_for('admin_veterinarios.editar', vet_id=veterinario.id) }}" class="btn btn-primary">Editar</a>
+    <a href="{{ url_for('admin_veterinarios.lista') }}" class="btn btn-secondary">Volver</a>
 </div>
 {% endblock %}

@@ -2,40 +2,44 @@
 
 {% block title %}Iniciar Sesión{% endblock %}
 
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/login.css') }}" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="row" style="min-height: 80vh; align-items: center; justify-content: center;">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                🔐 Iniciar Sesión
+<div class="login-container">
+    <div class="login-card">
+        <div class="illustration-container">
+            <img src="{{ url_for('static', filename='img/login_illustration.png') }}" alt="Ilustración de Login">
+        </div>
+
+        <h1 class="login-title">Iniciar Sesión</h1>
+        <p class="login-subtitle">Por favor inicia sesión para continuar</p>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="form-group">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required
+                    autofocus>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('auth.login') }}">
-                    <div class="form-group">
-                        <label class="form-label" for="username">Usuario</label>
-                        <input type="text" class="form-control" id="username" name="username" required autofocus>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="password">Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember">Recordarme</label>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar</button>
-                </form>
-                
-                <div style="text-align: center; margin-top: 1.5rem;">
-                    <p>¿No tienes cuenta? <a href="{{ url_for('auth.register') }}" style="color: var(--primary-color); font-weight: bold;">Regístrate aquí</a></p>
+
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña"
+                    required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; text-align: center;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                    <label class="form-check-label" for="remember">Recuérdame</label>
                 </div>
             </div>
-        </div>
+
+            <button type="submit" class="btn btn-primary">Ingresar</button>
+
+            <div class="login-footer">
+                ¿No tienes cuenta? <a href="{{ url_for('auth.register') }}" class="create-account">Regístrate</a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

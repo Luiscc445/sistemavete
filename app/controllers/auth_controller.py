@@ -36,7 +36,7 @@ def login():
             user.actualizar_ultimo_acceso()
             
             # Registrar en auditoría
-            from app.controllers.admin_controller import registrar_auditoria
+            from app.controllers.admin.utils import registrar_auditoria
             registrar_auditoria('login', 'usuario', user.id, f'Inicio de sesión: {user.nombre_completo}')
             
             flash(f'Bienvenido, {user.nombre}!', 'success')
@@ -56,7 +56,7 @@ def login():
 @login_required
 def logout():
     """Cerrar sesión"""
-    from app.controllers.admin_controller import registrar_auditoria
+    from app.controllers.admin.utils import registrar_auditoria
     registrar_auditoria('logout', 'usuario', current_user.id, f'Cierre de sesión: {current_user.nombre_completo}')
     
     logout_user()

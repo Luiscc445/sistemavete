@@ -6,7 +6,8 @@ from app import create_app, db, init_database
 from app.models import *
 
 # Obtener configuración del entorno
-config_name = os.getenv('FLASK_ENV', 'development')
+# CORRECCIÓN: Leer 'FLASK_CONFIG' y usar 'default' (SQL Server) como fallback
+config_name = os.getenv('FLASK_CONFIG', 'default')
 
 # Crear la aplicación
 app = create_app(config_name)
@@ -39,5 +40,6 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=5000,
-        debug=(config_name == 'development')
+        # El debug se tomará de la configuración (ya está en 'default')
+        debug=app.config.get('DEBUG', False) 
     )

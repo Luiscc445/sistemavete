@@ -4,6 +4,7 @@ Configuración de la aplicación Flask Veterinaria
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
+from urllib.parse import quote_plus
 
 # Cargar variables de entorno
 load_dotenv()
@@ -63,16 +64,67 @@ class Config:
     NOTIFICATION_TIMEOUT = 5000  # 5 segundos
 
 class DevelopmentConfig(Config):
-    """Configuración de desarrollo"""
+    """Configuración de desarrollo (SQLite)"""
+    DEBUG = True
+    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///veterinaria.db'
+
+class DevelopmentSQLServerConfig(Config):
+    """Configuración de desarrollo con SQL Server"""
     DEBUG = True
     SQLALCHEMY_ECHO = True
     
+    # SQL Server Configuration
+    # --- CORRECCIÓN ---
+    # Se usa el driver ODBC moderno en lugar del driver antiguo
+    SQLSERVER_DRIVER = '{ODBC Driver 17 for SQL Server}'
+    SQLSERVER_SERVER = r'LUIS_CARLOS69\SQLDEV'
+    SQLSERVER_DATABASE = 'VeterinariaDB'
+    
+    # Construir cadena de conexión
+    connection_params = (
+        f'DRIVER={SQLSERVER_DRIVER};'
+        f'SERVER={SQLSERVER_SERVER};'
+        f'DATABASE={SQLSERVER_DATABASE};'
+        f'Trusted_Connection=yes;'
+        f'TrustServerCertificate=yes;'
+    )
+    
+    SQLALCHEMY_DATABASE_URI = f'mssql+pyodbc:///?odbc_connect={quote_plus(connection_params)}'
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 3600,
+    }
+    
 class ProductionConfig(Config):
-    """Configuración de producción"""
+    """Configuración de producción con SQL Server"""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     
-    # En producción, asegurarse de que estas variables estén configuradas
+    # SQL Server Configuration
+    # --- CORRECCIÓN ---
+    # Se usa el driver ODBC moderno en lugar del driver antiguo
+    SQLSERVER_DRIVER = '{ODBC Driver 17 for SQL Server}'
+    SQLSERVER_SERVER = r'LUIS_CARLOS69\SQLDEV'
+    SQLSERVER_DATABASE = 'VeterinariaDB'
+    
+    # Construir cadena de conexión
+    connection_params = (
+        f'DRIVER={SQLSERVER_DRIVER};'
+        f'SERVER={SQLSERVER_SERVER};'
+        f'DATABASE={SQLSERVER_DATABASE};'
+        f'Trusted_Connection=yes;'
+        f'TrustServerCertificate=yes;'
+    )
+    
+    SQLALCHEMY_DATABASE_URI = f'mssql+pyodbc:///?odbc_connect={quote_plus(connection_params)}'
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 3600,
+        'pool_size': 10,
+        'max_overflow': 20
+    }
+    
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
@@ -93,55 +145,76 @@ class TestingConfig(Config):
 
 class SQLServerConfig(Config):
     """
-    Configuración para SQL Server
-
-    Variables de entorno necesarias:
-    - SQLSERVER_DRIVER: Driver ODBC (default: ODBC Driver 17 for SQL Server)
-    - SQLSERVER_SERVER: Servidor (ejemplo: localhost o IP)
-    - SQLSERVER_DATABASE: Nombre de la base de datos
-    - SQLSERVER_USERNAME: Usuario de SQL Server
-    - SQLSERVER_PASSWORD: Contraseña
-    - SQLSERVER_PORT: Puerto (default: 1433)
-    - SQLSERVER_TRUSTED: true para autenticación Windows (opcional)
-
-    Ejemplo de DATABASE_URL:
-    mssql+pyodbc://user:pass@localhost:1433/veterinaria?driver=ODBC+Driver+17+for+SQL+Server
+    Configuración flexible para SQL Server
+    
+    Puede configurarse mediante variables de entorno o usar valores por defecto.
+    
+    Variables de entorno opcionales:
+    - SQLSERVER_DRIVER: Driver ODBC (default: {ODBC Driver 17 for SQL Server})
+    - SQLSERVER_SERVER: Servidor (ejemplo: SERVIDOR\\INSTANCIA)
+    - SQLSERVER_DATABASE: Base de datos (default: VeterinariaDB)
+    - SQLSERVER_USERNAME: Usuario (si no usa Windows Auth)
+    - SQLSERVER_PASSWORD: Contraseña (si no usa Windows Auth)
+    - SQLSERVER_TRUSTED: true para Windows Auth (default: true)
     """
 
     @staticmethod
     def get_sqlserver_uri():
-        """Construye la URI de SQL Server desde variables de entorno"""
-        driver = os.environ.get('SQLSERVER_DRIVER', 'ODBC Driver 17 for SQL Server')
-        server = os.environ.get('SQLSERVER_SERVER', 'localhost')
-        database = os.environ.get('SQLSERVER_DATABASE', 'veterinaria')
+        """Construye la URI de SQL Server desde variables de entorno o valores por defecto"""
+        # --- CORRECCIÓN ---
+        # Se usa el driver ODBC moderno como valor por defecto
+        driver = os.environ.get('SQLSERVER_DRIVER', '{ODBC Driver 17 for SQL Server}')
+        server = os.environ.get('SQLSERVER_SERVER', r'LUIS_CARLOS69\SQLDEV')
+        database = os.environ.get('SQLSERVER_DATABASE', 'VeterinariaDB')
         username = os.environ.get('SQLSERVER_USERNAME')
         password = os.environ.get('SQLSERVER_PASSWORD')
-        port = os.environ.get('SQLSERVER_PORT', '1433')
-        trusted = os.environ.get('SQLSERVER_TRUSTED', 'false').lower() == 'true'
+        trusted = os.environ.get('SQLSERVER_TRUSTED', 'true').lower() == 'true'
 
-        # Si usa autenticación de Windows
+        # Autenticación de Windows (por defecto)
         if trusted:
-            return f"mssql+pyodbc://{server}:{port}/{database}?driver={driver}&trusted_connection=yes"
+            connection_params = (
+                f'DRIVER={driver};'
+                f'SERVER={server};'
+                f'DATABASE={database};'
+                f'Trusted_Connection=yes;'
+                f'TrustServerCertificate=yes;'
+            )
+            return f'mssql+pyodbc:///?odbc_connect={quote_plus(connection_params)}'
 
         # Autenticación con usuario y contraseña
         if username and password:
-            return f"mssql+pyodbc://{username}:{password}@{server}:{port}/{database}?driver={driver}"
+            connection_params = (
+                f'DRIVER={driver};'
+                f'SERVER={server};'
+                f'DATABASE={database};'
+                f'UID={username};'
+                f'PWD={password};'
+                f'TrustServerCertificate=yes;'
+            )
+            return f'mssql+pyodbc:///?odbc_connect={quote_plus(connection_params)}'
 
-        # Fallback a SQLite si no hay configuración de SQL Server
+        # Fallback a SQLite si no hay configuración completa
         return 'sqlite:///veterinaria.db'
 
     SQLALCHEMY_DATABASE_URI = get_sqlserver_uri.__func__()
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
         'pool_recycle': 3600,
-        'echo_pool': True
+        'echo_pool': False
     }
 
 # Diccionario de configuraciones
 config = {
     'development': DevelopmentConfig,
+    'development_sqlserver': DevelopmentSQLServerConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
     'sqlserver': SQLServerConfig,
-    'default': DevelopmentConfig
+    'default': DevelopmentSQLServerConfig
 }
+
+def get_config(config_name=None):
+    """Obtener configuración por nombre o variable de entorno"""
+    if config_name is None:
+        config_name = os.environ.get('FLASK_CONFIG', 'default')
+    return config.get(config_name, config['default'])

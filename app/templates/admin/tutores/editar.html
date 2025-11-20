@@ -2,13 +2,13 @@
 {% block title %}Editar Tutor{% endblock %}
 
 {% block page_title %}
-    <i class="bi bi-pencil-square me-2"></i> Editar Tutor
+<i class="bi bi-pencil-square me-2"></i> Editar Tutor
 {% endblock %}
 
 {% block breadcrumb %}
 <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="{{ url_for('admin.tutores') }}">Tutores</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_tutores.lista') }}">Tutores</a></li>
     <li class="breadcrumb-item active">Editar</li>
 </ol>
 {% endblock %}
@@ -24,11 +24,13 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label" for="nombre">Nombre *</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ tutor.nombre }}" required>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ tutor.nombre }}"
+                        required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label" for="apellido">Apellido *</label>
-                    <input type="text" class="form-control" id="apellido" name="apellido" value="{{ tutor.apellido }}" required>
+                    <input type="text" class="form-control" id="apellido" name="apellido" value="{{ tutor.apellido }}"
+                        required>
                 </div>
             </div>
             <div class="row">
@@ -38,12 +40,14 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label" for="telefono">Teléfono</label>
-                    <input type="text" class="form-control" id="telefono" name="telefono" value="{{ tutor.telefono or '' }}">
+                    <input type="text" class="form-control" id="telefono" name="telefono"
+                        value="{{ tutor.telefono or '' }}">
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="direccion">Dirección</label>
-                <textarea class="form-control" id="direccion" name="direccion" rows="2">{{ tutor.direccion or '' }}</textarea>
+                <textarea class="form-control" id="direccion" name="direccion"
+                    rows="2">{{ tutor.direccion or '' }}</textarea>
             </div>
 
             <h6 class="border-bottom pb-2 mb-3 mt-4">Administración</h6>
@@ -52,9 +56,10 @@
                 <input type="password" class="form-control" id="nueva_password" name="nueva_password">
                 <small class="form-text text-muted">Dejar en blanco para no cambiar la contraseña.</small>
             </div>
-            
+
             <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if tutor.activo %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if tutor.activo %}checked{%
+                    endif %}>
                 <label class="form-check-label" for="activo">
                     Cuenta Activa
                 </label>
@@ -69,7 +74,7 @@
                   Cambiamos 'id=tutor.id' por 'tutor_id=tutor.id' 
                   Este es el error que te aparecía.
                 -->
-                <a href="{{ url_for('admin.ver_tutor', tutor_id=tutor.id) }}" class="btn btn-secondary">
+                <a href="{{ url_for('admin_tutores.ver', tutor_id=tutor.id) }}" class="btn btn-secondary">
                     <i class="bi bi-x-circle me-1"></i> Cancelar
                 </a>
             </div>
