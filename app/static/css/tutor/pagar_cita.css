@@ -1349,3 +1349,340 @@
             right: 20px;
         }
     }
+
+    /* ==================== Factura Modal Styles ==================== */
+    .factura-modal-body {
+        padding: 40px;
+    }
+
+    .factura-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .factura-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+    }
+
+    .factura-header h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .factura-header p {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    /* Tipo selector */
+    .factura-tipo-selector {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .factura-tipo-option {
+        flex: 1;
+        min-width: 120px;
+        max-width: 160px;
+        cursor: pointer;
+    }
+
+    .factura-tipo-option input {
+        display: none;
+    }
+
+    .factura-tipo-option .tipo-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 12px;
+        background: var(--light);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .factura-tipo-option .tipo-content i {
+        font-size: 1.5rem;
+        color: #64748b;
+    }
+
+    .factura-tipo-option .tipo-content span {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+    }
+
+    .factura-tipo-option:hover .tipo-content {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .factura-tipo-option.active .tipo-content,
+    .factura-tipo-option input:checked + .tipo-content {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+    }
+
+    .factura-tipo-option.active .tipo-content i,
+    .factura-tipo-option input:checked + .tipo-content i {
+        color: var(--primary);
+    }
+
+    .factura-tipo-option.active .tipo-content span,
+    .factura-tipo-option input:checked + .tipo-content span {
+        color: var(--primary);
+    }
+
+    /* Form elements */
+    .form-hint {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 6px;
+    }
+
+    .required-asterisk {
+        color: var(--danger);
+        margin-left: 2px;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 6px;
+    }
+
+    .form-input-modern.is-invalid {
+        border-color: var(--danger);
+    }
+
+    .form-input-modern.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+
+    /* Factura resumen */
+    .factura-resumen {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 24px 0;
+    }
+
+    .resumen-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .resumen-divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--border), transparent);
+        margin: 12px 0;
+    }
+
+    .resumen-total {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 8px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .factura-legal-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px;
+        background: rgba(14, 165, 233, 0.05);
+        border: 1px solid rgba(14, 165, 233, 0.2);
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .factura-legal-note i {
+        color: #0ea5e9;
+        font-size: 1rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .factura-legal-note span {
+        font-size: 0.75rem;
+        color: #64748b;
+        line-height: 1.5;
+    }
+
+    /* ==================== Confirmación Modal ==================== */
+    .confirmacion-modal-body {
+        padding: 40px;
+        text-align: center;
+    }
+
+    .confirmacion-icon {
+        margin-bottom: 24px;
+    }
+
+    .confirmacion-icon .icon-circle {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        animation: pulse-confirm 2s infinite;
+    }
+
+    @keyframes pulse-confirm {
+        0%, 100% { transform: scale(1); box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3); }
+        50% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4); }
+    }
+
+    .confirmacion-modal-body h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .confirmacion-modal-body > p {
+        color: #64748b;
+        margin-bottom: 24px;
+    }
+
+    .confirmacion-detalles {
+        background: var(--light);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .detalle-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--border);
+    }
+
+    .detalle-row:last-child {
+        border-bottom: none;
+    }
+
+    .detalle-label {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    .detalle-value {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.875rem;
+    }
+
+    .detalle-value.precio {
+        color: var(--success);
+        font-size: 1rem;
+    }
+
+    .confirmacion-buttons {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .confirmacion-buttons .btn-cancel-modern,
+    .confirmacion-buttons .btn-pay-modern {
+        flex: 1;
+    }
+
+    .confirmacion-seguridad {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .confirmacion-seguridad i {
+        color: var(--success);
+    }
+
+    /* ==================== Loading Steps ==================== */
+    .loading-steps {
+        margin-top: 32px;
+        text-align: left;
+        max-width: 250px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .loading-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .loading-step.active {
+        color: white;
+    }
+
+    .loading-step.completed {
+        color: var(--success);
+    }
+
+    .loading-step.completed i {
+        color: var(--success);
+    }
+
+    .loading-step i {
+        font-size: 1.25rem;
+    }
+
+    /* ==================== Responsive Factura ==================== */
+    @media (max-width: 767.98px) {
+        .factura-modal-body,
+        .confirmacion-modal-body {
+            padding: 24px;
+        }
+
+        .factura-tipo-selector {
+            flex-direction: column;
+        }
+
+        .factura-tipo-option {
+            max-width: 100%;
+        }
+
+        .confirmacion-buttons {
+            flex-direction: column;
+        }
+    }

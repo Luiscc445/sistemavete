@@ -27,11 +27,15 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-lg border-2" name="nombre" required
-                                    placeholder="Ej: Max">
+                                    placeholder="Ej: Max"
+                                    data-validate="required|onlyLetters|minLength:2"
+                                    data-validate-type="name">
+                                <small class="text-muted">Solo letras, sin números</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Especie <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-lg border-2" name="especie" required>
+                                <select class="form-select form-select-lg border-2" name="especie" required
+                                    data-validate="required">
                                     <option value="">Seleccione...</option>
                                     <option value="Perro">🐕 Perro</option>
                                     <option value="Gato">🐈 Gato</option>
@@ -45,7 +49,9 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Raza</label>
                                 <input type="text" class="form-control form-control-lg border-2" name="raza"
-                                    placeholder="Ej: Labrador">
+                                    placeholder="Ej: Labrador"
+                                    data-validate-type="name">
+                                <small class="text-muted">Solo letras</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Sexo</label>
@@ -74,16 +80,19 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Fecha Nacimiento</label>
                                 <input type="date" class="form-control form-control-lg border-2"
-                                    name="fecha_nacimiento">
+                                    name="fecha_nacimiento"
+                                    data-validate="pastDate">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Color</label>
                                 <input type="text" class="form-control form-control-lg border-2" name="color"
-                                    placeholder="Ej: Café">
+                                    placeholder="Ej: Café"
+                                    data-validate-type="name">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Peso (kg)</label>
-                                <input type="number" step="0.1" class="form-control form-control-lg border-2"
+                                <input type="number" step="0.1" min="0.1" max="500" 
+                                    class="form-control form-control-lg border-2"
                                     name="peso" placeholder="0.0">
                             </div>
                         </div>

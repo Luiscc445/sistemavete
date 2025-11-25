@@ -1,0 +1,924 @@
+{% extends "layouts/veterinario_base.html" %}
+{% block title %}Historial de {{ mascota.nombre }} - RamboPet{% endblock %}
+
+{% block content %}
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in vet-mb-3">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-file-medical-fill"></i>
+        </div>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Historial de {{ mascota.nombre }}</h1>
+            <p class="vet-page-header-subtitle">{{ mascota.especie }} {% if mascota.raza %}- {{ mascota.raza }}{% endif %}</p>
+        </div>
+    </div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-clipboard2-pulse"></i>
+            <span>{{ timeline|length }} registros médicos</span>
+        </div>
+        <a href="{{ url_for('veterinario.historial_medico') }}" class="vet-header-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Volver</span>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column - Patient Info -->
+    <div class="col-lg-4">
+        <!-- Patient Profile Card -->
+        <div class="vet-profile-card vet-animate-fade-in vet-stagger-1">
+            <div class="vet-profile-header">
+                <div class="vet-profile-avatar">
+                    {% if mascota.foto_principal %}
+                    <img src="{{ url_for('static', filename='uploads/pets/' + mascota.foto_principal) }}" alt="{{ mascota.nombre }}">
+                    {% else %}
+                    <div class="vet-profile-avatar-placeholder">
+                        {% if mascota.especie|lower == 'perro' %}
+                        <i class="bi bi-emoji-smile-fill"></i>
+                        {% elif mascota.especie|lower == 'gato' %}
+                        <i class="bi bi-emoji-heart-eyes-fill"></i>
+                        {% else %}
+                        <i class="bi bi-heart-pulse-fill"></i>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <h3 class="vet-profile-name">{{ mascota.nombre }}</h3>
+                <div class="vet-profile-badges">
+                    <span class="vet-badge vet-badge-primary">
+                        <i class="bi bi-tag-fill"></i> {{ mascota.especie }}
+                    </span>
+                    {% if mascota.raza %}
+                    <span class="vet-badge vet-badge-gold">{{ mascota.raza }}</span>
+                    {% endif %}
+                    {% if mascota.sexo %}
+                    <span class="vet-badge {% if mascota.sexo == 'Macho' %}vet-badge-info{% else %}vet-badge-pink{% endif %}">
+                        <i class="bi bi-{% if mascota.sexo == 'Macho' %}gender-male{% else %}gender-female{% endif %}"></i>
+                        {{ mascota.sexo }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="vet-profile-body">
+                <div class="vet-profile-info-list">
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-calendar3"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Edad</span>
+                            <span class="vet-profile-info-value">{{ mascota.edad_detallada if mascota.fecha_nacimiento else 'No registrada' }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if mascota.peso %}
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Peso Actual</span>
+                            <span class="vet-profile-info-value">{{ mascota.peso }} kg</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if mascota.color %}
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-palette-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Color</span>
+                            <span class="vet-profile-info-value">{{ mascota.color }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Tutor</span>
+                            <span class="vet-profile-info-value">{{ mascota.tutor.nombre_completo if mascota.tutor else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if mascota.chip_identificacion %}
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-cpu-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Chip ID</span>
+                            <span class="vet-profile-info-value">{{ mascota.chip_identificacion }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon {% if mascota.esterilizado %}icon-success{% endif %}">
+                            <i class="bi bi-{% if mascota.esterilizado %}check-circle-fill{% else %}x-circle{% endif %}"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Esterilizado</span>
+                            <span class="vet-profile-info-value">{{ 'Sí' if mascota.esterilizado else 'No' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Card -->
+        <div class="vet-card vet-mt-3 vet-animate-fade-in vet-stagger-2">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-graph-up-arrow"></i> Estadísticas</h3>
+            </div>
+            <div class="vet-card-body">
+                <div class="vet-stats-grid">
+                    <div class="vet-stat-mini">
+                        <div class="vet-stat-mini-icon">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <div class="vet-stat-mini-content">
+                            <span class="vet-stat-mini-value">{{ stats.total_consultas }}</span>
+                            <span class="vet-stat-mini-label">Consultas</span>
+                        </div>
+                    </div>
+                    <div class="vet-stat-mini">
+                        <div class="vet-stat-mini-icon">
+                            <i class="bi bi-file-medical-fill"></i>
+                        </div>
+                        <div class="vet-stat-mini-content">
+                            <span class="vet-stat-mini-value">{{ stats.total_historiales }}</span>
+                            <span class="vet-stat-mini-label">Registros</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if stats.ultima_visita %}
+                <div class="vet-last-visit-info vet-mt-3">
+                    <i class="bi bi-clock-history"></i>
+                    <div>
+                        <span class="label">Última visita</span>
+                        <span class="date">{{ stats.ultima_visita.strftime('%d de %B, %Y') }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Alerts Card (Allergies, Conditions) -->
+        {% if mascota.alergias or mascota.condiciones_medicas %}
+        <div class="vet-alert-card vet-mt-3 vet-animate-fade-in vet-stagger-3">
+            <div class="vet-alert-header">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <h4>Alertas Médicas</h4>
+            </div>
+            <div class="vet-alert-body">
+                {% if mascota.alergias %}
+                <div class="vet-alert-item vet-alert-danger">
+                    <div class="vet-alert-icon">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </div>
+                    <div class="vet-alert-content">
+                        <span class="vet-alert-title">Alergias</span>
+                        <p class="vet-alert-text">{{ mascota.alergias }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if mascota.condiciones_medicas %}
+                <div class="vet-alert-item vet-alert-warning">
+                    <div class="vet-alert-icon">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <div class="vet-alert-content">
+                        <span class="vet-alert-title">Condiciones Médicas</span>
+                        <p class="vet-alert-text">{{ mascota.condiciones_medicas }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Right Column - Timeline -->
+    <div class="col-lg-8">
+        <div class="vet-card vet-animate-fade-in vet-stagger-2">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-journal-medical"></i> Historial Clínico</h3>
+                <span class="vet-badge vet-badge-primary">{{ timeline|length }} registros</span>
+            </div>
+            <div class="vet-card-body vet-p-0">
+                {% if timeline %}
+                <div class="vet-timeline-container">
+                    {% for item in timeline %}
+                    <div class="vet-timeline-item {% if loop.first %}active{% endif %} vet-animate-slide-in" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                        <div class="vet-timeline-marker">
+                            <div class="vet-timeline-dot {% if item.tipo == 'historial' %}dot-primary{% else %}dot-gold{% endif %}">
+                                <i class="bi bi-{% if item.tipo == 'historial' %}file-medical{% else %}calendar-check{% endif %}"></i>
+                            </div>
+                            <div class="vet-timeline-line"></div>
+                        </div>
+                        
+                        <div class="vet-timeline-content">
+                            <div class="vet-timeline-header">
+                                <div class="vet-timeline-date">
+                                    <i class="bi bi-calendar3"></i>
+                                    {{ item.fecha.strftime('%d/%m/%Y') }}
+                                    <span class="vet-timeline-time">{{ item.fecha.strftime('%H:%M') }}</span>
+                                </div>
+                                <span class="vet-badge {% if item.tipo == 'historial' %}vet-badge-primary{% else %}vet-badge-gold{% endif %}">
+                                    {{ item.tipo|title }}
+                                </span>
+                            </div>
+                            
+                            <div class="vet-timeline-card">
+                                <h4 class="vet-timeline-title">{{ item.titulo }}</h4>
+                                
+                                {% if item.diagnostico %}
+                                <div class="vet-timeline-section">
+                                    <h5><i class="bi bi-search"></i> Diagnóstico</h5>
+                                    <p>{{ item.diagnostico }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.tratamiento %}
+                                <div class="vet-timeline-section">
+                                    <h5><i class="bi bi-bandaid"></i> Tratamiento</h5>
+                                    <p>{{ item.tratamiento }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.tipo == 'historial' and item.datos %}
+                                <!-- Additional historial details -->
+                                {% if item.datos.peso or item.datos.temperatura %}
+                                <div class="vet-timeline-vitals">
+                                    {% if item.datos.peso %}
+                                    <div class="vet-vital-item">
+                                        <i class="bi bi-speedometer2"></i>
+                                        <span>{{ item.datos.peso }} kg</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if item.datos.temperatura %}
+                                    <div class="vet-vital-item">
+                                        <i class="bi bi-thermometer-half"></i>
+                                        <span>{{ item.datos.temperatura }}°C</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if item.datos.frecuencia_cardiaca %}
+                                    <div class="vet-vital-item">
+                                        <i class="bi bi-heart-pulse"></i>
+                                        <span>{{ item.datos.frecuencia_cardiaca }} bpm</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.datos.pronostico %}
+                                <div class="vet-timeline-prognosis">
+                                    <span class="prognosis-label">Pronóstico:</span>
+                                    <span class="prognosis-value vet-badge 
+                                        {% if item.datos.pronostico == 'bueno' %}vet-badge-success
+                                        {% elif item.datos.pronostico == 'reservado' %}vet-badge-warning
+                                        {% else %}vet-badge-danger{% endif %}">
+                                        {{ item.datos.pronostico|title }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                {% endif %}
+                                
+                                {% if item.tipo == 'cita' and item.datos.observaciones %}
+                                <div class="vet-timeline-section">
+                                    <h5><i class="bi bi-chat-text"></i> Observaciones</h5>
+                                    <p>{{ item.datos.observaciones }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="vet-empty-state">
+                    <div class="vet-empty-icon">
+                        <i class="bi bi-journal-x"></i>
+                    </div>
+                    <h4>Sin registros médicos</h4>
+                    <p>Este paciente aún no tiene historial clínico registrado.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ============================================
+   Page-Specific Styles - Ver Historial
+   ============================================ */
+
+/* Back Navigation */
+.vet-back-nav {
+    margin-bottom: 1rem;
+}
+
+.vet-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--vet-gray-600);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.vet-back-link:hover {
+    background: var(--vet-white);
+    color: var(--vet-primary);
+    transform: translateX(-4px);
+}
+
+/* Profile Card */
+.vet-profile-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.vet-profile-header {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.vet-profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.vet-profile-avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vet-profile-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--vet-gold) 0%, var(--vet-gold-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: var(--vet-white);
+}
+
+.vet-profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--vet-white);
+    margin: 0 0 1rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-badges {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-body {
+    padding: 1.5rem;
+}
+
+.vet-profile-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.vet-profile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vet-profile-info-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vet-primary);
+    flex-shrink: 0;
+}
+
+.vet-profile-info-icon.icon-success {
+    background: rgba(46, 125, 50, 0.1);
+    color: var(--vet-success);
+}
+
+.vet-profile-info-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.vet-profile-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vet-gray-500);
+}
+
+.vet-profile-info-value {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+}
+
+/* Stats Grid */
+.vet-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.vet-stat-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-md);
+}
+
+.vet-stat-mini-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-light) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vet-white);
+    font-size: 1.25rem;
+}
+
+.vet-stat-mini-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.vet-stat-mini-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--vet-dark);
+    line-height: 1;
+}
+
+.vet-stat-mini-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vet-gray-500);
+}
+
+.vet-last-visit-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(218, 165, 32, 0.1);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--vet-gold);
+}
+
+.vet-last-visit-info i {
+    color: var(--vet-gold);
+    font-size: 1.25rem;
+}
+
+.vet-last-visit-info .label {
+    font-size: 0.75rem;
+    color: var(--vet-gray-600);
+    display: block;
+}
+
+.vet-last-visit-info .date {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+}
+
+/* Alert Card */
+.vet-alert-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid rgba(211, 47, 47, 0.2);
+}
+
+.vet-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(211, 47, 47, 0.1) 0%, rgba(211, 47, 47, 0.05) 100%);
+    border-bottom: 1px solid rgba(211, 47, 47, 0.1);
+}
+
+.vet-alert-header i {
+    color: var(--vet-danger);
+    font-size: 1.25rem;
+}
+
+.vet-alert-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--vet-danger);
+}
+
+.vet-alert-body {
+    padding: 1rem;
+}
+
+.vet-alert-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+}
+
+.vet-alert-item:last-child {
+    margin-bottom: 0;
+}
+
+.vet-alert-danger {
+    background: rgba(211, 47, 47, 0.05);
+    border-left: 3px solid var(--vet-danger);
+}
+
+.vet-alert-warning {
+    background: rgba(237, 108, 2, 0.05);
+    border-left: 3px solid var(--vet-warning);
+}
+
+.vet-alert-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.vet-alert-danger .vet-alert-icon {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--vet-danger);
+}
+
+.vet-alert-warning .vet-alert-icon {
+    background: rgba(237, 108, 2, 0.1);
+    color: var(--vet-warning);
+}
+
+.vet-alert-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--vet-gray-800);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.vet-alert-text {
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Timeline Container */
+.vet-timeline-container {
+    padding: 1.5rem;
+}
+
+/* Timeline Item */
+.vet-timeline-item {
+    display: flex;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    opacity: 0;
+}
+
+.vet-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.vet-timeline-item:last-child .vet-timeline-line {
+    display: none;
+}
+
+/* Timeline Marker */
+.vet-timeline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.vet-timeline-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-timeline-dot.dot-primary {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-light) 100%);
+    color: var(--vet-white);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.vet-timeline-dot.dot-gold {
+    background: linear-gradient(135deg, var(--vet-gold) 0%, var(--vet-gold-light) 100%);
+    color: var(--vet-white);
+    box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+}
+
+.vet-timeline-item.active .vet-timeline-dot {
+    animation: pulse 2s infinite;
+}
+
+.vet-timeline-line {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--vet-gray-200) 0%, var(--vet-gray-100) 100%);
+    margin-top: 0.5rem;
+    min-height: 40px;
+}
+
+/* Timeline Content */
+.vet-timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.vet-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vet-timeline-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    font-weight: 500;
+}
+
+.vet-timeline-time {
+    color: var(--vet-gray-400);
+    font-size: 0.8rem;
+}
+
+/* Timeline Card */
+.vet-timeline-card {
+    background: var(--vet-white);
+    border: 1px solid var(--vet-gray-100);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.vet-timeline-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(4px);
+}
+
+.vet-timeline-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--vet-dark);
+    margin: 0 0 1rem 0;
+    font-family: 'Playfair Display', serif;
+}
+
+.vet-timeline-section {
+    margin-bottom: 1rem;
+}
+
+.vet-timeline-section:last-child {
+    margin-bottom: 0;
+}
+
+.vet-timeline-section h5 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--vet-primary);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.vet-timeline-section p {
+    font-size: 0.9rem;
+    color: var(--vet-gray-700);
+    margin: 0;
+    line-height: 1.6;
+    background: var(--vet-gray-50);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--vet-primary);
+}
+
+/* Timeline Vitals */
+.vet-timeline-vitals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--vet-gray-100);
+}
+
+.vet-vital-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--vet-gray-700);
+}
+
+.vet-vital-item i {
+    color: var(--vet-primary);
+}
+
+/* Timeline Prognosis */
+.vet-timeline-prognosis {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--vet-gray-100);
+}
+
+.prognosis-label {
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    font-weight: 500;
+}
+
+/* Badge Variants */
+.vet-badge-info {
+    background: rgba(2, 136, 209, 0.1);
+    color: var(--vet-info);
+}
+
+.vet-badge-pink {
+    background: rgba(233, 30, 99, 0.1);
+    color: #E91E63;
+}
+
+/* Empty State Enhancement */
+.vet-empty-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--vet-cream) 0%, var(--vet-sand) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.vet-empty-icon i {
+    font-size: 3rem;
+    color: var(--vet-primary);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .vet-profile-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .vet-profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .vet-profile-name {
+        font-size: 1.25rem;
+    }
+    
+    .vet-timeline-item {
+        gap: 1rem;
+    }
+    
+    .vet-timeline-dot {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .vet-timeline-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .vet-timeline-card {
+        padding: 1rem;
+    }
+    
+    .vet-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .vet-timeline-container {
+        padding: 1rem;
+    }
+    
+    .vet-timeline-vitals {
+        flex-direction: column;
+    }
+    
+    .vet-vital-item {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animation */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(139, 69, 19, 0.5);
+    }
+}
+</style>
+{% endblock %}
+

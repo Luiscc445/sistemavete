@@ -75,9 +75,17 @@ def dashboard():
     if citas_por_estado:
         df_estado = pd.DataFrame(citas_por_estado, columns=['Estado', 'Cantidad'])
         df_estado['Estado'] = df_estado['Estado'].str.title()
-        fig_estado = px.pie(df_estado, values='Cantidad', names='Estado', 
-                            color_discrete_sequence=px.colors.qualitative.Pastel)
-        fig_estado.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=350)
+        fig_estado = px.pie(df_estado, values='Cantidad', names='Estado', hole=0.45,
+                            color_discrete_sequence=['#26A69A', '#FFA726', '#42A5F5', '#EF5350', '#66BB6A'])
+        fig_estado.update_layout(
+            margin=dict(t=20, b=20, l=20, r=20), 
+            height=300,
+            font=dict(family="Inter, sans-serif", size=11),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        fig_estado.update_traces(textposition='inside', textinfo='percent+label', textfont_size=10,
+                                marker=dict(line=dict(color='#ffffff', width=2)))
         graph_estado = pio.to_html(fig_estado, full_html=False, config={'displayModeBar': False})
     else:
         graph_estado = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
@@ -95,11 +103,25 @@ def dashboard():
     if citas_por_mes:
         df_mes = pd.DataFrame(citas_por_mes, columns=['Año', 'Mes', 'Total'])
         df_mes['Periodo'] = df_mes.apply(lambda x: f"{int(x['Mes'])}/{int(x['Año'])}", axis=1)
-        fig_mes = px.line(df_mes, x='Periodo', y='Total', markers=True,
-                          line_shape='spline', render_mode='svg')
-        fig_mes.update_traces(line_color='#0d6efd', line_width=3)
-        fig_mes.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
-                              xaxis_title=None, yaxis_title=None)
+        fig_mes = px.area(df_mes, x='Periodo', y='Total', markers=True,
+                          line_shape='spline')
+        fig_mes.update_traces(
+            line_color='#42A5F5', 
+            line_width=3,
+            fillcolor='rgba(66, 165, 245, 0.15)',
+            marker=dict(size=8, color='#42A5F5', line=dict(width=2, color='#ffffff'))
+        )
+        fig_mes.update_layout(
+            margin=dict(t=20, b=40, l=50, r=20), 
+            height=300,
+            font=dict(family="Inter, sans-serif", size=11),
+            xaxis_title=None, 
+            yaxis_title=None,
+            plot_bgcolor='rgba(0,0,0,0)', 
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        fig_mes.update_xaxes(showgrid=False, tickfont=dict(size=10, color='#6c757d'))
+        fig_mes.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.06)', tickfont=dict(size=10, color='#6c757d'))
         graph_mes = pio.to_html(fig_mes, full_html=False, config={'displayModeBar': False})
     else:
         graph_mes = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
@@ -121,9 +143,27 @@ def dashboard():
         df_ingresos = pd.DataFrame(ingresos_por_mes, columns=['Año', 'Mes', 'Total'])
         df_ingresos['Periodo'] = df_ingresos.apply(lambda x: f"{int(x['Mes'])}/{int(x['Año'])}", axis=1)
         fig_ingresos = px.bar(df_ingresos, x='Periodo', y='Total', text='Total')
-        fig_ingresos.update_traces(marker_color='#198754', texttemplate='$%{text:.2s}', textposition='outside')
-        fig_ingresos.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
-                                   xaxis_title=None, yaxis_title=None)
+        fig_ingresos.update_traces(
+            marker_color='#26A69A', 
+            texttemplate='Bs.%{text:.2s}', 
+            textposition='outside',
+            marker=dict(
+                line=dict(color='rgba(0,0,0,0.1)', width=1),
+                cornerradius=5
+            )
+        )
+        fig_ingresos.update_layout(
+            margin=dict(t=30, b=40, l=50, r=20), 
+            height=300,
+            font=dict(family="Inter, sans-serif", size=11),
+            xaxis_title=None, 
+            yaxis_title=None,
+            plot_bgcolor='rgba(0,0,0,0)', 
+            paper_bgcolor='rgba(0,0,0,0)',
+            bargap=0.3
+        )
+        fig_ingresos.update_xaxes(showgrid=False, tickfont=dict(size=10, color='#6c757d'))
+        fig_ingresos.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.06)', tickfont=dict(size=10, color='#6c757d'))
         graph_ingresos = pio.to_html(fig_ingresos, full_html=False, config={'displayModeBar': False})
     else:
         graph_ingresos = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"

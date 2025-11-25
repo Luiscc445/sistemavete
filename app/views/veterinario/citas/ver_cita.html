@@ -1,9 +1,143 @@
 ﻿{% extends "layouts/veterinario_base.html" %}
+{% block title %}Detalle de Cita - RamboPet{% endblock %}
+
 {% block content %}
-<h1>Detalle</h1>
-<div class="card">
-    <div class="card-body">
-        <p><strong>Diagnóstico:</strong> {{ cita.diagnostico }}</p>
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in vet-mb-3">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-file-earmark-medical-fill"></i>
+        </div>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Detalle de Consulta</h1>
+            <p class="vet-page-header-subtitle">{{ cita.mascota.nombre if cita.mascota else 'Paciente' }} - {{ cita.fecha.strftime('%d/%m/%Y') if cita.fecha else 'Sin fecha' }}</p>
+        </div>
+    </div>
+    <div class="vet-page-header-right">
+        <span class="vet-page-header-badge">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ cita.estado|title if cita.estado else 'Completada' }}</span>
+        </span>
+        <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-header-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Volver</span>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Patient Info -->
+    <div class="col-lg-4">
+        <div class="vet-card vet-animate-fade-in">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-heart-pulse"></i> Paciente</h3>
+            </div>
+            <div class="vet-card-body">
+                {% if cita.mascota %}
+                <div class="text-center mb-3">
+                    {% if cita.mascota.foto_principal %}
+                    <img src="{{ url_for('static', filename='uploads/pets/' + cita.mascota.foto_principal) }}" 
+                         alt="{{ cita.mascota.nombre }}" 
+                         class="rounded-circle" 
+                         style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-brown-subtle d-flex align-items-center justify-content-center mx-auto" 
+                         style="width: 80px; height: 80px;">
+                        <i class="bi bi-heart-pulse-fill text-brown" style="font-size: 2rem;"></i>
+                    </div>
+                    {% endif %}
+                    <h4 class="mt-2 mb-0">{{ cita.mascota.nombre }}</h4>
+                    <small class="text-muted">{{ cita.mascota.especie }} - {{ cita.mascota.raza or 'Sin raza' }}</small>
+                </div>
+                {% endif %}
+                
+                <div class="vet-profile-info-list">
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon"><i class="bi bi-person"></i></div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Tutor</span>
+                            <span class="vet-profile-info-value">{{ cita.tutor.nombre_completo if cita.tutor else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon"><i class="bi bi-calendar3"></i></div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Fecha</span>
+                            <span class="vet-profile-info-value">{{ cita.fecha.strftime('%d/%m/%Y %H:%M') if cita.fecha else 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Consultation Details -->
+    <div class="col-lg-8">
+        <div class="vet-card vet-animate-fade-in vet-stagger-1">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-clipboard2-pulse"></i> Detalles de la Consulta</h3>
+            </div>
+            <div class="vet-card-body">
+                {% if cita.motivo %}
+                <div class="mb-4">
+                    <h6 class="text-muted fw-semibold mb-2">
+                        <i class="bi bi-chat-left-text me-2"></i>Motivo de la Consulta
+                    </h6>
+                    <p class="mb-0">{{ cita.motivo }}</p>
+                </div>
+                {% endif %}
+                
+                {% if cita.diagnostico %}
+                <div class="mb-4">
+                    <h6 class="text-muted fw-semibold mb-2">
+                        <i class="bi bi-search me-2"></i>Diagnóstico
+                    </h6>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0">{{ cita.diagnostico }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if cita.tratamiento %}
+                <div class="mb-4">
+                    <h6 class="text-muted fw-semibold mb-2">
+                        <i class="bi bi-bandaid me-2"></i>Tratamiento
+                    </h6>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0">{{ cita.tratamiento }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if cita.observaciones %}
+                <div class="mb-4">
+                    <h6 class="text-muted fw-semibold mb-2">
+                        <i class="bi bi-journal-text me-2"></i>Observaciones
+                    </h6>
+                    <p class="mb-0">{{ cita.observaciones }}</p>
+                </div>
+                {% endif %}
+                
+                {% if not cita.diagnostico and not cita.tratamiento %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p class="mt-2">No hay información clínica registrada para esta cita.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="vet-d-flex vet-gap-2 vet-mt-3 justify-content-end">
+            {% if cita.estado in ['completada', 'atendida'] %}
+            <a href="{{ url_for('veterinario.descargar_receta', id=cita.id) }}" class="vet-btn vet-btn-secondary">
+                <i class="bi bi-file-pdf me-2"></i>Descargar PDF
+            </a>
+            {% endif %}
+            <a href="{{ url_for('veterinario.historial_medico') }}" class="vet-btn vet-btn-primary">
+                <i class="bi bi-file-medical me-2"></i>Ver Historial Completo
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

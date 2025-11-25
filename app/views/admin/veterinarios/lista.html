@@ -1,26 +1,28 @@
 {% extends "layouts/admin_base.html" %}
-{% block title %}Gestión de Veterinarios{% endblock %}
+{% block title %}Gestion de Veterinarios{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-heart-pulse-fill"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Gestión de Veterinarios</h1>
-            <p class="page-header-subtitle-modern">Administra el equipo médico y especialistas</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Gestion de Veterinarios</h1>
+            <p class="admin-page-header-subtitle">Administra el equipo medico y especialistas</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <a href="{{ url_for('admin_veterinarios.nuevo') }}" class="btn btn-primary-modern">
-            <i class="bi bi-person-plus-fill me-1"></i> Nuevo Veterinario
+    <div class="admin-page-header-right">
+        <div class="admin-page-header-badge">
+            <i class="bi bi-person-badge"></i>
+            <span>{{ veterinarios.total if veterinarios else 0 }} profesionales</span>
+        </div>
+        <a href="{{ url_for('admin_veterinarios.nuevo') }}" class="admin-btn admin-btn-primary">
+            <i class="bi bi-person-plus-fill"></i> Nuevo Veterinario
         </a>
     </div>
 </div>
-{% endblock %}
-
-{% block content %}
 <div class="card modern-activity-card mb-4">
     <div class="card-header">
         <h6 class="mb-0 text-secondary"><i class="bi bi-funnel me-1"></i> Filtrar Personal</h6>

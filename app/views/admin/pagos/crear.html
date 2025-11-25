@@ -1,25 +1,24 @@
 ﻿{% extends "layouts/admin_base.html" %}
 {% block title %}Crear Nuevo Pago{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-plus-circle"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Crear Nuevo Pago</h1>
-            <p class="page-header-subtitle-modern">Registrar un nuevo pago en el sistema</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Crear Nuevo Pago</h1>
+            <p class="admin-page-header-subtitle">Registrar un nuevo pago en el sistema</p>
         </div>
     </div>
+    <div class="admin-page-header-right">
+        <a href="{{ url_for('pagos.listar') }}" class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
 
 <div class="row justify-content-center">
     <div class="col-xl-10">

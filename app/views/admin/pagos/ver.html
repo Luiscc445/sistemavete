@@ -1,25 +1,24 @@
 ﻿{% extends "layouts/admin_base.html" %}
 {% block title %}Pago {{ pago.codigo_pago }}{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-receipt"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Detalle de Pago</h1>
-            <p class="page-header-subtitle-modern">Información detallada del pago {{ pago.codigo_pago }}</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Detalle de Pago</h1>
+            <p class="admin-page-header-subtitle">{{ pago.codigo_pago }}</p>
         </div>
     </div>
+    <div class="admin-page-header-right">
+        <a href="{{ url_for('pagos.listar') }}" class="admin-btn admin-btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
 
 <!-- Información Principal del Pago -->
 <div class="row">
@@ -74,10 +73,7 @@
                             <tr>
                                 <th class="text-muted">Cita Asociada:</th>
                                 <td>
-                                    <a href="{{ url_for('admin.detalle_cita', cita_id=pago.cita_id) }}"
-                                        class="text-decoration-none">
-                                        Cita #{{ pago.cita_id }}
-                                    </a>
+                                    <span class="badge bg-info">Cita #{{ pago.cita_id }}</span>
                                 </td>
                             </tr>
                             {% endif %}

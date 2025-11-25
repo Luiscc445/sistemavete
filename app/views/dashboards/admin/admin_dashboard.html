@@ -1,42 +1,36 @@
 ﻿{% extends "layouts/admin_base.html" %}
 {% block title %}Dashboard Administrador{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-speedometer2"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Dashboard del Administrador</h1>
-            <p class="page-header-subtitle-modern">Bienvenido de vuelta, gestiona tu sistema veterinario</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Dashboard Administrativo</h1>
+            <p class="admin-page-header-subtitle">Bienvenido, gestiona tu sistema veterinario</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <div class="clock-widget-modern">
-            <div class="clock-time-display">
-                <i class="bi bi-clock-fill me-2 text-primary"></i>
-                <span id="la-paz-time" class="fw-bold">--:--:--</span>
+    <div class="admin-page-header-right">
+        <div class="admin-clock-widget">
+            <div class="admin-clock-time">
+                <i class="bi bi-clock-fill"></i>
+                <span id="la-paz-time">--:--:--</span>
             </div>
-            <div class="clock-location">
-                <i class="bi bi-geo-alt-fill me-1 text-muted"></i>
-                <span class="text-muted">La Paz, Bolivia</span>
+            <div class="admin-clock-location">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>La Paz, Bolivia</span>
             </div>
         </div>
-        <div class="vr mx-3"></div>
-        <div class="date-widget-modern">
-            <div class="date-display fw-semibold" id="current-date-full">--</div>
-            <div class="day-display text-muted" id="current-day">--</div>
+        <div class="admin-page-header-divider"></div>
+        <div class="admin-page-header-date">
+            <div class="admin-date-main" id="current-date-full">--</div>
+            <div class="admin-date-sub" id="current-day">--</div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
 <!-- Stats Cards - All 4 in One Row -->
 <div class="row g-2 mb-3">
     <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6">

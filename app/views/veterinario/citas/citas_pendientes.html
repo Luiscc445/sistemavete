@@ -1,31 +1,32 @@
 ﻿{% extends "layouts/veterinario_base.html" %}
 {% block title %}Citas Pendientes{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern vet-theme">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
             <i class="bi bi-hourglass-split"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Citas Pendientes</h1>
-            <p class="page-header-subtitle-modern">Gestiona las solicitudes de citas de tus pacientes</p>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Citas Pendientes</h1>
+            <p class="vet-page-header-subtitle">Gestiona las solicitudes de citas de tus pacientes</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <div class="date-widget-modern">
-            <div class="date-display fw-semibold" id="current-date-full">--</div>
-            <div class="day-display text-white-50" id="current-day">--</div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-bell"></i>
+            <span>{{ citas|length }} por confirmar</span>
+        </div>
+        <div class="vet-page-header-date">
+            <div class="vet-page-header-date-main">
+                <i class="bi bi-calendar3"></i>
+                <span id="headerDateFull">--</span>
+            </div>
+            <div class="vet-page-header-date-sub" id="headerDay">--</div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card modern-activity-card">
@@ -91,8 +92,8 @@
                     <div class="mb-3">
                         <i class="bi bi-check-circle text-brown" style="font-size: 3rem; opacity: 0.5;"></i>
                     </div>
-                    <h5 class="text-muted fw-semibold">¡Todo al día!</h5>
-                    <p class="text-muted small mb-0">No tienes citas pendientes de confirmación.</p>
+                    <h5 class="text-muted fw-semibold">Todo al dia!</h5>
+                    <p class="text-muted small mb-0">No tienes citas pendientes de confirmacion.</p>
                 </div>
                 {% endif %}
             </div>
@@ -101,120 +102,18 @@
 </div>
 
 <style>
-    /* Modern Brown Theme Palette */
-    :root {
-        --brown-primary: #5D4037;
-        --brown-secondary: #8D6E63;
-        --brown-light: #D7CCC8;
-        --brown-dark: #3E2723;
-    }
-
-    /* Header Card Styling */
-    .page-header-modern.vet-theme {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 1.25rem;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Decorative background element */
-    .page-header-modern.vet-theme::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    .page-header-modern.vet-theme .page-header-content {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        position: relative;
-        z-index: 1;
-    }
-
-    .page-header-modern.vet-theme .page-header-icon {
-        width: 64px;
-        height: 64px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: white;
-        backdrop-filter: blur(5px);
-    }
-
-    .page-header-modern.vet-theme .page-header-title-modern {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1.2;
-        color: white;
-    }
-
-    .page-header-modern.vet-theme .page-header-subtitle-modern {
-        font-size: 1rem;
-        margin: 0.25rem 0 0 0;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .page-header-modern.vet-theme .page-header-actions {
-        display: flex;
-        align-items: center;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Date Widget */
-    .date-widget-modern {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.25rem;
-    }
-
-    .date-display {
-        font-size: 1.125rem;
-        color: white;
-        line-height: 1;
-    }
-
-    .day-display {
-        font-size: 0.875rem;
-        text-transform: capitalize;
-    }
-
-    /* Brown Theme Colors */
+    /* Citas Pendientes - Specific Styles */
     .text-brown {
-        color: var(--brown-primary) !important;
-    }
-
-    .bg-brown {
-        background-color: var(--brown-primary) !important;
-        color: white;
+        color: var(--vet-primary) !important;
     }
 
     .bg-brown-subtle {
         background-color: #EFEBE9 !important;
-        color: var(--brown-dark);
+        color: var(--vet-primary-dark);
     }
 
     .btn-brown-modern {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
         border: none;
         color: white;
         padding: 0.5rem 1rem;
@@ -225,15 +124,14 @@
 
     .btn-brown-modern:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(93, 64, 55, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4) !important;
         color: white;
-        background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-primary) 100%);
+        background: linear-gradient(135deg, var(--vet-primary-dark) 0%, var(--vet-primary) 100%);
     }
 
-    /* Activity Icons */
     .activity-icon-brown {
-        background-color: rgba(93, 64, 55, 0.1);
-        color: var(--brown-primary);
+        background-color: rgba(139, 69, 19, 0.1);
+        color: var(--vet-primary);
         width: 48px;
         height: 48px;
         border-radius: 12px;
@@ -243,7 +141,6 @@
         font-size: 1.25rem;
     }
 
-    /* Activity Item Hover */
     .activity-item-modern {
         transition: all 0.2s ease-in-out;
     }
@@ -257,7 +154,6 @@
         border-bottom: none !important;
     }
 
-    /* Modern Card */
     .modern-activity-card {
         border-radius: 1rem;
         border: none;
@@ -273,29 +169,17 @@
 
 <script>
     // Update current date and day
-    function updateDate() {
+    document.addEventListener('DOMContentLoaded', function () {
         const now = new Date();
-        const laPazTime = new Date(now.toLocaleString('en-US', {
-            timeZone: 'America/La_Paz'
-        }));
-
-        const dateStr = laPazTime.toLocaleDateString('es-ES', {
+        const dateStr = now.toLocaleDateString('es-BO', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
         });
-
-        const dayStr = laPazTime.toLocaleDateString('es-ES', {
-            weekday: 'long'
-        });
-
-        document.getElementById('current-date-full').textContent = dateStr;
-        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
-    }
-
-    // Initialize on load
-    document.addEventListener('DOMContentLoaded', function () {
-        updateDate();
+        const dayStr = now.toLocaleDateString('es-BO', { weekday: 'long' });
+        
+        document.getElementById('headerDateFull').textContent = dateStr;
+        document.getElementById('headerDay').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
     });
 </script>
 {% endblock %}

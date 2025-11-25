@@ -140,6 +140,12 @@
                             <span>Ver Detalles de Cita</span>
                             <div class="btn-shine"></div>
                         </a>
+                        {% if pago.requiere_factura %}
+                        <a href="{{ url_for('tutor.descargar_factura', pago_id=pago.id) }}" class="btn-action btn-invoice">
+                            <i class="bi bi-receipt me-2"></i>
+                            <span>Descargar Factura</span>
+                        </a>
+                        {% endif %}
                         <button onclick="downloadReceipt()" class="btn-action btn-download" id="btn-descargar-pdf">
                             <i class="bi bi-file-earmark-pdf me-2"></i>
                             <span>Descargar Comprobante</span>

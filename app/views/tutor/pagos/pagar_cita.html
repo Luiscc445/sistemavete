@@ -465,14 +465,242 @@
     </div>
 </div>
 
+<!-- MODAL: Invoice Data (Factura Boliviana) -->
+<div class="modal fade" id="modalFactura" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-modern">
+            <button type="button" class="btn-close-modern" data-bs-dismiss="modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <div class="modal-body-modern factura-modal-body">
+                <div class="factura-header">
+                    <div class="factura-icon">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </div>
+                    <h3>Datos de Facturación</h3>
+                    <p>Ingresa los datos para tu factura electrónica boliviana</p>
+                </div>
+
+                <div class="factura-form">
+                    <!-- Tipo de documento -->
+                    <div class="factura-tipo-selector mb-4">
+                        <label class="factura-tipo-option active" data-tipo="nit">
+                            <input type="radio" name="tipo_documento" value="nit" checked>
+                            <div class="tipo-content">
+                                <i class="bi bi-building"></i>
+                                <span>NIT Empresa</span>
+                            </div>
+                        </label>
+                        <label class="factura-tipo-option" data-tipo="ci">
+                            <input type="radio" name="tipo_documento" value="ci">
+                            <div class="tipo-content">
+                                <i class="bi bi-person-vcard"></i>
+                                <span>C.I. Personal</span>
+                            </div>
+                        </label>
+                        <label class="factura-tipo-option" data-tipo="sin">
+                            <input type="radio" name="tipo_documento" value="sin_nit">
+                            <div class="tipo-content">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>Sin NIT</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- NIT Field -->
+                    <div class="form-group-modern" id="nitGroup">
+                        <label class="form-label-modern">
+                            <i class="bi bi-hash me-2"></i>NIT / Número de Documento
+                            <span class="required-asterisk">*</span>
+                        </label>
+                        <input type="text" class="form-input-modern" id="nit_cliente" 
+                            placeholder="Ej: 1234567890" maxlength="15"
+                            pattern="[0-9]+" inputmode="numeric">
+                        <div class="form-hint">Solo números, sin guiones ni espacios</div>
+                        <div class="invalid-feedback" id="nitError"></div>
+                    </div>
+
+                    <!-- Razón Social -->
+                    <div class="form-group-modern" id="razonSocialGroup">
+                        <label class="form-label-modern">
+                            <i class="bi bi-building me-2"></i>Razón Social / Nombre Completo
+                            <span class="required-asterisk">*</span>
+                        </label>
+                        <input type="text" class="form-input-modern" id="razon_social" 
+                            placeholder="Ej: EMPRESA EJEMPLO S.R.L. o Juan Pérez"
+                            maxlength="200">
+                        <div class="form-hint">Nombre de la empresa o persona tal como aparecerá en la factura</div>
+                        <div class="invalid-feedback" id="razonSocialError"></div>
+                    </div>
+
+                    <!-- Complemento CI (optional) -->
+                    <div class="row g-3" id="complementoRow" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-card-text me-2"></i>Complemento (opcional)
+                                </label>
+                                <input type="text" class="form-input-modern" id="complemento_ci" 
+                                    placeholder="Ej: 1A" maxlength="5">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-geo-alt me-2"></i>Expedido en
+                                </label>
+                                <select class="form-input-modern" id="expedido_en">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="LP">La Paz</option>
+                                    <option value="CB">Cochabamba</option>
+                                    <option value="SC">Santa Cruz</option>
+                                    <option value="OR">Oruro</option>
+                                    <option value="PT">Potosí</option>
+                                    <option value="TJ">Tarija</option>
+                                    <option value="CH">Chuquisaca</option>
+                                    <option value="BN">Beni</option>
+                                    <option value="PD">Pando</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email para factura electrónica -->
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="bi bi-envelope me-2"></i>Correo Electrónico
+                        </label>
+                        <input type="email" class="form-input-modern" id="email_factura" 
+                            placeholder="correo@ejemplo.com" value="{{ current_user.email }}">
+                        <div class="form-hint">Te enviaremos la factura electrónica a este correo</div>
+                    </div>
+
+                    <!-- Checkbox guardar datos -->
+                    <div class="form-checkbox-modern mb-4">
+                        <input type="checkbox" id="guardarDatosFactura" checked>
+                        <label for="guardarDatosFactura">
+                            <i class="bi bi-bookmark-check me-1"></i>
+                            Guardar estos datos para futuras compras
+                        </label>
+                    </div>
+
+                    <!-- Resumen -->
+                    <div class="factura-resumen">
+                        <div class="resumen-item">
+                            <span>Subtotal</span>
+                            <span>Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                        </div>
+                        <div class="resumen-item">
+                            <span>IVA (13% incluido)</span>
+                            <span>Bs. {{ "%.2f"|format(cita.costo * 0.13) }}</span>
+                        </div>
+                        <div class="resumen-divider"></div>
+                        <div class="resumen-total">
+                            <span>Total a Facturar</span>
+                            <span>Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-pay-modern" onclick="confirmarFacturaYPagar()">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Confirmar y Procesar Pago</span>
+                        <div class="btn-shine"></div>
+                    </button>
+
+                    <button type="button" class="btn-cancel-modern" onclick="continuarSinFactura()">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Continuar sin Factura
+                    </button>
+
+                    <div class="factura-legal-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>De acuerdo a la normativa del SIN (Servicio de Impuestos Nacionales), 
+                            la factura será emitida con los datos proporcionados.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Confirmación de Pago -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-modern">
+            <div class="modal-body-modern confirmacion-modal-body">
+                <div class="confirmacion-icon">
+                    <div class="icon-circle">
+                        <i class="bi bi-question-lg"></i>
+                    </div>
+                </div>
+                
+                <h3>Confirmar Pago</h3>
+                <p id="confirmacionMensaje">¿Deseas proceder con el pago?</p>
+                
+                <div class="confirmacion-detalles">
+                    <div class="detalle-row">
+                        <span class="detalle-label">Método de Pago:</span>
+                        <span class="detalle-value" id="confirmMetodoPago">-</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Monto Total:</span>
+                        <span class="detalle-value precio">Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                    </div>
+                    <div class="detalle-row" id="confirmFacturaRow" style="display: none;">
+                        <span class="detalle-label">Factura a:</span>
+                        <span class="detalle-value" id="confirmFacturaNombre">-</span>
+                    </div>
+                </div>
+                
+                <div class="confirmacion-buttons">
+                    <button type="button" class="btn-cancel-modern" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn-pay-modern" onclick="procesarPagoFinal()">
+                        <i class="bi bi-check-lg me-2"></i>
+                        <span>Sí, Confirmar Pago</span>
+                    </button>
+                </div>
+                
+                <div class="confirmacion-seguridad">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Transacción protegida con SSL 256-bits</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-content">
         <div class="loading-spinner"></div>
         <h4>Procesando tu pago...</h4>
         <p>Por favor espera un momento</p>
+        <div class="loading-steps">
+            <div class="loading-step active" id="step1">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Validando datos...</span>
+            </div>
+            <div class="loading-step" id="step2">
+                <i class="bi bi-circle"></i>
+                <span>Procesando pago...</span>
+            </div>
+            <div class="loading-step" id="step3">
+                <i class="bi bi-circle"></i>
+                <span>Generando factura...</span>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Hidden form fields for invoice -->
+<input type="hidden" id="hidden_nit" name="nit_cliente" form="pagoForm">
+<input type="hidden" id="hidden_razon_social" name="razon_social" form="pagoForm">
+<input type="hidden" id="hidden_email_factura" name="email_factura" form="pagoForm">
+<input type="hidden" id="hidden_requiere_factura" name="requiere_factura" value="0" form="pagoForm">
+<input type="hidden" id="hidden_tipo_documento" name="tipo_documento" form="pagoForm">
 
 {% endblock %}
 

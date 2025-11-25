@@ -2,15 +2,18 @@
 Controlador de Veterinario
 Gestiona las acciones de los veterinarios
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, make_response
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
 from app.models.cita import Cita
+from app.models.mascota import Mascota
+from app.models.historial_clinico import HistorialClinico
 from app.models.medicamento import Medicamento, Receta
 from app.models.pago import Pago
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, or_, desc
+from io import BytesIO
 
 veterinario_bp = Blueprint('veterinario', __name__)
 
@@ -22,7 +25,7 @@ def veterinario_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_veterinario():
             flash('No tienes permisos para acceder a esta página.', 'danger')
-            return redirect(url_for('auth.index'))
+            return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -375,3 +378,494 @@ def perfil():
             flash(f'Error al actualizar perfil: {str(e)}', 'danger')
 
     return render_template('veterinario/perfil.html')
+
+
+# ============================================
+# HISTORIAL MÉDICO
+# ============================================
+
+@veterinario_bp.route('/historial')
+@veterinario_required
+def historial_medico():
+    """Lista de pacientes con historial médico"""
+    # Obtener parámetros de búsqueda y filtro
+    buscar = request.args.get('buscar', '').strip()
+    especie_filtro = request.args.get('especie', '')
+    orden = request.args.get('orden', 'reciente')
+    
+    # Query base - obtener mascotas que han tenido citas atendidas por este veterinario
+    # o mascotas con historial clínico creado por este veterinario
+    subquery_citas = db.session.query(Cita.mascota_id).filter(
+        Cita.veterinario_id == current_user.id,
+        Cita.estado.in_(['completada', 'atendida'])
+    ).distinct()
+    
+    subquery_historiales = db.session.query(HistorialClinico.mascota_id).filter(
+        HistorialClinico.creado_por_id == current_user.id
+    ).distinct()
+    
+    # Combinar ambas consultas
+    query = Mascota.query.filter(
+        or_(
+            Mascota.id.in_(subquery_citas),
+            Mascota.id.in_(subquery_historiales)
+        ),
+        Mascota.activo == True
+    )
+    
+    # Aplicar filtro de búsqueda
+    if buscar:
+        query = query.filter(
+            or_(
+                Mascota.nombre.ilike(f'%{buscar}%'),
+                Mascota.especie.ilike(f'%{buscar}%'),
+                Mascota.raza.ilike(f'%{buscar}%')
+            )
+        )
+    
+    # Aplicar filtro de especie
+    if especie_filtro:
+        query = query.filter(Mascota.especie.ilike(f'%{especie_filtro}%'))
+    
+    # Ordenar
+    if orden == 'nombre':
+        query = query.order_by(Mascota.nombre.asc())
+    elif orden == 'especie':
+        query = query.order_by(Mascota.especie.asc(), Mascota.nombre.asc())
+    else:  # reciente
+        query = query.order_by(Mascota.ultima_actualizacion.desc())
+    
+    mascotas = query.all()
+    
+    # Obtener estadísticas para cada mascota
+    mascotas_info = []
+    for mascota in mascotas:
+        # Contar citas atendidas
+        citas_count = Cita.query.filter(
+            Cita.mascota_id == mascota.id,
+            Cita.veterinario_id == current_user.id,
+            Cita.estado.in_(['completada', 'atendida'])
+        ).count()
+        
+        # Obtener última cita
+        ultima_cita = Cita.query.filter(
+            Cita.mascota_id == mascota.id,
+            Cita.veterinario_id == current_user.id,
+            Cita.estado.in_(['completada', 'atendida'])
+        ).order_by(Cita.fecha.desc()).first()
+        
+        # Contar historiales
+        historiales_count = HistorialClinico.query.filter(
+            HistorialClinico.mascota_id == mascota.id
+        ).count()
+        
+        mascotas_info.append({
+            'mascota': mascota,
+            'citas_count': citas_count,
+            'ultima_cita': ultima_cita,
+            'historiales_count': historiales_count
+        })
+    
+    # Obtener lista de especies para el filtro
+    especies = db.session.query(Mascota.especie).distinct().order_by(Mascota.especie).all()
+    especies = [e[0] for e in especies if e[0]]
+    
+    return render_template('veterinario/historial/lista_pacientes.html',
+                         mascotas_info=mascotas_info,
+                         especies=especies,
+                         buscar=buscar,
+                         especie_filtro=especie_filtro,
+                         orden=orden,
+                         total_pacientes=len(mascotas_info))
+
+
+@veterinario_bp.route('/historial/<int:mascota_id>')
+@veterinario_required
+def ver_historial_mascota(mascota_id):
+    """Ver historial médico de una mascota específica"""
+    mascota = Mascota.query.get_or_404(mascota_id)
+    
+    # Verificar que el veterinario ha atendido a esta mascota
+    tiene_acceso = Cita.query.filter(
+        Cita.mascota_id == mascota_id,
+        Cita.veterinario_id == current_user.id,
+        Cita.estado.in_(['completada', 'atendida'])
+    ).first() is not None
+    
+    # O ha creado historiales para esta mascota
+    if not tiene_acceso:
+        tiene_acceso = HistorialClinico.query.filter(
+            HistorialClinico.mascota_id == mascota_id,
+            HistorialClinico.creado_por_id == current_user.id
+        ).first() is not None
+    
+    if not tiene_acceso:
+        flash('No tienes acceso al historial de esta mascota.', 'danger')
+        return redirect(url_for('veterinario.historial_medico'))
+    
+    # Obtener historial clínico ordenado por fecha
+    historiales = HistorialClinico.query.filter(
+        HistorialClinico.mascota_id == mascota_id
+    ).order_by(HistorialClinico.fecha.desc()).all()
+    
+    # Obtener citas completadas
+    citas_completadas = Cita.query.filter(
+        Cita.mascota_id == mascota_id,
+        Cita.estado.in_(['completada', 'atendida'])
+    ).order_by(Cita.fecha.desc()).all()
+    
+    # Crear timeline combinando historiales y citas
+    timeline = []
+    
+    for historial in historiales:
+        timeline.append({
+            'tipo': 'historial',
+            'fecha': historial.fecha,
+            'titulo': historial.tipo_registro or 'Registro Médico',
+            'diagnostico': historial.diagnostico_definitivo or historial.diagnostico_presuntivo,
+            'tratamiento': historial.tratamiento_aplicado,
+            'datos': historial
+        })
+    
+    for cita in citas_completadas:
+        # Evitar duplicados si la cita ya tiene historial asociado
+        if not any(h.cita_id == cita.id for h in historiales if h.cita_id):
+            timeline.append({
+                'tipo': 'cita',
+                'fecha': cita.fecha,
+                'titulo': f'Consulta - {cita.motivo}' if cita.motivo else 'Consulta Médica',
+                'diagnostico': cita.diagnostico,
+                'tratamiento': cita.tratamiento,
+                'datos': cita
+            })
+    
+    # Ordenar timeline por fecha descendente
+    timeline.sort(key=lambda x: x['fecha'], reverse=True)
+    
+    # Estadísticas del paciente
+    stats = {
+        'total_consultas': len(citas_completadas),
+        'total_historiales': len(historiales),
+        'ultima_visita': citas_completadas[0].fecha if citas_completadas else None,
+        'peso_actual': mascota.peso,
+    }
+    
+    # Obtener historial de peso si existe
+    historial_peso = []
+    for h in historiales:
+        if h.peso:
+            historial_peso.append({
+                'fecha': h.fecha.strftime('%d/%m/%Y'),
+                'peso': h.peso
+            })
+    
+    return render_template('veterinario/historial/ver_historial.html',
+                         mascota=mascota,
+                         timeline=timeline,
+                         stats=stats,
+                         historial_peso=historial_peso)
+
+
+# ============================================
+# GENERACIÓN DE PDF - RECETA/CONSULTA
+# ============================================
+
+@veterinario_bp.route('/cita/<int:id>/receta-pdf')
+@veterinario_required
+def descargar_receta(id):
+    """Generar y descargar PDF de la receta/consulta"""
+    cita = Cita.query.get_or_404(id)
+    
+    # Verificar que la cita esté completada y tenga datos
+    if cita.estado not in ['completada', 'atendida']:
+        flash('Solo puedes generar PDF de citas completadas.', 'warning')
+        return redirect(url_for('veterinario.mis_citas'))
+    
+    # Verificar acceso
+    if cita.veterinario_id != current_user.id:
+        flash('No tienes permiso para acceder a esta cita.', 'danger')
+        return redirect(url_for('veterinario.mis_citas'))
+    
+    try:
+        # Generar PDF
+        pdf_buffer = generar_pdf_consulta(cita)
+        
+        # Crear respuesta
+        response = make_response(pdf_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=consulta_{cita.mascota.nombre}_{cita.fecha.strftime("%Y%m%d")}.pdf'
+        
+        return response
+    except Exception as e:
+        flash(f'Error al generar PDF: {str(e)}', 'danger')
+        return redirect(url_for('veterinario.mis_citas'))
+
+
+def generar_pdf_consulta(cita):
+    """Genera el PDF de la consulta médica"""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm, leftMargin=1.5*cm, rightMargin=1.5*cm)
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    
+    # Estilos personalizados
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#8B4513'),
+        spaceAfter=10,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#666666'),
+        alignment=TA_CENTER,
+        spaceAfter=20
+    )
+    
+    section_title_style = ParagraphStyle(
+        'SectionTitle',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#8B4513'),
+        spaceBefore=15,
+        spaceAfter=8,
+        fontName='Helvetica-Bold'
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=5
+    )
+    
+    bold_style = ParagraphStyle(
+        'CustomBold',
+        parent=styles['Normal'],
+        fontSize=10,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Contenido del documento
+    elements = []
+    
+    # === ENCABEZADO ===
+    elements.append(Paragraph("🏥 RamboPet - Veterinaria", title_style))
+    elements.append(Paragraph("Sistema de Gestión Veterinaria", subtitle_style))
+    elements.append(Spacer(1, 10))
+    
+    # Línea separadora
+    elements.append(Table([['']], colWidths=[18*cm], rowHeights=[2]))
+    elements[-1].setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#8B4513')),
+    ]))
+    elements.append(Spacer(1, 15))
+    
+    # === INFORMACIÓN DE LA CONSULTA ===
+    elements.append(Paragraph("📋 RESUMEN DE CONSULTA MÉDICA", section_title_style))
+    
+    # Datos básicos en tabla
+    fecha_consulta = cita.fecha.strftime('%d de %B de %Y a las %H:%M')
+    consulta_data = [
+        ['Fecha de Consulta:', fecha_consulta],
+        ['Veterinario:', f"Dr(a). {current_user.nombre_completo if hasattr(current_user, 'nombre_completo') else current_user.nombre}"],
+        ['N° de Cita:', f"#{cita.id}"],
+    ]
+    
+    consulta_table = Table(consulta_data, colWidths=[4*cm, 14*cm])
+    consulta_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#666666')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(consulta_table)
+    elements.append(Spacer(1, 15))
+    
+    # === INFORMACIÓN DEL PACIENTE ===
+    elements.append(Paragraph("🐾 DATOS DEL PACIENTE", section_title_style))
+    
+    mascota = cita.mascota
+    tutor = cita.tutor
+    
+    paciente_data = [
+        ['Nombre:', mascota.nombre, 'Especie:', mascota.especie],
+        ['Raza:', mascota.raza or 'No especificada', 'Sexo:', mascota.sexo or 'No especificado'],
+        ['Edad:', mascota.edad_detallada if hasattr(mascota, 'edad_detallada') and mascota.fecha_nacimiento else 'No registrada', 
+         'Peso:', f"{mascota.peso} kg" if mascota.peso else 'No registrado'],
+    ]
+    
+    paciente_table = Table(paciente_data, colWidths=[3*cm, 6*cm, 3*cm, 6*cm])
+    paciente_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#666666')),
+        ('TEXTCOLOR', (2, 0), (2, -1), colors.HexColor('#666666')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FDF5E6')),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#D2691E')),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#D2691E')),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(paciente_table)
+    elements.append(Spacer(1, 10))
+    
+    # Tutor
+    if tutor:
+        tutor_data = [
+            ['Tutor:', tutor.nombre_completo if hasattr(tutor, 'nombre_completo') else tutor.nombre, 
+             'Teléfono:', tutor.telefono or 'No registrado'],
+        ]
+        tutor_table = Table(tutor_data, colWidths=[3*cm, 6*cm, 3*cm, 6*cm])
+        tutor_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#666666')),
+            ('TEXTCOLOR', (2, 0), (2, -1), colors.HexColor('#666666')),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        elements.append(tutor_table)
+    
+    elements.append(Spacer(1, 15))
+    
+    # === MOTIVO DE CONSULTA ===
+    if cita.motivo:
+        elements.append(Paragraph("📝 MOTIVO DE CONSULTA", section_title_style))
+        elements.append(Paragraph(cita.motivo, normal_style))
+        elements.append(Spacer(1, 10))
+    
+    # === DIAGNÓSTICO ===
+    if cita.diagnostico:
+        elements.append(Paragraph("🔍 DIAGNÓSTICO", section_title_style))
+        
+        # Caja de diagnóstico
+        diag_data = [[Paragraph(cita.diagnostico, normal_style)]]
+        diag_table = Table(diag_data, colWidths=[17*cm])
+        diag_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F5F5F5')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#CCCCCC')),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(diag_table)
+        elements.append(Spacer(1, 10))
+    
+    # === TRATAMIENTO ===
+    if cita.tratamiento:
+        elements.append(Paragraph("💊 TRATAMIENTO", section_title_style))
+        
+        # Caja de tratamiento
+        trat_data = [[Paragraph(cita.tratamiento, normal_style)]]
+        trat_table = Table(trat_data, colWidths=[17*cm])
+        trat_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#E8F5E9')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#81C784')),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(trat_table)
+        elements.append(Spacer(1, 10))
+    
+    # === MEDICAMENTOS RECETADOS ===
+    recetas = Receta.query.filter_by(cita_id=cita.id).all()
+    if recetas:
+        elements.append(Paragraph("💉 MEDICAMENTOS RECETADOS", section_title_style))
+        
+        # Tabla de medicamentos
+        med_header = ['Medicamento', 'Cantidad', 'Dosis', 'Duración', 'Indicaciones']
+        med_data = [med_header]
+        
+        for receta in recetas:
+            med_data.append([
+                receta.medicamento.nombre if receta.medicamento else 'N/A',
+                str(receta.cantidad) if receta.cantidad else '-',
+                receta.dosis or '-',
+                receta.duracion or '-',
+                receta.indicaciones or '-'
+            ])
+        
+        med_table = Table(med_data, colWidths=[4*cm, 2*cm, 3*cm, 3*cm, 5*cm])
+        med_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8B4513')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#FFF8DC')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#8B4513')),
+            ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#D2691E')),
+        ]))
+        elements.append(med_table)
+        elements.append(Spacer(1, 10))
+    
+    # === OBSERVACIONES ===
+    if cita.observaciones:
+        elements.append(Paragraph("📋 OBSERVACIONES Y RECOMENDACIONES", section_title_style))
+        elements.append(Paragraph(cita.observaciones, normal_style))
+        elements.append(Spacer(1, 10))
+    
+    # === PIE DE PÁGINA ===
+    elements.append(Spacer(1, 20))
+    elements.append(Table([['']], colWidths=[18*cm], rowHeights=[1]))
+    elements[-1].setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#D2691E')),
+    ]))
+    elements.append(Spacer(1, 10))
+    
+    # Firma
+    firma_style = ParagraphStyle(
+        'Firma',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=TA_CENTER,
+        spaceBefore=30
+    )
+    
+    elements.append(Spacer(1, 30))
+    elements.append(Paragraph("_" * 40, firma_style))
+    elements.append(Paragraph(f"Dr(a). {current_user.nombre_completo if hasattr(current_user, 'nombre_completo') else current_user.nombre}", firma_style))
+    if hasattr(current_user, 'licencia_profesional') and current_user.licencia_profesional:
+        elements.append(Paragraph(f"Lic. Prof.: {current_user.licencia_profesional}", firma_style))
+    
+    # Fecha de generación
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.HexColor('#999999'),
+        alignment=TA_CENTER,
+        spaceBefore=20
+    )
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph(f"Documento generado el {datetime.now().strftime('%d/%m/%Y a las %H:%M')}", footer_style))
+    elements.append(Paragraph("RamboPet - Sistema de Gestión Veterinaria", footer_style))
+    
+    # Construir PDF
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return buffer

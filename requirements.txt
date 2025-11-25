@@ -36,6 +36,9 @@ pandas==2.2.3
 openpyxl==3.1.2
 plotly==5.18.0
 
+# Generación de PDFs
+reportlab==4.0.7
+
 # Generación de códigos QR para pagos
 qrcode==7.4.2
 Pillow==10.4.0

@@ -167,7 +167,10 @@
                                             </label>
                                             <input type="text" class="form-input-modern" name="nombre"
                                                 value="{{ current_user.nombre }}"
-                                                placeholder="Ingresa tu nombre completo" required>
+                                                placeholder="Ingresa tu nombre completo" required
+                                                data-validate="required|onlyLetters|minLength:3"
+                                                data-validate-type="name">
+                                            <small class="text-muted">Solo letras, sin números</small>
                                         </div>
                                     </div>
 
@@ -178,7 +181,9 @@
                                                 Correo Electrónico
                                             </label>
                                             <input type="email" class="form-input-modern" name="email"
-                                                value="{{ current_user.email }}" placeholder="tu@email.com" required>
+                                                value="{{ current_user.email }}" placeholder="tu@email.com" required
+                                                data-validate="required|email"
+                                                data-validate-type="email">
                                         </div>
                                     </div>
 
@@ -186,10 +191,14 @@
                                         <div class="form-group-modern">
                                             <label class="form-label-modern">
                                                 <i class="bi bi-telephone me-2"></i>
-                                                Teléfono
+                                                Teléfono (Celular)
                                             </label>
                                             <input type="tel" class="form-input-modern" name="telefono"
-                                                placeholder="+591 XXX XXXXX">
+                                                placeholder="7XXXXXXX" maxlength="8"
+                                                data-validate="phone"
+                                                data-validate-type="phone"
+                                                value="{{ current_user.telefono or '' }}">
+                                            <small class="text-muted">8 dígitos, ej: 71234567</small>
                                         </div>
                                     </div>
 
@@ -200,7 +209,8 @@
                                                 Ciudad
                                             </label>
                                             <input type="text" class="form-input-modern" name="ciudad"
-                                                placeholder="La Paz">
+                                                placeholder="La Paz"
+                                                data-validate-type="name">
                                         </div>
                                     </div>
 

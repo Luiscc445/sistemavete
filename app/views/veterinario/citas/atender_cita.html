@@ -1,349 +1,865 @@
 ﻿{% extends "layouts/veterinario_base.html" %}
-{% block title %}Atender Cita{% endblock %}
-
-{% block page_title %}
-<div class="page-header-modern vet-theme">
-    <div class="page-header-content">
-        <div class="page-header-icon">
-            <i class="bi bi-clipboard2-pulse-fill"></i>
-        </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Atender Cita</h1>
-            <p class="page-header-subtitle-modern">Registra el diagnóstico y tratamiento del paciente</p>
-        </div>
-    </div>
-    <div class="page-header-actions">
-        <div class="date-widget-modern">
-            <div class="date-display fw-semibold" id="current-date-full">--</div>
-            <div class="day-display text-white-50" id="current-day">--</div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
+{% block title %}Atender Consulta - {{ cita.mascota.nombre }} - RamboPet{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card modern-form-card">
-            <div class="card-header bg-white border-bottom py-3">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-file-medical me-2 text-brown"></i>
-                    <span class="fw-semibold">Detalles de la Consulta</span>
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in vet-mb-3">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Atender Consulta</h1>
+            <p class="vet-page-header-subtitle">{{ cita.mascota.nombre }} - {{ cita.fecha.strftime('%d/%m/%Y a las %H:%M') }}</p>
+        </div>
+    </div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-clipboard2-pulse"></i>
+            <span>Consulta Activa</span>
+        </div>
+        <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-header-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Volver</span>
+        </a>
+    </div>
+</div>
+
+<form method="POST" id="consultaForm">
+    <div class="row g-4">
+        <!-- Left Column - Patient Info -->
+        <div class="col-lg-4">
+            <!-- Patient Card -->
+            <div class="patient-card vet-animate-fade-in vet-stagger-1">
+                <div class="patient-header">
+                    <div class="patient-avatar">
+                        {% if cita.mascota.foto_principal %}
+                        <img src="{{ url_for('static', filename='uploads/pets/' + cita.mascota.foto_principal) }}" alt="{{ cita.mascota.nombre }}">
+                        {% else %}
+                        <div class="avatar-placeholder">
+                            {% if cita.mascota.especie|lower == 'perro' %}
+                            <i class="bi bi-emoji-smile-fill"></i>
+                            {% elif cita.mascota.especie|lower == 'gato' %}
+                            <i class="bi bi-emoji-heart-eyes-fill"></i>
+                            {% else %}
+                            <i class="bi bi-heart-pulse-fill"></i>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h3 class="patient-name">{{ cita.mascota.nombre }}</h3>
+                    <div class="patient-badges">
+                        <span class="vet-badge vet-badge-primary">{{ cita.mascota.especie }}</span>
+                        {% if cita.mascota.raza %}
+                        <span class="vet-badge vet-badge-gold">{{ cita.mascota.raza }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="patient-body">
+                    <div class="patient-info-grid">
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            <div>
+                                <span class="info-label">Edad</span>
+                                <span class="info-value">{{ cita.mascota.edad_detallada if cita.mascota.fecha_nacimiento else 'No registrada' }}</span>
+                            </div>
+                        </div>
+                        {% if cita.mascota.sexo %}
+                        <div class="info-item">
+                            <i class="bi bi-gender-{{ 'male' if cita.mascota.sexo == 'Macho' else 'female' }}"></i>
+                            <div>
+                                <span class="info-label">Sexo</span>
+                                <span class="info-value">{{ cita.mascota.sexo }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if cita.mascota.peso %}
+                        <div class="info-item">
+                            <i class="bi bi-speedometer2"></i>
+                            <div>
+                                <span class="info-label">Peso</span>
+                                <span class="info-value">{{ cita.mascota.peso }} kg</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if cita.mascota.color %}
+                        <div class="info-item">
+                            <i class="bi bi-palette"></i>
+                            <div>
+                                <span class="info-label">Color</span>
+                                <span class="info-value">{{ cita.mascota.color }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="tutor-section">
+                        <h5><i class="bi bi-person-fill"></i> Tutor</h5>
+                        <p class="tutor-name">{{ cita.tutor.nombre_completo if cita.tutor else 'N/A' }}</p>
+                        {% if cita.tutor and cita.tutor.telefono %}
+                        <p class="tutor-phone"><i class="bi bi-telephone"></i> {{ cita.tutor.telefono }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if cita.mascota.alergias or cita.mascota.condiciones_medicas %}
+                    <div class="alerts-section">
+                        {% if cita.mascota.alergias %}
+                        <div class="alert-item alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <span class="alert-title">Alergias</span>
+                                <span class="alert-text">{{ cita.mascota.alergias }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if cita.mascota.condiciones_medicas %}
+                        <div class="alert-item alert-warning">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                            <div>
+                                <span class="alert-title">Condiciones</span>
+                                <span class="alert-text">{{ cita.mascota.condiciones_medicas }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-            <div class="card-body p-4">
-                <form method="POST">
-                    <!-- Diagnosis Section -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold text-dark">
-                            <i class="bi bi-search me-1 text-brown"></i>Diagnóstico <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control form-control-modern" name="diagnostico" rows="4"
-                            placeholder="Describe el diagnóstico del paciente..." required></textarea>
-                        <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle me-1"></i>Describe los hallazgos clínicos y la condición del
-                            paciente
+            
+            <!-- Appointment Info -->
+            <div class="vet-card vet-mt-3 vet-animate-fade-in vet-stagger-2">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-calendar-event"></i> Datos de la Cita</h3>
+                </div>
+                <div class="vet-card-body">
+                    <div class="appointment-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Fecha</span>
+                            <span class="detail-value">{{ cita.fecha.strftime('%d de %B, %Y') }}</span>
                         </div>
-                    </div>
-
-                    <!-- Treatment Section -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold text-dark">
-                            <i class="bi bi-bandaid me-1 text-brown"></i>Tratamiento <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control form-control-modern" name="tratamiento" rows="4"
-                            placeholder="Detalla el tratamiento a seguir..." required></textarea>
-                        <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle me-1"></i>Incluye medicación, cuidados y recomendaciones
+                        <div class="detail-row">
+                            <span class="detail-label">Hora</span>
+                            <span class="detail-value">{{ cita.fecha.strftime('%H:%M') }}</span>
                         </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado</span>
+                            <span class="vet-badge 
+                                {% if cita.estado == 'confirmada' %}vet-badge-success
+                                {% elif cita.estado == 'pendiente' %}vet-badge-warning
+                                {% else %}vet-badge-primary{% endif %}">
+                                {{ cita.estado|title }}
+                            </span>
+                        </div>
+                        {% if cita.motivo %}
+                        <div class="detail-row full-width">
+                            <span class="detail-label">Motivo</span>
+                            <span class="detail-value">{{ cita.motivo }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-
-                    <hr class="my-4 border-light">
-
-                    <!-- Medicines Section -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <label class="form-label fw-semibold text-dark mb-0">
-                                <i class="bi bi-capsule me-1 text-brown"></i>Receta Médica
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Consultation Form -->
+        <div class="col-lg-8">
+            <!-- Vital Signs (Optional) -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-2 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-activity"></i> Signos Vitales</h3>
+                    <span class="vet-badge vet-badge-gold">Opcional</span>
+                </div>
+                <div class="vet-card-body">
+                    <div class="vitals-grid">
+                        <div class="vital-input">
+                            <label class="vital-label">
+                                <i class="bi bi-speedometer2"></i> Peso (kg)
                             </label>
-                            <span class="badge bg-brown-subtle text-brown">Opcional</span>
+                            <input type="number" step="0.1" class="vet-form-control" name="peso" 
+                                   value="{{ cita.mascota.peso or '' }}" placeholder="0.0">
                         </div>
-
-                        <div class="medicine-section p-4 bg-light rounded-3 border-0">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-7">
-                                    <label class="form-label small fw-semibold text-muted mb-2">
-                                        <i class="bi bi-prescription2 me-1"></i>Medicamento
-                                    </label>
-                                    <select class="form-select form-select-modern" name="medicamento_id[]">
-                                        <option value="">Seleccionar medicamento...</option>
+                        <div class="vital-input">
+                            <label class="vital-label">
+                                <i class="bi bi-thermometer-half"></i> Temperatura (°C)
+                            </label>
+                            <input type="number" step="0.1" class="vet-form-control" name="temperatura" placeholder="38.5">
+                        </div>
+                        <div class="vital-input">
+                            <label class="vital-label">
+                                <i class="bi bi-heart-pulse"></i> Frec. Cardíaca (bpm)
+                            </label>
+                            <input type="number" class="vet-form-control" name="frecuencia_cardiaca" placeholder="80">
+                        </div>
+                        <div class="vital-input">
+                            <label class="vital-label">
+                                <i class="bi bi-wind"></i> Frec. Respiratoria
+                            </label>
+                            <input type="number" class="vet-form-control" name="frecuencia_respiratoria" placeholder="20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Diagnosis & Treatment -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-3 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-clipboard2-pulse"></i> Diagnóstico y Tratamiento</h3>
+                </div>
+                <div class="vet-card-body">
+                    <div class="form-section">
+                        <label class="section-label">
+                            <i class="bi bi-search"></i> Diagnóstico <span class="required">*</span>
+                        </label>
+                        <textarea class="vet-form-control" name="diagnostico" rows="4" 
+                                  placeholder="Describe el diagnóstico del paciente, incluyendo hallazgos clínicos y condición observada..." 
+                                  required></textarea>
+                        <span class="form-hint">
+                            <i class="bi bi-info-circle"></i> 
+                            Incluye los hallazgos del examen físico y la evaluación clínica
+                        </span>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label class="section-label">
+                            <i class="bi bi-bandaid"></i> Tratamiento <span class="required">*</span>
+                        </label>
+                        <textarea class="vet-form-control" name="tratamiento" rows="4" 
+                                  placeholder="Detalla el tratamiento a seguir, incluyendo medicamentos, dosis, frecuencia y duración..." 
+                                  required></textarea>
+                        <span class="form-hint">
+                            <i class="bi bi-info-circle"></i> 
+                            Especifica medicamentos, dosis, vía de administración y duración
+                        </span>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label class="section-label">
+                            <i class="bi bi-chat-left-text"></i> Observaciones
+                        </label>
+                        <textarea class="vet-form-control" name="observaciones" rows="3" 
+                                  placeholder="Notas adicionales, recomendaciones de cuidado, próxima visita sugerida..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prescription (Medicine) -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-4 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-capsule"></i> Receta Médica</h3>
+                    <span class="vet-badge vet-badge-gold">Opcional</span>
+                </div>
+                <div class="vet-card-body">
+                    <div id="medicamentosContainer">
+                        <div class="medicine-row" data-index="0">
+                            <div class="medicine-grid">
+                                <div class="medicine-select">
+                                    <label class="medicine-label">Medicamento</label>
+                                    <select class="vet-form-control" name="medicamento_id[]">
+                                        <option value="">Seleccionar...</option>
                                         {% for m in medicamentos %}
-                                        <option value="{{ m.id }}">{{ m.nombre }} (Stock: {{ m.stock }})</option>
+                                        <option value="{{ m.id }}" data-stock="{{ m.stock_actual if m.stock_actual else m.stock }}">
+                                            {{ m.nombre }} (Stock: {{ m.stock_actual if m.stock_actual else m.stock }})
+                                        </option>
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-muted mb-2">
-                                        <i class="bi bi-hash me-1"></i>Cantidad
-                                    </label>
-                                    <input type="number" class="form-control form-control-modern" name="cantidad[]"
-                                        min="0" placeholder="0">
+                                <div class="medicine-qty">
+                                    <label class="medicine-label">Cantidad</label>
+                                    <input type="number" class="vet-form-control" name="cantidad[]" min="0" placeholder="0">
                                 </div>
-                                <div class="col-md-2">
-                                    <button type="button" class="btn btn-light border w-100" disabled>
-                                        <i class="bi bi-plus-lg"></i>
+                                <div class="medicine-dose">
+                                    <label class="medicine-label">Dosis</label>
+                                    <input type="text" class="vet-form-control" name="dosis[]" placeholder="Ej: 1 tableta">
+                                </div>
+                                <div class="medicine-duration">
+                                    <label class="medicine-label">Duración</label>
+                                    <input type="text" class="vet-form-control" name="duracion[]" placeholder="Ej: 7 días">
+                                </div>
+                                <div class="medicine-action">
+                                    <button type="button" class="btn-remove-medicine" onclick="removeMedicine(this)" style="visibility: hidden;">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="mt-3 text-center">
-                                <small class="text-muted">
-                                    <i class="bi bi-clock-history me-1"></i>Función de múltiples medicamentos
-                                    próximamente
-                                </small>
+                            <div class="medicine-instructions">
+                                <label class="medicine-label">Indicaciones</label>
+                                <input type="text" class="vet-form-control" name="indicaciones[]" placeholder="Ej: Administrar con comida, cada 12 horas">
                             </div>
                         </div>
                     </div>
-
-                    <!-- Actions -->
-                    <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
-                        <a href="{{ url_for('veterinario.mis_citas') }}" class="btn btn-light-modern px-4">
-                            <i class="bi bi-x-lg me-2"></i>Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-brown-modern px-5 d-flex align-items-center gap-2">
-                            <i class="bi bi-check-lg"></i>
-                            <span>Completar Consulta</span>
-                        </button>
-                    </div>
-                </form>
+                    
+                    <button type="button" class="btn-add-medicine" onclick="addMedicine()">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Agregar otro medicamento</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="form-actions vet-animate-fade-in vet-stagger-5">
+                <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-btn vet-btn-secondary vet-btn-lg">
+                    <i class="bi bi-x-lg"></i>
+                    <span>Cancelar</span>
+                </a>
+                <button type="submit" class="vet-btn vet-btn-primary vet-btn-lg">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Completar Consulta</span>
+                </button>
+            </div>
+            
+            <div class="form-note">
+                <i class="bi bi-file-pdf"></i>
+                <span>Al completar la consulta, podrás descargar un PDF con el resumen para entregar al tutor.</span>
             </div>
         </div>
     </div>
-</div>
+</form>
 
 <style>
-    /* Modern Brown Theme Palette */
-    :root {
-        --brown-primary: #5D4037;
-        --brown-secondary: #8D6E63;
-        --brown-light: #D7CCC8;
-        --brown-dark: #3E2723;
-    }
+/* ============================================
+   Atender Cita - Modern Redesign
+   ============================================ */
 
-    /* Header Card Styling */
-    .page-header-modern.vet-theme {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 1.25rem;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
-        position: relative;
-        overflow: hidden;
-    }
+/* Back Navigation */
+.vet-back-nav {
+    margin-bottom: 1rem;
+}
 
-    /* Decorative background element */
-    .page-header-modern.vet-theme::after {
-        content: '';
+.vet-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--vet-gray-600);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.vet-back-link:hover {
+    background: var(--vet-white);
+    color: var(--vet-primary);
+    transform: translateX(-4px);
+}
+
+/* Patient Card */
+.patient-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.patient-header {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.patient-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.patient-avatar {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.patient-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.patient-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--vet-gold) 0%, var(--vet-gold-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--vet-white);
+}
+
+.patient-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--vet-white);
+    margin: 0 0 0.75rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.patient-badges {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.patient-body {
+    padding: 1.5rem;
+}
+
+.patient-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.info-item i {
+    width: 32px;
+    height: 32px;
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vet-primary);
+    flex-shrink: 0;
+}
+
+.info-item .info-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vet-gray-500);
+}
+
+.info-item .info-value {
+    display: block;
+    font-weight: 600;
+    color: var(--vet-gray-800);
+    font-size: 0.9rem;
+}
+
+.divider {
+    height: 1px;
+    background: var(--vet-gray-200);
+    margin: 1.25rem 0;
+}
+
+.tutor-section h5 {
+    font-size: 0.8rem;
+    color: var(--vet-gray-500);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.tutor-name {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+    margin: 0 0 0.25rem 0;
+}
+
+.tutor-phone {
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+/* Alerts Section */
+.alerts-section {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.alert-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border-radius: var(--radius-md);
+}
+
+.alert-item.alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #EF4444;
+}
+
+.alert-item.alert-danger i {
+    color: #EF4444;
+}
+
+.alert-item.alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #F59E0B;
+}
+
+.alert-item.alert-warning i {
+    color: #F59E0B;
+}
+
+.alert-item i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.alert-item .alert-title {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--vet-gray-700);
+}
+
+.alert-item .alert-text {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--vet-gray-600);
+}
+
+/* Appointment Details */
+.appointment-details {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-row.full-width {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--vet-gray-500);
+}
+
+.detail-value {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+}
+
+/* Vitals Grid */
+.vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.vital-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vital-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--vet-gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.vital-label i {
+    color: var(--vet-primary);
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--vet-gray-700);
+    margin-bottom: 0.75rem;
+}
+
+.section-label i {
+    color: var(--vet-primary);
+}
+
+.section-label .required {
+    color: #EF4444;
+}
+
+.form-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--vet-gray-500);
+    margin-top: 0.5rem;
+}
+
+.form-hint i {
+    color: var(--vet-gray-400);
+}
+
+/* Medicine Section */
+.medicine-row {
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--vet-gray-200);
+}
+
+.medicine-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.medicine-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--vet-gray-600);
+    margin-bottom: 0.375rem;
+}
+
+.medicine-instructions {
+    margin-top: 0.75rem;
+}
+
+.medicine-action {
+    display: flex;
+    align-items: center;
+}
+
+.btn-remove-medicine {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-sm);
+    color: #EF4444;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-remove-medicine:hover {
+    background: #EF4444;
+    color: var(--vet-white);
+}
+
+.btn-add-medicine {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    border: 2px dashed var(--vet-gray-300);
+    background: transparent;
+    border-radius: var(--radius-md);
+    color: var(--vet-gray-500);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-add-medicine:hover {
+    border-color: var(--vet-primary);
+    color: var(--vet-primary);
+    background: rgba(139, 69, 19, 0.05);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+}
+
+.form-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(218, 165, 32, 0.1);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+}
+
+.form-note i {
+    color: var(--vet-gold);
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .vitals-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 991px) {
+    .patient-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .medicine-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .medicine-grid > div:first-child {
+        grid-column: 1 / -1;
+    }
+    
+    .medicine-action {
         position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        pointer-events: none;
+        top: 0.5rem;
+        right: 0.5rem;
     }
-
-    .page-header-modern.vet-theme .page-header-content {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
+    
+    .medicine-row {
         position: relative;
-        z-index: 1;
     }
+}
 
-    .page-header-modern.vet-theme .page-header-icon {
-        width: 64px;
-        height: 64px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: white;
-        backdrop-filter: blur(5px);
+@media (max-width: 768px) {
+    .patient-info-grid {
+        grid-template-columns: 1fr;
     }
-
-    .page-header-modern.vet-theme .page-header-title-modern {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1.2;
-        color: white;
+    
+    .vitals-grid {
+        grid-template-columns: 1fr;
     }
-
-    .page-header-modern.vet-theme .page-header-subtitle-modern {
-        font-size: 1rem;
-        margin: 0.25rem 0 0 0;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .page-header-modern.vet-theme .page-header-actions {
-        display: flex;
-        align-items: center;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Date Widget */
-    .date-widget-modern {
-        display: flex;
+    
+    .form-actions {
         flex-direction: column;
-        align-items: flex-end;
-        gap: 0.25rem;
     }
-
-    .date-display {
-        font-size: 1.125rem;
-        color: white;
-        line-height: 1;
+    
+    .form-actions .vet-btn {
+        width: 100%;
     }
-
-    .day-display {
-        font-size: 0.875rem;
-        text-transform: capitalize;
-    }
-
-    /* Brown Theme Colors */
-    .text-brown {
-        color: var(--brown-primary) !important;
-    }
-
-    .bg-brown-subtle {
-        background-color: #EFEBE9 !important;
-        color: var(--brown-dark);
-    }
-
-    /* Modern Form Card */
-    .modern-form-card {
-        border-radius: 1rem;
-        border: none;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-
-    /* Form Controls */
-    .form-control-modern,
-    .form-select-modern {
-        border: 2px solid #e9ecef;
-        padding: 0.875rem 1.25rem;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        background-color: white;
-        font-size: 0.95rem;
-    }
-
-    .form-control-modern:focus,
-    .form-select-modern:focus {
-        border-color: var(--brown-primary);
-        box-shadow: 0 0 0 4px rgba(93, 64, 55, 0.1);
-        background-color: #fff;
-        outline: none;
-    }
-
-    .form-control-modern::placeholder {
-        color: #adb5bd;
-    }
-
-    /* Medicine Section */
-    .medicine-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%) !important;
-        border: 2px dashed #dee2e6 !important;
-    }
-
-    /* Buttons */
-    .btn-brown-modern {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
-        border: none;
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2);
-    }
-
-    .btn-brown-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(93, 64, 55, 0.35) !important;
-        color: white;
-        background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-primary) 100%);
-    }
-
-    .btn-light-modern {
-        background: white;
-        border: 2px solid #e9ecef;
-        color: #6c757d;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-light-modern:hover {
-        border-color: #dee2e6;
-        background: #f8f9fa;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Form Labels */
-    .form-label {
-        color: #495057;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-text {
-        display: flex;
-        align-items: center;
-    }
+}
 </style>
 
 <script>
-    // Update current date and day
-    function updateDate() {
-        const now = new Date();
-        const laPazTime = new Date(now.toLocaleString('en-US', {
-            timeZone: 'America/La_Paz'
-        }));
+let medicineIndex = 1;
 
-        const dateStr = laPazTime.toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
-
-        const dayStr = laPazTime.toLocaleDateString('es-ES', {
-            weekday: 'long'
-        });
-
-        document.getElementById('current-date-full').textContent = dateStr;
-        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+function addMedicine() {
+    const container = document.getElementById('medicamentosContainer');
+    const template = `
+        <div class="medicine-row" data-index="${medicineIndex}">
+            <div class="medicine-grid">
+                <div class="medicine-select">
+                    <label class="medicine-label">Medicamento</label>
+                    <select class="vet-form-control" name="medicamento_id[]">
+                        <option value="">Seleccionar...</option>
+                        {% for m in medicamentos %}
+                        <option value="{{ m.id }}">{{ m.nombre }} (Stock: {{ m.stock_actual if m.stock_actual else m.stock }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="medicine-qty">
+                    <label class="medicine-label">Cantidad</label>
+                    <input type="number" class="vet-form-control" name="cantidad[]" min="0" placeholder="0">
+                </div>
+                <div class="medicine-dose">
+                    <label class="medicine-label">Dosis</label>
+                    <input type="text" class="vet-form-control" name="dosis[]" placeholder="Ej: 1 tableta">
+                </div>
+                <div class="medicine-duration">
+                    <label class="medicine-label">Duración</label>
+                    <input type="text" class="vet-form-control" name="duracion[]" placeholder="Ej: 7 días">
+                </div>
+                <div class="medicine-action">
+                    <button type="button" class="btn-remove-medicine" onclick="removeMedicine(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="medicine-instructions">
+                <label class="medicine-label">Indicaciones</label>
+                <input type="text" class="vet-form-control" name="indicaciones[]" placeholder="Ej: Administrar con comida, cada 12 horas">
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', template);
+    medicineIndex++;
+    
+    // Show remove button on first row if there's more than one
+    const rows = container.querySelectorAll('.medicine-row');
+    if (rows.length > 1) {
+        rows[0].querySelector('.btn-remove-medicine').style.visibility = 'visible';
     }
+}
 
-    // Initialize on load
-    document.addEventListener('DOMContentLoaded', function () {
-        updateDate();
-    });
+function removeMedicine(btn) {
+    const row = btn.closest('.medicine-row');
+    const container = document.getElementById('medicamentosContainer');
+    
+    row.remove();
+    
+    // Hide remove button if only one row left
+    const rows = container.querySelectorAll('.medicine-row');
+    if (rows.length === 1) {
+        rows[0].querySelector('.btn-remove-medicine').style.visibility = 'hidden';
+    }
+}
+
+// Form validation
+document.getElementById('consultaForm').addEventListener('submit', function(e) {
+    const diagnostico = document.querySelector('[name="diagnostico"]').value.trim();
+    const tratamiento = document.querySelector('[name="tratamiento"]').value.trim();
+    
+    if (!diagnostico || !tratamiento) {
+        e.preventDefault();
+        toastr.error('El diagnóstico y tratamiento son obligatorios');
+        return false;
+    }
+});
 </script>
 {% endblock %}

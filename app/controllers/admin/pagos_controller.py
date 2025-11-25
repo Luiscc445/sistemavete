@@ -134,10 +134,17 @@ def dashboard():
         }
         df_metodos['Metodo'] = df_metodos['Metodo'].map(lambda x: metodos_labels.get(x, x))
         
-        fig_metodos = px.pie(df_metodos, values='Total', names='Metodo', hole=0.4,
-                             color_discrete_sequence=px.colors.qualitative.Pastel)
-        fig_metodos.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=350,
-                                  legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
+        fig_metodos = px.pie(df_metodos, values='Total', names='Metodo', hole=0.45,
+                             color_discrete_sequence=['#26A69A', '#FFA726', '#42A5F5', '#AB47BC', '#EF5350', '#66BB6A'])
+        fig_metodos.update_layout(
+            margin=dict(t=20, b=20, l=20, r=20), 
+            height=320,
+            font=dict(family="Inter, sans-serif", size=12),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5, font=dict(size=11)),
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        fig_metodos.update_traces(textposition='inside', textinfo='percent', textfont_size=12,
+                                  marker=dict(line=dict(color='#ffffff', width=2)))
         graph_metodos = pio.to_html(fig_metodos, full_html=False, config={'displayModeBar': False})
     else:
         graph_metodos = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
@@ -157,14 +164,35 @@ def dashboard():
     # Generar gráfico de Ingresos por Día con Plotly
     if ingresos_por_dia:
         df_dia = pd.DataFrame(ingresos_por_dia, columns=['Fecha', 'Total'])
-        fig_dia = px.line(df_dia, x='Fecha', y='Total', markers=True,
-                          line_shape='spline', render_mode='svg')
-        fig_dia.update_traces(line_color='#198754', line_width=3)
-        fig_dia.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
-                              xaxis_title=None, yaxis_title=None,
-                              plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-        fig_dia.update_xaxes(showgrid=False)
-        fig_dia.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+        fig_dia = px.area(df_dia, x='Fecha', y='Total', markers=True,
+                          line_shape='spline')
+        fig_dia.update_traces(
+            line_color='#26A69A', 
+            line_width=3,
+            fillcolor='rgba(38, 166, 154, 0.15)',
+            marker=dict(size=8, color='#26A69A', line=dict(width=2, color='#ffffff'))
+        )
+        fig_dia.update_layout(
+            margin=dict(t=20, b=40, l=50, r=20), 
+            height=320,
+            font=dict(family="Inter, sans-serif", size=11),
+            xaxis_title=None, 
+            yaxis_title=None,
+            plot_bgcolor='rgba(0,0,0,0)', 
+            paper_bgcolor='rgba(0,0,0,0)',
+            hovermode='x unified'
+        )
+        fig_dia.update_xaxes(
+            showgrid=False, 
+            tickformat='%d %b\n%Y',
+            tickfont=dict(size=10, color='#6c757d')
+        )
+        fig_dia.update_yaxes(
+            showgrid=True, 
+            gridcolor='rgba(0,0,0,0.06)',
+            tickfont=dict(size=10, color='#6c757d'),
+            tickprefix='Bs. '
+        )
         graph_dia = pio.to_html(fig_dia, full_html=False, config={'displayModeBar': False})
     else:
         graph_dia = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"

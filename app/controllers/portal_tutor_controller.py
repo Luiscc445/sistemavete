@@ -2,7 +2,7 @@
 Controlador de Tutor
 Gestiona las acciones de los tutores de mascotas
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, current_app
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
@@ -12,6 +12,8 @@ from app.models.cita import Cita
 from app.models.pago import Pago
 from datetime import datetime
 import base64
+import os
+from io import BytesIO
 
 tutor_bp = Blueprint('tutor', __name__)
 
@@ -335,6 +337,13 @@ def pagar_cita(cita_id):
         # El monto viene del formulario pero lo validamos con el costo de la cita
         monto_form = request.form.get('monto')
         
+        # Datos de facturación
+        requiere_factura = request.form.get('requiere_factura') == '1'
+        nit_cliente = request.form.get('nit_cliente', '').strip()
+        razon_social = request.form.get('razon_social', '').strip()
+        email_factura = request.form.get('email_factura', '').strip()
+        tipo_documento = request.form.get('tipo_documento', 'nit')
+        
         # Usamos el costo de la cita como autoridad, o el del form si es válido
         monto_final = cita.costo if cita.costo > 0 else float(monto_form)
 
@@ -342,6 +351,26 @@ def pagar_cita(cita_id):
         if not metodo_pago:
             flash('Por favor seleccione un método de pago.', 'danger')
             return render_template('tutor/pagos/pagar_cita.html', cita=cita)
+
+        # Generar número de factura si requiere factura
+        numero_factura = None
+        if requiere_factura:
+            # Formato: FAC-AAAAMMDD-XXXX
+            fecha_str = datetime.now().strftime('%Y%m%d')
+            ultimo_pago_factura = Pago.query.filter(
+                Pago.numero_factura.like(f'FAC-{fecha_str}-%')
+            ).order_by(Pago.id.desc()).first()
+            
+            if ultimo_pago_factura and ultimo_pago_factura.numero_factura:
+                try:
+                    ultimo_num = int(ultimo_pago_factura.numero_factura.split('-')[-1])
+                    nuevo_num = ultimo_num + 1
+                except:
+                    nuevo_num = 1
+            else:
+                nuevo_num = 1
+            
+            numero_factura = f'FAC-{fecha_str}-{nuevo_num:04d}'
 
         # Crear el pago
         nuevo_pago = Pago(
@@ -354,7 +383,12 @@ def pagar_cita(cita_id):
             veterinario_id=cita.veterinario_id,
             porcentaje_empresa=57.14,  # Porcentaje para la empresa
             porcentaje_veterinario=42.86,  # Porcentaje para el veterinario
-            fecha_pago=datetime.now()  # Fecha del pago
+            fecha_pago=datetime.now(),  # Fecha del pago
+            # Datos de facturación
+            requiere_factura=requiere_factura,
+            numero_factura=numero_factura,
+            nit_cliente=nit_cliente if requiere_factura else None,
+            razon_social_cliente=razon_social if requiere_factura else None
         )
 
         # Generar código de pago único
@@ -399,6 +433,327 @@ def pago_exitoso(pago_id):
         return redirect(url_for('tutor.citas'))
 
     return render_template('tutor/pagos/pago_exitoso.html', pago=pago)
+
+
+@tutor_bp.route('/descargar-factura/<int:pago_id>')
+@tutor_required
+def descargar_factura(pago_id):
+    """Descargar factura en PDF - Formato Bolivia"""
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, cm
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib import colors
+    
+    pago = Pago.query.get_or_404(pago_id)
+
+    # Verificar que el pago pertenece al usuario
+    if pago.usuario_id != current_user.id:
+        flash('No tienes permiso para descargar esta factura.', 'danger')
+        return redirect(url_for('tutor.citas'))
+
+    # Crear buffer para el PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=letter,
+        rightMargin=1*cm,
+        leftMargin=1*cm,
+        topMargin=1*cm,
+        bottomMargin=1*cm
+    )
+    
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Estilos personalizados
+    styles.add(ParagraphStyle(
+        name='FacturaTitle',
+        alignment=TA_CENTER,
+        fontSize=18,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=6
+    ))
+    
+    styles.add(ParagraphStyle(
+        name='FacturaSubtitle',
+        alignment=TA_CENTER,
+        fontSize=10,
+        fontName='Helvetica',
+        textColor=colors.HexColor('#64748b'),
+        spaceAfter=20
+    ))
+    
+    styles.add(ParagraphStyle(
+        name='SectionTitle',
+        alignment=TA_LEFT,
+        fontSize=11,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor('#1e293b'),
+        spaceBefore=15,
+        spaceAfter=8
+    ))
+    
+    styles.add(ParagraphStyle(
+        name='NormalText',
+        alignment=TA_LEFT,
+        fontSize=10,
+        fontName='Helvetica',
+        textColor=colors.HexColor('#374151')
+    ))
+    
+    styles.add(ParagraphStyle(
+        name='SmallText',
+        alignment=TA_CENTER,
+        fontSize=8,
+        fontName='Helvetica',
+        textColor=colors.HexColor('#6b7280')
+    ))
+    
+    # Logo (si existe)
+    logo_path = os.path.join(current_app.root_path, 'static', 'img', 'logo.png')
+    if os.path.exists(logo_path):
+        try:
+            img = Image(logo_path, width=1.2*inch, height=1.2*inch)
+            story.append(img)
+        except:
+            pass
+    
+    # Encabezado de la empresa
+    story.append(Paragraph("VETERINARIA RAMBOPET", styles['FacturaTitle']))
+    story.append(Paragraph("NIT: 1234567890 | Casa Matriz", styles['FacturaSubtitle']))
+    
+    # Número de Factura y datos fiscales
+    factura_info = f"""
+    <b>FACTURA</b><br/>
+    N° {pago.numero_factura or pago.codigo_pago}<br/>
+    <font size="8" color="#64748b">AUTORIZACIÓN: 79040011157827</font>
+    """
+    story.append(Paragraph(factura_info, ParagraphStyle(
+        name='FacturaNum',
+        alignment=TA_CENTER,
+        fontSize=14,
+        fontName='Helvetica-Bold',
+        textColor=colors.HexColor('#dc2626'),
+        spaceBefore=10,
+        spaceAfter=20
+    )))
+    
+    # Línea separadora
+    story.append(Spacer(1, 0.1*inch))
+    
+    # Datos del cliente
+    story.append(Paragraph("DATOS DEL CLIENTE", styles['SectionTitle']))
+    
+    cliente_data = [
+        ['NIT/CI:', pago.nit_cliente or 'S/N'],
+        ['Razón Social:', pago.razon_social_cliente or current_user.nombre_completo],
+        ['Fecha:', pago.fecha_pago.strftime('%d/%m/%Y') if pago.fecha_pago else datetime.now().strftime('%d/%m/%Y')],
+        ['Hora:', pago.fecha_pago.strftime('%H:%M:%S') if pago.fecha_pago else datetime.now().strftime('%H:%M:%S')],
+    ]
+    
+    cliente_table = Table(cliente_data, colWidths=[2*inch, 4.5*inch])
+    cliente_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#374151')),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#1e293b')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(cliente_table)
+    
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Detalle de la factura
+    story.append(Paragraph("DETALLE", styles['SectionTitle']))
+    
+    # Calcular IVA (13% incluido en Bolivia)
+    subtotal = pago.monto / 1.13
+    iva = pago.monto - subtotal
+    
+    detalle_data = [
+        ['CANTIDAD', 'DESCRIPCIÓN', 'P. UNITARIO', 'SUBTOTAL'],
+        ['1', f'Consulta Veterinaria\n{pago.cita.tipo if pago.cita else "Servicio"}', f'Bs. {subtotal:.2f}', f'Bs. {subtotal:.2f}'],
+    ]
+    
+    detalle_table = Table(detalle_data, colWidths=[1*inch, 3.5*inch, 1.25*inch, 1.25*inch])
+    detalle_table.setStyle(TableStyle([
+        # Header
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f1f5f9')),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#374151')),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        # Body
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#1e293b')),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        # Borders
+        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor('#e2e8f0')),
+        ('LINEBELOW', (0, -1), (-1, -1), 1, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(detalle_table)
+    
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Totales
+    totales_data = [
+        ['SUBTOTAL:', f'Bs. {subtotal:.2f}'],
+        ['IVA (13%):', f'Bs. {iva:.2f}'],
+        ['TOTAL:', f'Bs. {pago.monto:.2f}'],
+    ]
+    
+    totales_table = Table(totales_data, colWidths=[5*inch, 1.5*inch])
+    totales_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, 1), 'Helvetica'),
+        ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('TEXTCOLOR', (0, 0), (-1, 1), colors.HexColor('#64748b')),
+        ('TEXTCOLOR', (0, 2), (-1, 2), colors.HexColor('#059669')),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LINEABOVE', (0, 2), (-1, 2), 2, colors.HexColor('#e2e8f0')),
+    ]))
+    story.append(totales_table)
+    
+    # Monto en literal
+    monto_literal = numero_a_letras(pago.monto)
+    story.append(Spacer(1, 0.2*inch))
+    story.append(Paragraph(f"<b>Son:</b> {monto_literal} Bolivianos", styles['NormalText']))
+    
+    story.append(Spacer(1, 0.4*inch))
+    
+    # Información adicional
+    story.append(Paragraph("INFORMACIÓN ADICIONAL", styles['SectionTitle']))
+    
+    info_data = [
+        ['Código de Pago:', pago.codigo_pago],
+        ['Método de Pago:', pago.metodo_pago_label],
+        ['Estado:', 'PAGADO'],
+    ]
+    
+    if pago.cita:
+        info_data.extend([
+            ['Mascota:', pago.cita.mascota.nombre if pago.cita.mascota else '-'],
+            ['Veterinario:', f'Dr(a). {pago.cita.veterinario.nombre_completo}' if pago.cita.veterinario else '-'],
+            ['Fecha de Cita:', pago.cita.fecha.strftime('%d/%m/%Y %H:%M') if pago.cita.fecha else '-'],
+        ])
+    
+    info_table = Table(info_data, colWidths=[2*inch, 4.5*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#64748b')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(info_table)
+    
+    story.append(Spacer(1, 0.5*inch))
+    
+    # Pie de página legal
+    legal_text = """
+    "ESTA FACTURA CONTRIBUYE AL DESARROLLO DEL PAÍS, EL USO ILÍCITO SERÁ SANCIONADO PENALMENTE DE ACUERDO A LEY"
+    """
+    story.append(Paragraph(legal_text, styles['SmallText']))
+    
+    story.append(Spacer(1, 0.1*inch))
+    story.append(Paragraph(
+        f"Documento generado el {datetime.now().strftime('%d/%m/%Y a las %H:%M')} | Veterinaria RamboPet",
+        styles['SmallText']
+    ))
+    
+    # Construir PDF
+    doc.build(story)
+    buffer.seek(0)
+    
+    # Nombre del archivo
+    filename = f"Factura_{pago.numero_factura or pago.codigo_pago}.pdf"
+    
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
+
+
+def numero_a_letras(numero):
+    """Convierte un número a su representación en letras (español)"""
+    unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve']
+    decenas = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
+    especiales = {
+        11: 'once', 12: 'doce', 13: 'trece', 14: 'catorce', 15: 'quince',
+        16: 'dieciséis', 17: 'diecisiete', 18: 'dieciocho', 19: 'diecinueve',
+        21: 'veintiuno', 22: 'veintidós', 23: 'veintitrés', 24: 'veinticuatro',
+        25: 'veinticinco', 26: 'veintiséis', 27: 'veintisiete', 28: 'veintiocho', 29: 'veintinueve'
+    }
+    centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
+                'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+    
+    def convertir_grupo(n):
+        if n == 0:
+            return ''
+        if n == 100:
+            return 'cien'
+        if n in especiales:
+            return especiales[n]
+        
+        resultado = ''
+        if n >= 100:
+            resultado += centenas[n // 100] + ' '
+            n = n % 100
+        
+        if n in especiales:
+            resultado += especiales[n]
+        elif n >= 10:
+            resultado += decenas[n // 10]
+            if n % 10 != 0:
+                resultado += ' y ' + unidades[n % 10]
+        else:
+            resultado += unidades[n]
+        
+        return resultado.strip()
+    
+    entero = int(numero)
+    decimal = int(round((numero - entero) * 100))
+    
+    if entero == 0:
+        resultado = 'cero'
+    elif entero == 1:
+        resultado = 'un'
+    elif entero < 1000:
+        resultado = convertir_grupo(entero)
+    elif entero < 1000000:
+        miles = entero // 1000
+        resto = entero % 1000
+        if miles == 1:
+            resultado = 'mil'
+        else:
+            resultado = convertir_grupo(miles) + ' mil'
+        if resto > 0:
+            resultado += ' ' + convertir_grupo(resto)
+    else:
+        resultado = str(entero)
+    
+    # Agregar centavos
+    if decimal > 0:
+        resultado += f' {decimal:02d}/100'
+    else:
+        resultado += ' 00/100'
+    
+    return resultado.upper()
 
 
 @tutor_bp.route('/perfil', methods=['GET', 'POST'])

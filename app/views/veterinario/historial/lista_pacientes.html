@@ -1,0 +1,647 @@
+{% extends "layouts/veterinario_base.html" %}
+{% block title %}Historial Médico - RamboPet{% endblock %}
+
+{% block content %}
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-file-medical-fill"></i>
+        </div>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Historial Médico</h1>
+            <p class="vet-page-header-subtitle">Accede al registro médico completo de tus pacientes</p>
+        </div>
+    </div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-people-fill"></i>
+            <span>{{ total_pacientes }} pacientes registrados</span>
+        </div>
+        <div class="vet-quick-actions-header">
+            <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-quick-action-header-btn" title="Ver Citas">
+                <i class="bi bi-calendar-check"></i>
+            </a>
+            <a href="{{ url_for('veterinario.dashboard') }}" class="vet-quick-action-header-btn" title="Dashboard">
+                <i class="bi bi-grid-1x2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="vet-card vet-animate-fade-in vet-stagger-1 mb-4">
+    <div class="vet-card-body">
+        <form method="GET" action="{{ url_for('veterinario.historial_medico') }}" class="vet-search-form">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-5 col-md-12">
+                    <div class="vet-form-group vet-mb-0">
+                        <label class="vet-form-label">
+                            <i class="bi bi-search me-1"></i> Buscar Paciente
+                        </label>
+                        <div class="vet-search-input-wrapper">
+                            <input type="text" 
+                                   class="vet-form-control vet-search-input" 
+                                   name="buscar" 
+                                   value="{{ buscar }}"
+                                   placeholder="Nombre, especie o raza...">
+                            <i class="bi bi-search vet-search-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="vet-form-group vet-mb-0">
+                        <label class="vet-form-label">
+                            <i class="bi bi-filter me-1"></i> Especie
+                        </label>
+                        <select class="vet-form-control" name="especie">
+                            <option value="">Todas las especies</option>
+                            {% for especie in especies %}
+                            <option value="{{ especie }}" {% if especie_filtro == especie %}selected{% endif %}>
+                                {{ especie }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <div class="vet-form-group vet-mb-0">
+                        <label class="vet-form-label">
+                            <i class="bi bi-sort-down me-1"></i> Ordenar
+                        </label>
+                        <select class="vet-form-control" name="orden">
+                            <option value="reciente" {% if orden == 'reciente' %}selected{% endif %}>Más reciente</option>
+                            <option value="nombre" {% if orden == 'nombre' %}selected{% endif %}>Por nombre</option>
+                            <option value="especie" {% if orden == 'especie' %}selected{% endif %}>Por especie</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-12">
+                    <div class="vet-d-flex vet-gap-2">
+                        <button type="submit" class="vet-btn vet-btn-primary flex-grow-1">
+                            <i class="bi bi-search"></i>
+                            <span class="d-none d-md-inline">Buscar</span>
+                        </button>
+                        <a href="{{ url_for('veterinario.historial_medico') }}" class="vet-btn vet-btn-secondary">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Section -->
+{% if mascotas_info %}
+<div class="vet-patients-grid">
+    {% for info in mascotas_info %}
+    <div class="vet-patient-card vet-animate-fade-in vet-stagger-{{ loop.index % 4 + 1 }}">
+        <div class="vet-patient-header">
+            <div class="vet-patient-avatar">
+                {% if info.mascota.foto_principal %}
+                <img src="{{ url_for('static', filename='uploads/pets/' + info.mascota.foto_principal) }}" alt="{{ info.mascota.nombre }}">
+                {% else %}
+                <div class="vet-patient-avatar-placeholder">
+                    {% if info.mascota.especie|lower == 'perro' %}
+                    <i class="bi bi-emoji-smile-fill"></i>
+                    {% elif info.mascota.especie|lower == 'gato' %}
+                    <i class="bi bi-emoji-heart-eyes-fill"></i>
+                    {% else %}
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="vet-patient-info">
+                <h4 class="vet-patient-name">{{ info.mascota.nombre }}</h4>
+                <div class="vet-patient-meta">
+                    <span class="vet-badge vet-badge-primary">
+                        <i class="bi bi-tag-fill"></i> {{ info.mascota.especie }}
+                    </span>
+                    {% if info.mascota.raza %}
+                    <span class="vet-badge vet-badge-gold">
+                        {{ info.mascota.raza }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="vet-patient-actions-mobile">
+                <a href="{{ url_for('veterinario.ver_historial_mascota', mascota_id=info.mascota.id) }}" 
+                   class="vet-btn vet-btn-sm vet-btn-primary">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="vet-patient-body">
+            <div class="vet-patient-details">
+                <div class="vet-detail-item">
+                    <i class="bi bi-calendar3"></i>
+                    <div>
+                        <span class="vet-detail-label">Edad</span>
+                        <span class="vet-detail-value">{{ info.mascota.edad_detallada if info.mascota.fecha_nacimiento else 'No registrada' }}</span>
+                    </div>
+                </div>
+                <div class="vet-detail-item">
+                    <i class="bi bi-person-fill"></i>
+                    <div>
+                        <span class="vet-detail-label">Tutor</span>
+                        <span class="vet-detail-value">{{ info.mascota.tutor.nombre_completo if info.mascota.tutor else 'N/A' }}</span>
+                    </div>
+                </div>
+                {% if info.mascota.peso %}
+                <div class="vet-detail-item">
+                    <i class="bi bi-speedometer2"></i>
+                    <div>
+                        <span class="vet-detail-label">Peso</span>
+                        <span class="vet-detail-value">{{ info.mascota.peso }} kg</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="vet-patient-stats">
+                <div class="vet-mini-stat">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    <span class="vet-mini-stat-value">{{ info.citas_count }}</span>
+                    <span class="vet-mini-stat-label">Consultas</span>
+                </div>
+                <div class="vet-mini-stat">
+                    <i class="bi bi-file-medical-fill"></i>
+                    <span class="vet-mini-stat-value">{{ info.historiales_count }}</span>
+                    <span class="vet-mini-stat-label">Registros</span>
+                </div>
+            </div>
+            
+            {% if info.ultima_cita %}
+            <div class="vet-patient-last-visit">
+                <i class="bi bi-clock-history"></i>
+                <span>Última visita: {{ info.ultima_cita.fecha.strftime('%d/%m/%Y') }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="vet-patient-footer">
+            <a href="{{ url_for('veterinario.ver_historial_mascota', mascota_id=info.mascota.id) }}" 
+               class="vet-btn vet-btn-primary vet-btn-block">
+                <i class="bi bi-file-text-fill me-2"></i>
+                Ver Historial Completo
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="vet-card vet-animate-fade-in">
+    <div class="vet-empty-state">
+        <div class="vet-empty-icon">
+            <i class="bi bi-file-medical"></i>
+        </div>
+        <h4>No se encontraron pacientes</h4>
+        <p>
+            {% if buscar or especie_filtro %}
+            No hay pacientes que coincidan con tu búsqueda. Prueba con otros filtros.
+            {% else %}
+            Aún no has atendido pacientes. Los pacientes aparecerán aquí una vez que completes consultas.
+            {% endif %}
+        </p>
+        {% if buscar or especie_filtro %}
+        <a href="{{ url_for('veterinario.historial_medico') }}" class="vet-btn vet-btn-secondary vet-mt-2">
+            <i class="bi bi-arrow-left me-2"></i>
+            Limpiar Filtros
+        </a>
+        {% else %}
+        <a href="{{ url_for('veterinario.citas_pendientes') }}" class="vet-btn vet-btn-primary vet-mt-2">
+            <i class="bi bi-calendar-plus me-2"></i>
+            Ver Citas Pendientes
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* ============================================
+   Page-Specific Styles - Lista Pacientes
+   ============================================ */
+
+/* Hero Card */
+.vet-hero-card {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    color: var(--vet-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.vet-hero-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+
+.vet-hero-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-hero-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(255,255,255,0.15);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.vet-hero-text h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    color: var(--vet-white);
+}
+
+.vet-hero-text p {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 0.95rem;
+}
+
+.vet-hero-stats {
+    position: relative;
+    z-index: 1;
+}
+
+.vet-hero-stat {
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    padding: 1rem 2rem;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+}
+
+.vet-hero-stat .stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--vet-gold-light);
+}
+
+.vet-hero-stat .stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.85;
+}
+
+/* Quick Actions */
+.vet-quick-actions {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    height: 100%;
+}
+
+.vet-quick-actions h6 {
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    margin-bottom: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vet-quick-actions h6 i {
+    color: var(--vet-gold);
+}
+
+.vet-quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-md);
+    color: var(--vet-gray-700);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    margin-bottom: 0.5rem;
+}
+
+.vet-quick-action-btn:last-child {
+    margin-bottom: 0;
+}
+
+.vet-quick-action-btn:hover {
+    background: var(--vet-primary);
+    color: var(--vet-white);
+    transform: translateX(4px);
+}
+
+.vet-quick-action-btn i {
+    font-size: 1.1rem;
+}
+
+/* Search Form */
+.vet-search-form {
+    width: 100%;
+}
+
+.vet-search-input-wrapper {
+    position: relative;
+}
+
+.vet-search-input {
+    padding-left: 2.75rem !important;
+}
+
+.vet-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--vet-gray-400);
+    pointer-events: none;
+}
+
+/* Patients Grid */
+.vet-patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Patient Card */
+.vet-patient-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    border: 1px solid var(--vet-gray-100);
+}
+
+.vet-patient-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.vet-patient-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, var(--vet-cream) 0%, var(--vet-white) 100%);
+    border-bottom: 1px solid var(--vet-gray-100);
+}
+
+.vet-patient-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.vet-patient-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vet-patient-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: var(--vet-white);
+}
+
+.vet-patient-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vet-patient-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--vet-dark);
+}
+
+.vet-patient-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vet-patient-actions-mobile {
+    display: none;
+}
+
+.vet-patient-body {
+    padding: 1.25rem;
+}
+
+.vet-patient-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.vet-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.vet-detail-item i {
+    color: var(--vet-primary);
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.vet-detail-item > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.vet-detail-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vet-gray-500);
+}
+
+.vet-detail-value {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+}
+
+.vet-patient-stats {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+}
+
+.vet-mini-stat {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.vet-mini-stat i {
+    color: var(--vet-primary);
+    font-size: 1.25rem;
+}
+
+.vet-mini-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--vet-dark);
+    line-height: 1;
+}
+
+.vet-mini-stat-label {
+    font-size: 0.7rem;
+    color: var(--vet-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vet-patient-last-visit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--vet-gray-600);
+    padding: 0.75rem;
+    background: rgba(218, 165, 32, 0.1);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--vet-gold);
+}
+
+.vet-patient-last-visit i {
+    color: var(--vet-gold);
+}
+
+.vet-patient-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--vet-gray-100);
+    background: var(--vet-gray-50);
+}
+
+.vet-btn-block {
+    width: 100%;
+}
+
+/* Empty State Enhancement */
+.vet-empty-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--vet-cream) 0%, var(--vet-sand) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.vet-empty-icon i {
+    font-size: 3rem;
+    color: var(--vet-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .vet-hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .vet-hero-content {
+        flex-direction: column;
+    }
+    
+    .vet-hero-text h2 {
+        font-size: 1.5rem;
+    }
+    
+    .vet-patients-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vet-patient-actions-mobile {
+        display: block;
+    }
+    
+    .vet-patient-footer {
+        display: none;
+    }
+    
+    .vet-quick-actions {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .vet-hero-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+    
+    .vet-hero-stat .stat-number {
+        font-size: 2rem;
+    }
+    
+    .vet-patient-header {
+        flex-wrap: wrap;
+    }
+    
+    .vet-patient-avatar {
+        width: 56px;
+        height: 56px;
+    }
+}
+</style>
+{% endblock %}
+

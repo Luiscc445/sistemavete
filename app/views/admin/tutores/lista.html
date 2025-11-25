@@ -1,26 +1,28 @@
 {% extends "layouts/admin_base.html" %}
-{% block title %}Gestión de Tutores{% endblock %}
+{% block title %}Gestion de Tutores{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-people-fill"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Gestión de Tutores</h1>
-            <p class="page-header-subtitle-modern">Administra la información de clientes y sus mascotas</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Gestion de Tutores</h1>
+            <p class="admin-page-header-subtitle">Administra la informacion de clientes y sus mascotas</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <a href="{{ url_for('admin_tutores.nuevo') }}" class="btn btn-primary-modern">
-            <i class="bi bi-plus-circle me-1"></i> Nuevo Tutor
+    <div class="admin-page-header-right">
+        <div class="admin-page-header-badge">
+            <i class="bi bi-person-badge"></i>
+            <span>{{ tutores.total if tutores else 0 }} registrados</span>
+        </div>
+        <a href="{{ url_for('admin_tutores.nuevo') }}" class="admin-btn admin-btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Tutor
         </a>
     </div>
 </div>
-{% endblock %}
-
-{% block content %}
 <div class="card modern-activity-card mb-4">
     <div class="card-header">
         <h6 class="mb-0 text-secondary"><i class="bi bi-funnel me-1"></i> Búsqueda</h6>

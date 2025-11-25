@@ -1,6 +1,6 @@
 """
-Módulo de Administración - Inicializador
-Registra todos los blueprints del módulo admin
+Modulo de Administracion - Inicializador
+Registra todos los blueprints del modulo admin
 """
 from .dashboard_controller import dashboard_bp
 from .tutores_controller import tutores_bp
@@ -14,7 +14,7 @@ from .perfil_controller import perfil_bp
 from .servicios_controller import servicios_bp
 
 def register_admin_blueprints(app):
-    """Registra todos los blueprints del módulo admin"""
+    """Registra todos los blueprints del modulo admin"""
     # Registrar blueprints con el prefijo /admin
     app.register_blueprint(dashboard_bp, url_prefix='/admin')
     app.register_blueprint(tutores_bp, url_prefix='/admin')
@@ -22,11 +22,11 @@ def register_admin_blueprints(app):
     app.register_blueprint(mascotas_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/admin')
     
-    # Nuevos módulos administrativos movidos
+    # Nuevos modulos administrativos movidos
     app.register_blueprint(inventario_bp, url_prefix='/admin/inventario')
     app.register_blueprint(pagos_bp, url_prefix='/admin/pagos')
     app.register_blueprint(reportes_bp, url_prefix='/admin/reportes')
     app.register_blueprint(perfil_bp, url_prefix='/admin')
     app.register_blueprint(servicios_bp, url_prefix='/admin')
     
-    print("✓ Módulo admin registrado correctamente")
+    print("[OK] Modulo admin registrado correctamente")

@@ -1,234 +1,358 @@
 ﻿{% extends "layouts/veterinario_base.html" %}
-{% block title %}Mis Citas{% endblock %}
+{% block title %}Mis Citas - RamboPet{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern vet-theme">
-    <div class="page-header-content">
-        <div class="page-header-icon">
-            <i class="bi bi-calendar-check-fill"></i>
+{% block content %}
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-calendar-heart"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Mis Citas</h1>
-            <p class="page-header-subtitle-modern">Historial y gestión de tus citas médicas</p>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Mis Citas</h1>
+            <p class="vet-page-header-subtitle">Gestión de consultas médicas y atención a pacientes</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <div class="date-widget-modern">
-            <div class="date-display fw-semibold" id="current-date-full">--</div>
-            <div class="day-display text-white-50" id="current-day">--</div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-calendar-check"></i>
+            <span>{{ citas|length }} citas en total</span>
+        </div>
+        <div class="vet-page-header-date">
+            <div class="vet-page-header-date-main">
+                <i class="bi bi-clock"></i>
+                <span id="headerTime">--:--</span>
+            </div>
+            <div class="vet-page-header-date-sub" id="headerDate">Cargando...</div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
-<div class="row g-3">
-    <!-- Left Sidebar - Filters -->
-    <div class="col-lg-3">
-        <div class="card filters-card">
-            <div class="card-header bg-brown-subtle border-bottom-0 py-3">
-                <h6 class="mb-0 fw-bold text-brown">
-                    <i class="bi bi-funnel me-2"></i>Filtros
-                </h6>
-            </div>
-            <div class="card-body p-3">
-                <form method="GET" action="{{ url_for('veterinario.mis_citas') }}" id="filterForm">
-                    <!-- Status Filter -->
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-muted mb-2">
-                            <i class="bi bi-tag me-1"></i>Estado
-                        </label>
-                        <select class="form-select form-select-modern" name="estado" id="estadoFilter">
-                            <option value="todos" {% if estado_filtro=='todos' %}selected{% endif %}>Todos los estados
-                            </option>
-                            <option value="pendiente" {% if estado_filtro=='pendiente' %}selected{% endif %}>Pendiente
-                            </option>
-                            <option value="confirmada" {% if estado_filtro=='confirmada' %}selected{% endif %}>
-                                Confirmada</option>
-                            <option value="en_progreso" {% if estado_filtro=='en_progreso' %}selected{% endif %}>En
-                                Progreso</option>
-                            <option value="completada" {% if estado_filtro=='completada' %}selected{% endif %}>
-                                Completada</option>
-                            <option value="cancelada" {% if estado_filtro=='cancelada' %}selected{% endif %}>Cancelada
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Date Range -->
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-muted mb-2">
-                            <i class="bi bi-calendar-range me-1"></i>Desde
-                        </label>
-                        <input type="date" class="form-control form-control-modern" name="fecha_desde"
-                            value="{{ fecha_desde }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-muted mb-2">
-                            <i class="bi bi-calendar-range me-1"></i>Hasta
-                        </label>
-                        <input type="date" class="form-control form-control-modern" name="fecha_hasta"
-                            value="{{ fecha_hasta }}">
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-brown-modern btn-sm">
-                            <i class="bi bi-check-circle me-1"></i>Aplicar Filtros
-                        </button>
-                        <a href="{{ url_for('veterinario.mis_citas') }}" class="btn btn-light-modern btn-sm">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
-                        </a>
-                    </div>
-                </form>
-
-                <!-- Statistics -->
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="small fw-semibold text-muted mb-3">Resumen</h6>
-                    <div class="stat-mini mb-2">
-                        <span class="stat-mini-label">Total</span>
-                        <span class="stat-mini-value">{{ citas|length }}</span>
-                    </div>
-                </div>
-            </div>
+<script>
+(function(){
+    const now = new Date();
+    document.getElementById('headerTime').textContent = now.toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('headerDate').textContent = now.toLocaleDateString('es-BO', {weekday:'long', day:'numeric', month:'long'});
+})();
+</script>
+<!-- Stats Overview -->
+<div class="citas-stats-row vet-animate-fade-in">
+    {% set pendientes = citas|selectattr('estado', 'equalto', 'pendiente')|list|length %}
+    {% set confirmadas = citas|selectattr('estado', 'equalto', 'confirmada')|list|length %}
+    {% set completadas = citas|selectattr('estado', 'equalto', 'completada')|list|length + citas|selectattr('estado', 'equalto', 'atendida')|list|length %}
+    {% set en_progreso = citas|selectattr('estado', 'equalto', 'en_progreso')|list|length %}
+    
+    <div class="citas-stat-card stat-pending">
+        <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+        <div class="stat-info">
+            <span class="stat-number">{{ pendientes }}</span>
+            <span class="stat-label">Pendientes</span>
         </div>
     </div>
-
-    <!-- Center Content - Appointments List -->
-    <div class="col-lg-6">
-        <!-- Search Bar -->
-        <div class="search-bar mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar por mascota o tutor..."
-                    id="searchInput" value="{{ buscar }}">
-            </div>
+    <div class="citas-stat-card stat-confirmed">
+        <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="stat-info">
+            <span class="stat-number">{{ confirmadas }}</span>
+            <span class="stat-label">Confirmadas</span>
         </div>
+    </div>
+    <div class="citas-stat-card stat-progress">
+        <div class="stat-icon"><i class="bi bi-play-circle"></i></div>
+        <div class="stat-info">
+            <span class="stat-number">{{ en_progreso }}</span>
+            <span class="stat-label">En Progreso</span>
+        </div>
+    </div>
+    <div class="citas-stat-card stat-completed">
+        <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+        <div class="stat-info">
+            <span class="stat-number">{{ completadas }}</span>
+            <span class="stat-label">Completadas</span>
+        </div>
+    </div>
+</div>
 
-        <!-- Appointments List -->
-        <div class="card modern-activity-card">
-            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
-                <div>
-                    <i class="bi bi-list-check me-2 text-brown"></i>
-                    <span class="fw-semibold">Listado de Citas</span>
-                </div>
-                <span class="badge bg-brown-subtle text-brown">{{ citas|length }} citas</span>
-            </div>
-            <div class="card-body p-0">
-                {% if citas %}
-                <div class="appointments-list" id="appointmentsList">
-                    {% for c in citas %}
-                    <div class="appointment-card"
-                        data-search="{{ c.mascota.nombre|lower }} {{ c.tutor.nombre_completo|lower }}"
-                        data-status="{{ c.estado }}" data-date="{{ c.fecha.strftime('%Y-%m-%d') }}">
-                        <div class="d-flex align-items-center gap-3">
-                            <!-- Status Icon -->
-                            <div class="appointment-icon 
-                                {% if c.estado == 'completada' %}icon-success
-                                {% elif c.estado == 'cancelada' %}icon-danger
-                                {% elif c.estado == 'en_progreso' %}icon-brown
-                                {% elif c.estado == 'pendiente' %}icon-warning
-                                {% elif c.estado == 'confirmada' %}icon-info
-                                {% else %}icon-secondary{% endif %}">
-                                <i class="bi 
-                                    {% if c.estado == 'completada' %}bi-check-all
-                                    {% elif c.estado == 'cancelada' %}bi-x-circle
-                                    {% elif c.estado == 'en_progreso' %}bi-play-circle
-                                    {% elif c.estado == 'pendiente' %}bi-hourglass
-                                    {% elif c.estado == 'confirmada' %}bi-calendar-check
-                                    {% else %}bi-calendar{% endif %}"></i>
+<!-- Main Content -->
+<div class="row g-4">
+    <!-- Main Column - Appointments -->
+    <div class="col-xl-8 col-lg-7">
+        <!-- Search & Filter Bar -->
+        <div class="vet-card vet-mb-3 vet-animate-fade-in vet-stagger-1">
+            <div class="vet-card-body">
+                <form method="GET" action="{{ url_for('veterinario.mis_citas') }}" class="citas-filter-form">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-4 col-md-6">
+                            <div class="search-input-wrapper">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" class="vet-form-control search-input" 
+                                       name="buscar" value="{{ buscar }}"
+                                       placeholder="Buscar mascota o tutor...">
                             </div>
-
-                            <!-- Content -->
-                            <div class="appointment-content flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="appointment-pet-name mb-1">{{ c.mascota.nombre }}</h6>
-                                        <div class="appointment-tutor text-muted small mb-1">
-                                            <i class="bi bi-person me-1"></i>{{ c.tutor.nombre_completo }}
-                                        </div>
-                                        <span class="badge status-badge
-                                            {% if c.estado == 'completada' %}bg-success-subtle text-success
-                                            {% elif c.estado == 'cancelada' %}bg-danger-subtle text-danger
-                                            {% elif c.estado == 'en_progreso' %}bg-brown-subtle text-brown
-                                            {% elif c.estado == 'pendiente' %}bg-warning-subtle text-warning
-                                            {% elif c.estado == 'confirmada' %}bg-info-subtle text-info
-                                            {% else %}bg-secondary-subtle text-secondary{% endif %}">
-                                            {{ c.estado|replace('_', ' ')|title }}
-                                        </span>
-                                    </div>
-
-                                    <!-- Date and Actions -->
-                                    <div class="text-end">
-                                        <div class="appointment-date mb-2">
-                                            <div class="date-badge">
-                                                <i class="bi bi-calendar3 me-1"></i>{{ c.fecha.strftime('%d/%m/%Y') }}
-                                            </div>
-                                            <div class="time-badge">
-                                                <i class="bi bi-clock me-1"></i>{{ c.fecha.strftime('%H:%M') }}
-                                            </div>
-                                        </div>
-                                        {% if c.estado in ['confirmada', 'pendiente', 'en_progreso'] %}
-                                        <a href="{{ url_for('veterinario.atender_cita', id=c.id) }}"
-                                            class="btn btn-brown-sm">
-                                            <i class="bi bi-stethoscope me-1"></i>Atender
-                                        </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <select class="vet-form-control" name="estado">
+                                <option value="todos" {% if estado_filtro=='todos' %}selected{% endif %}>Todos</option>
+                                <option value="pendiente" {% if estado_filtro=='pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="confirmada" {% if estado_filtro=='confirmada' %}selected{% endif %}>Confirmada</option>
+                                <option value="en_progreso" {% if estado_filtro=='en_progreso' %}selected{% endif %}>En Progreso</option>
+                                <option value="completada" {% if estado_filtro=='completada' %}selected{% endif %}>Completada</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <input type="date" class="vet-form-control" name="fecha_desde" value="{{ fecha_desde }}" placeholder="Desde">
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <input type="date" class="vet-form-control" name="fecha_hasta" value="{{ fecha_hasta }}" placeholder="Hasta">
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="vet-btn vet-btn-primary flex-grow-1">
+                                    <i class="bi bi-funnel"></i>
+                                </button>
+                                <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-btn vet-btn-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state p-5 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-calendar-x text-brown" style="font-size: 3rem; opacity: 0.3;"></i>
-                    </div>
-                    <h5 class="text-muted fw-semibold">Sin Citas</h5>
-                    <p class="text-muted small mb-0">No se encontraron citas con los filtros aplicados.</p>
-                </div>
-                {% endif %}
+                </form>
             </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="citas-tabs vet-animate-fade-in vet-stagger-2">
+            <button class="citas-tab active" data-filter="all">
+                <i class="bi bi-grid-3x3-gap"></i>
+                <span>Todas</span>
+                <span class="tab-count">{{ citas|length }}</span>
+            </button>
+            <button class="citas-tab" data-filter="urgente">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>Hoy</span>
+            </button>
+            <button class="citas-tab" data-filter="pendiente">
+                <i class="bi bi-hourglass-split"></i>
+                <span>Pendientes</span>
+            </button>
+            <button class="citas-tab" data-filter="confirmada">
+                <i class="bi bi-calendar-check"></i>
+                <span>Confirmadas</span>
+            </button>
+        </div>
+
+        <!-- Appointments List -->
+        <div class="citas-list vet-animate-fade-in vet-stagger-3">
+            {% if citas %}
+                {% for c in citas %}
+                <div class="cita-card {% if c.estado == 'completada' or c.estado == 'atendida' %}cita-completed{% endif %}" 
+                     data-status="{{ c.estado }}"
+                     data-date="{{ c.fecha.strftime('%Y-%m-%d') }}"
+                     data-search="{{ c.mascota.nombre|lower }} {{ c.tutor.nombre_completo|lower if c.tutor else '' }}">
+                    
+                    <!-- Status Indicator -->
+                    <div class="cita-status-bar 
+                        {% if c.estado == 'completada' or c.estado == 'atendida' %}status-success
+                        {% elif c.estado == 'cancelada' %}status-danger
+                        {% elif c.estado == 'en_progreso' %}status-progress
+                        {% elif c.estado == 'confirmada' %}status-info
+                        {% else %}status-warning{% endif %}">
+                    </div>
+                    
+                    <div class="cita-content">
+                        <!-- Left Section - Pet Info -->
+                        <div class="cita-pet-section">
+                            <div class="cita-pet-avatar">
+                                {% if c.mascota.foto_principal %}
+                                <img src="{{ url_for('static', filename='uploads/pets/' + c.mascota.foto_principal) }}" alt="{{ c.mascota.nombre }}">
+                                {% else %}
+                                <div class="avatar-placeholder">
+                                    {% if c.mascota.especie|lower == 'perro' %}
+                                    <i class="bi bi-emoji-smile"></i>
+                                    {% elif c.mascota.especie|lower == 'gato' %}
+                                    <i class="bi bi-emoji-heart-eyes"></i>
+                                    {% else %}
+                                    <i class="bi bi-heart-pulse"></i>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="cita-pet-info">
+                                <h4 class="pet-name">{{ c.mascota.nombre }}</h4>
+                                <div class="pet-details">
+                                    <span class="pet-species">
+                                        <i class="bi bi-tag"></i> {{ c.mascota.especie }}
+                                    </span>
+                                    {% if c.mascota.raza %}
+                                    <span class="pet-breed">{{ c.mascota.raza }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="pet-tutor">
+                                    <i class="bi bi-person"></i> {{ c.tutor.nombre_completo if c.tutor else 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center Section - Appointment Info -->
+                        <div class="cita-info-section">
+                            <div class="cita-datetime">
+                                <div class="datetime-date">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span>{{ c.fecha.strftime('%d %b %Y') }}</span>
+                                </div>
+                                <div class="datetime-time">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ c.fecha.strftime('%H:%M') }}</span>
+                                </div>
+                            </div>
+                            {% if c.motivo %}
+                            <div class="cita-motivo">
+                                <i class="bi bi-chat-left-text"></i>
+                                <span>{{ c.motivo|truncate(50) }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="cita-badge-wrapper">
+                                <span class="cita-status-badge 
+                                    {% if c.estado == 'completada' or c.estado == 'atendida' %}badge-success
+                                    {% elif c.estado == 'cancelada' %}badge-danger
+                                    {% elif c.estado == 'en_progreso' %}badge-progress
+                                    {% elif c.estado == 'confirmada' %}badge-info
+                                    {% else %}badge-warning{% endif %}">
+                                    <i class="bi 
+                                        {% if c.estado == 'completada' or c.estado == 'atendida' %}bi-check-circle-fill
+                                        {% elif c.estado == 'cancelada' %}bi-x-circle-fill
+                                        {% elif c.estado == 'en_progreso' %}bi-play-fill
+                                        {% elif c.estado == 'confirmada' %}bi-calendar-check-fill
+                                        {% else %}bi-hourglass{% endif %}"></i>
+                                    {{ c.estado|replace('_', ' ')|title }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right Section - Actions -->
+                        <div class="cita-actions-section">
+                            {% if c.estado in ['confirmada', 'pendiente', 'en_progreso'] %}
+                            <a href="{{ url_for('veterinario.atender_cita', id=c.id) }}" class="cita-action-btn action-primary">
+                                <i class="bi bi-stethoscope"></i>
+                                <span>Atender</span>
+                            </a>
+                            {% elif c.estado in ['completada', 'atendida'] %}
+                            <a href="{{ url_for('veterinario.ver_cita', id=c.id) }}" class="cita-action-btn action-secondary">
+                                <i class="bi bi-eye"></i>
+                                <span>Ver</span>
+                            </a>
+                            <a href="{{ url_for('veterinario.descargar_receta', id=c.id) }}" class="cita-action-btn action-download" title="Descargar PDF">
+                                <i class="bi bi-file-pdf"></i>
+                                <span>PDF</span>
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('veterinario.ver_cita', id=c.id) }}" class="cita-action-btn action-secondary">
+                                <i class="bi bi-eye"></i>
+                                <span>Ver</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="citas-empty">
+                <div class="empty-illustration">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+                <h4>No hay citas</h4>
+                <p>No se encontraron citas con los filtros aplicados.</p>
+                <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-btn vet-btn-secondary">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Limpiar filtros
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Right Sidebar - Mini Calendar -->
-    <div class="col-lg-3">
-        <div class="card calendar-card">
-            <div class="card-header bg-brown-subtle border-bottom-0 py-3">
-                <h6 class="mb-0 fw-bold text-brown text-center">
-                    <i class="bi bi-calendar3 me-2"></i><span id="calendarMonthYear">Calendario</span>
-                </h6>
+    <!-- Right Column - Calendar & Quick Info -->
+    <div class="col-xl-4 col-lg-5">
+        <!-- Mini Calendar -->
+        <div class="vet-card vet-animate-fade-in vet-stagger-2 vet-mb-3">
+            <div class="vet-card-header">
+                <h3>
+                    <i class="bi bi-calendar3"></i> 
+                    <span id="calendarMonthYear">Calendario</span>
+                </h3>
+                <div class="calendar-nav">
+                    <button class="cal-nav-btn" onclick="changeMonth(-1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="cal-nav-btn" onclick="changeMonth(1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
             </div>
-            <div class="card-body p-3">
-                <div class="mini-calendar" id="miniCalendar"></div>
-
+            <div class="vet-card-body">
+                <div class="calendar-grid" id="miniCalendar"></div>
+                
                 <!-- Legend -->
-                <div class="calendar-legend mt-3 pt-3 border-top">
+                <div class="calendar-legend">
                     <div class="legend-item">
-                        <span class="legend-dot bg-success"></span>
-                        <span class="legend-label">Completada</span>
+                        <span class="legend-dot dot-success"></span>
+                        <span>Completada</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot bg-info"></span>
-                        <span class="legend-label">Confirmada</span>
+                        <span class="legend-dot dot-info"></span>
+                        <span>Confirmada</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: var(--brown-primary);"></span>
-                        <span class="legend-label">En Progreso</span>
+                        <span class="legend-dot dot-warning"></span>
+                        <span>Pendiente</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot bg-warning"></span>
-                        <span class="legend-label">Pendiente</span>
+                        <span class="legend-dot dot-today"></span>
+                        <span>Hoy</span>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="vet-card vet-animate-fade-in vet-stagger-3">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-clock-history"></i> Citas de Hoy</h3>
+            </div>
+            <div class="vet-card-body vet-p-0">
+                {% set today = 'now'|string|truncate(10, True, '') %}
+                {% set citas_hoy = citas|selectattr('fecha')|list %}
+                {% set has_today = false %}
+                
+                <div class="today-appointments">
+                    {% for c in citas %}
+                        {% if c.fecha.strftime('%Y-%m-%d') == today %}
+                        {% set has_today = true %}
+                        <div class="today-apt-item">
+                            <div class="today-apt-time">
+                                <span class="time">{{ c.fecha.strftime('%H:%M') }}</span>
+                            </div>
+                            <div class="today-apt-info">
+                                <span class="apt-pet">{{ c.mascota.nombre }}</span>
+                                <span class="apt-status 
+                                    {% if c.estado == 'completada' %}text-success
+                                    {% elif c.estado == 'confirmada' %}text-info
+                                    {% else %}text-warning{% endif %}">
+                                    {{ c.estado|title }}
+                                </span>
+                            </div>
+                            {% if c.estado in ['confirmada', 'pendiente'] %}
+                            <a href="{{ url_for('veterinario.atender_cita', id=c.id) }}" class="today-apt-action">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not has_today %}
+                    <div class="no-today-apts">
+                        <i class="bi bi-calendar-check"></i>
+                        <p>No hay citas programadas para hoy</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -236,542 +360,816 @@
 </div>
 
 <style>
-    /* Modern Brown Theme Palette */
-    :root {
-        --brown-primary: #5D4037;
-        --brown-secondary: #8D6E63;
-        --brown-light: #D7CCC8;
-        --brown-dark: #3E2723;
-    }
+/* ============================================
+   Mis Citas - Modern Redesign
+   ============================================ */
 
-    /* Header Card Styling */
-    .page-header-modern.vet-theme {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 1.25rem;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
-        position: relative;
-        overflow: hidden;
-    }
+/* Stats Row */
+.citas-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
 
-    .page-header-modern.vet-theme::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        pointer-events: none;
-    }
+.citas-stat-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid;
+    transition: all var(--transition-fast);
+}
 
-    .page-header-modern.vet-theme .page-header-content {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        position: relative;
-        z-index: 1;
-    }
+.citas-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
 
-    .page-header-modern.vet-theme .page-header-icon {
-        width: 64px;
-        height: 64px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: white;
-        backdrop-filter: blur(5px);
-    }
+.citas-stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
 
-    .page-header-modern.vet-theme .page-header-title-modern {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1.2;
-        color: white;
-    }
+.citas-stat-card .stat-info {
+    display: flex;
+    flex-direction: column;
+}
 
-    .page-header-modern.vet-theme .page-header-subtitle-modern {
-        font-size: 1rem;
-        margin: 0.25rem 0 0 0;
-        color: rgba(255, 255, 255, 0.8);
-    }
+.citas-stat-card .stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--vet-dark);
+}
 
-    .page-header-modern.vet-theme .page-header-actions {
-        display: flex;
-        align-items: center;
-        position: relative;
-        z-index: 1;
-    }
+.citas-stat-card .stat-label {
+    font-size: 0.75rem;
+    color: var(--vet-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
 
-    /* Date Widget */
-    .date-widget-modern {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.25rem;
-    }
+/* Stat Card Variants */
+.stat-pending {
+    border-color: #F59E0B;
+}
+.stat-pending .stat-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+}
 
-    .date-display {
-        font-size: 1.125rem;
-        color: white;
-        line-height: 1;
-    }
+.stat-confirmed {
+    border-color: #3B82F6;
+}
+.stat-confirmed .stat-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+}
 
-    .day-display {
-        font-size: 0.875rem;
-        text-transform: capitalize;
-    }
+.stat-progress {
+    border-color: var(--vet-primary);
+}
+.stat-progress .stat-icon {
+    background: rgba(139, 69, 19, 0.1);
+    color: var(--vet-primary);
+}
 
-    /* Brown Theme Colors */
-    .text-brown {
-        color: var(--brown-primary) !important;
-    }
+.stat-completed {
+    border-color: #10B981;
+}
+.stat-completed .stat-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
 
-    .bg-brown {
-        background-color: var(--brown-primary) !important;
-        color: white;
-    }
+/* Search Input */
+.search-input-wrapper {
+    position: relative;
+}
 
-    .bg-brown-subtle {
-        background-color: #EFEBE9 !important;
-        color: var(--brown-dark);
-    }
+.search-input-wrapper .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--vet-gray-400);
+}
 
-    /* Cards */
-    .filters-card,
-    .calendar-card,
-    .modern-activity-card {
-        border-radius: 1rem;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
+.search-input-wrapper .search-input {
+    padding-left: 2.75rem;
+}
 
-    /* Form Controls */
-    .form-control-modern,
-    .form-select-modern {
-        border: 2px solid #e9ecef;
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        background-color: white;
-        font-size: 0.9rem;
-    }
+/* Tabs */
+.citas-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background: var(--vet-white);
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
 
-    .form-control-modern:focus,
-    .form-select-modern:focus {
-        border-color: var(--brown-primary);
-        box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1);
-        background-color: #fff;
-        outline: none;
-    }
+.citas-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--vet-gray-600);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
 
-    /* Buttons */
-    .btn-brown-modern {
-        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
-        border: none;
-        color: white;
-        padding: 0.6rem 1.25rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
+.citas-tab:hover {
+    background: var(--vet-gray-50);
+    color: var(--vet-primary);
+}
 
-    .btn-brown-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(93, 64, 55, 0.3);
-        color: white;
-    }
+.citas-tab.active {
+    background: var(--vet-primary);
+    color: var(--vet-white);
+}
 
-    .btn-light-modern {
-        background: white;
-        border: 2px solid #e9ecef;
-        color: #6c757d;
-        padding: 0.6rem 1.25rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
+.citas-tab .tab-count {
+    background: rgba(255,255,255,0.2);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+}
 
-    .btn-light-modern:hover {
-        background: #f8f9fa;
-        border-color: #dee2e6;
-        transform: translateY(-2px);
-    }
+.citas-tab.active .tab-count {
+    background: rgba(255,255,255,0.3);
+}
 
-    .btn-brown-sm {
-        background: var(--brown-primary);
-        color: white;
-        border: none;
-        padding: 0.4rem 0.9rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-    }
+/* Citas List */
+.citas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
 
-    .btn-brown-sm:hover {
-        background: var(--brown-dark);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(93, 64, 55, 0.3);
-    }
+/* Cita Card */
+.cita-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    display: flex;
+}
 
-    /* Search Bar */
-    .search-bar .input-group-text {
-        border: 2px solid #e9ecef;
-        border-right: none;
-        border-radius: 10px 0 0 10px;
-    }
+.cita-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(4px);
+}
 
-    .search-bar .form-control {
-        border: 2px solid #e9ecef;
-        border-left: none;
-        border-radius: 0 10px 10px 0;
-        padding: 0.75rem 1rem;
-    }
+.cita-card.cita-completed {
+    opacity: 0.85;
+}
 
-    .search-bar .form-control:focus {
-        box-shadow: none;
-        border-color: var(--brown-primary);
-    }
+.cita-card.cita-completed:hover {
+    opacity: 1;
+}
 
-    .search-bar .form-control:focus+.input-group-text {
-        border-color: var(--brown-primary);
-    }
+/* Status Bar */
+.cita-status-bar {
+    width: 5px;
+    flex-shrink: 0;
+}
 
-    /* Appointment Cards */
-    .appointment-card {
-        padding: 1.25rem;
-        border-bottom: 1px solid #f0f0f0;
-        transition: all 0.2s ease;
-    }
+.status-success { background: #10B981; }
+.status-danger { background: #EF4444; }
+.status-progress { background: var(--vet-primary); }
+.status-info { background: #3B82F6; }
+.status-warning { background: #F59E0B; }
 
-    .appointment-card:last-child {
-        border-bottom: none;
-    }
+/* Cita Content */
+.cita-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    gap: 1.5rem;
+}
 
-    .appointment-card:hover {
-        background: #fafafa;
-        transform: translateX(4px);
-    }
+/* Pet Section */
+.cita-pet-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 200px;
+}
 
-    .appointment-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
+.cita-pet-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    flex-shrink: 0;
+}
 
-    .icon-success {
-        background: rgba(40, 167, 69, 0.1);
-        color: #28a745;
-    }
+.cita-pet-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-    .icon-danger {
-        background: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
+.cita-pet-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--vet-white);
+}
 
-    .icon-brown {
-        background: rgba(93, 64, 55, 0.1);
-        color: var(--brown-primary);
-    }
+.cita-pet-info {
+    min-width: 0;
+}
 
-    .icon-warning {
-        background: rgba(255, 193, 7, 0.1);
-        color: #ffc107;
-    }
+.cita-pet-info .pet-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--vet-dark);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-    .icon-info {
-        background: rgba(23, 162, 184, 0.1);
-        color: #17a2b8;
-    }
+.cita-pet-info .pet-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--vet-gray-500);
+    margin-bottom: 0.25rem;
+}
 
-    .icon-secondary {
-        background: rgba(108, 117, 125, 0.1);
-        color: #6c757d;
-    }
+.cita-pet-info .pet-details i {
+    color: var(--vet-primary);
+}
 
-    .appointment-pet-name {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0;
-    }
+.cita-pet-info .pet-tutor {
+    font-size: 0.8rem;
+    color: var(--vet-gray-500);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
 
-    .appointment-tutor {
-        font-size: 0.9rem;
-    }
+/* Info Section */
+.cita-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
 
-    .status-badge {
-        font-size: 0.75rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 6px;
-        font-weight: 600;
-        border: none;
-    }
+.cita-datetime {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
 
-    .date-badge,
-    .time-badge {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 0.25rem;
-    }
+.datetime-date, .datetime-time {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--vet-gray-700);
+    font-weight: 500;
+}
 
-    /* Mini Calendar */
-    .mini-calendar {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 4px;
-    }
+.datetime-date i, .datetime-time i {
+    color: var(--vet-primary);
+}
 
-    .cal-header {
-        text-align: center;
-        padding: 0.4rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: var(--brown-primary);
-        text-transform: uppercase;
-    }
+.cita-motivo {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--vet-gray-500);
+}
 
-    .cal-day {
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-        background: white;
-        border: 1px solid #f0f0f0;
-    }
+.cita-motivo i {
+    color: var(--vet-gray-400);
+}
 
-    .cal-day:hover {
-        background: #f8f9fa;
-        transform: scale(1.05);
-    }
+/* Status Badge */
+.cita-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
 
-    .cal-day.today {
-        background: var(--brown-primary);
-        color: white;
-        font-weight: bold;
-        border-color: var(--brown-primary);
-    }
+.badge-success { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+.badge-danger { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+.badge-progress { background: rgba(139, 69, 19, 0.1); color: var(--vet-primary); }
+.badge-info { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.badge-warning { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
 
-    .cal-day.has-appointments::after {
-        content: '';
-        position: absolute;
-        bottom: 2px;
-        width: 4px;
-        height: 4px;
-        background: var(--brown-primary);
-        border-radius: 50%;
-    }
+/* Actions Section */
+.cita-actions-section {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
 
-    .cal-day.today.has-appointments::after {
-        background: white;
-    }
+.cita-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    min-width: 60px;
+}
 
-    .cal-day.other-month {
-        opacity: 0.3;
-    }
+.action-primary {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
+    color: var(--vet-white);
+}
 
-    /* Stats */
-    .stat-mini {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+.action-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+    color: var(--vet-white);
+}
+
+.action-secondary {
+    background: var(--vet-gray-100);
+    color: var(--vet-gray-700);
+}
+
+.action-secondary:hover {
+    background: var(--vet-gray-200);
+    color: var(--vet-gray-800);
+}
+
+.action-download {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.action-download:hover {
+    background: #EF4444;
+    color: var(--vet-white);
+}
+
+.cita-action-btn i {
+    font-size: 1.125rem;
+}
+
+/* Empty State */
+.citas-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.citas-empty .empty-illustration {
+    width: 100px;
+    height: 100px;
+    background: var(--vet-gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.citas-empty .empty-illustration i {
+    font-size: 3rem;
+    color: var(--vet-gray-400);
+}
+
+.citas-empty h4 {
+    color: var(--vet-gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.citas-empty p {
+    color: var(--vet-gray-500);
+    margin-bottom: 1.5rem;
+}
+
+/* Calendar */
+.calendar-nav {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.cal-nav-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--vet-gray-100);
+    border-radius: var(--radius-sm);
+    color: var(--vet-gray-600);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cal-nav-btn:hover {
+    background: var(--vet-primary);
+    color: var(--vet-white);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 1rem;
+}
+
+.cal-header {
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--vet-gray-500);
+    text-transform: uppercase;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    background: var(--vet-white);
+    border: 1px solid var(--vet-gray-100);
+    font-weight: 500;
+}
+
+.cal-day:hover:not(.other-month) {
+    background: var(--vet-gray-100);
+    border-color: var(--vet-primary);
+}
+
+.cal-day.today {
+    background: var(--vet-primary);
+    color: var(--vet-white);
+    border-color: var(--vet-primary);
+    font-weight: 700;
+}
+
+.cal-day.has-appointments::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    background: var(--vet-gold);
+    border-radius: 50%;
+}
+
+.cal-day.today.has-appointments::after {
+    background: var(--vet-white);
+}
+
+.cal-day.other-month {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Calendar Legend */
+.calendar-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--vet-gray-100);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--vet-gray-600);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dot-success { background: #10B981; }
+.dot-info { background: #3B82F6; }
+.dot-warning { background: #F59E0B; }
+.dot-today { background: var(--vet-primary); }
+
+/* Today's Appointments */
+.today-appointments {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.today-apt-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--vet-gray-100);
+    transition: background var(--transition-fast);
+}
+
+.today-apt-item:last-child {
+    border-bottom: none;
+}
+
+.today-apt-item:hover {
+    background: var(--vet-gray-50);
+}
+
+.today-apt-time {
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--vet-primary);
+    border-radius: var(--radius-sm);
+}
+
+.today-apt-time .time {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--vet-white);
+}
+
+.today-apt-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.today-apt-info .apt-pet {
+    font-weight: 600;
+    color: var(--vet-dark);
+}
+
+.today-apt-info .apt-status {
+    font-size: 0.75rem;
+}
+
+.today-apt-action {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--vet-gray-100);
+    border-radius: 50%;
+    color: var(--vet-gray-600);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.today-apt-action:hover {
+    background: var(--vet-primary);
+    color: var(--vet-white);
+}
+
+.no-today-apts {
+    text-align: center;
+    padding: 2rem;
+    color: var(--vet-gray-500);
+}
+
+.no-today-apts i {
+    font-size: 2rem;
+    color: var(--vet-gray-300);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.no-today-apts p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .citas-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 991px) {
+    .cita-content {
+        flex-wrap: wrap;
+    }
+    
+    .cita-pet-section {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .cita-info-section {
+        width: 100%;
+    }
+    
+    .cita-actions-section {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--vet-gray-100);
+        margin-top: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .citas-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .citas-stat-card {
+        padding: 1rem;
+    }
+    
+    .citas-stat-card .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .citas-tabs {
+        padding: 0.375rem;
+    }
+    
+    .citas-tab {
         padding: 0.5rem 0.75rem;
-        background: #f8f9fa;
-        border-radius: 6px;
-    }
-
-    .stat-mini-label {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
-
-    .stat-mini-value {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--brown-primary);
-    }
-
-    /* Calendar Legend */
-    .calendar-legend {
-        display: grid;
-        gap: 0.5rem;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
         font-size: 0.8rem;
     }
-
-    .legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
+    
+    .citas-tab span:not(.tab-count) {
+        display: none;
     }
+}
 
-    .legend-label {
-        color: #6c757d;
+@media (max-width: 480px) {
+    .citas-stats-row {
+        grid-template-columns: 1fr 1fr;
     }
-
-    /* Responsive */
-    @media (max-width: 991px) {
-
-        .filters-card,
-        .calendar-card {
-            margin-bottom: 1rem;
-        }
+    
+    .cita-action-btn {
+        padding: 0.5rem;
+        min-width: 50px;
     }
+    
+    .cita-action-btn span {
+        display: none;
+    }
+}
 </style>
 
 <script>
-    // Datos de citas por fecha desde el backend
-    const citasPorFecha = {{ citas_por_fecha| tojson }};
+// Calendar data from backend
+const citasPorFecha = {{ citas_por_fecha|tojson }};
+let currentCalendarMonth = new Date().getMonth();
+let currentCalendarYear = new Date().getFullYear();
 
-    // Update current date and day
-    function updateDate() {
-        const now = new Date();
-        const laPazTime = new Date(now.toLocaleString('en-US', {
-            timeZone: 'America/La_Paz'
-        }));
-
-        const dateStr = laPazTime.toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
-
-        const dayStr = laPazTime.toLocaleDateString('es-ES', {
-            weekday: 'long'
-        });
-
-        document.getElementById('current-date-full').textContent = dateStr;
-        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
-    }
-
-    // Generate mini calendar
-    function generateMiniCalendar() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-
-        const monthName = now.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-        document.getElementById('calendarMonthYear').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-        const calendar = document.getElementById('miniCalendar');
-        calendar.innerHTML = '';
-
-        // Headers
-        const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
-        days.forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'cal-header';
-            header.textContent = day;
-            calendar.appendChild(header);
-        });
-
-        // Days
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startingDayOfWeek = firstDay.getDay();
-
-        // Previous month days
-        const prevMonthDays = new Date(year, month, 0).getDate();
-        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-            const day = document.createElement('div');
-            day.className = 'cal-day other-month';
-            day.textContent = prevMonthDays - i;
-            calendar.appendChild(day);
-        }
-
-        // Current month days
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            const day = document.createElement('div');
-            day.className = 'cal-day';
-            day.textContent = i;
-
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
-            // Check if today
-            if (i === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
-                day.classList.add('today');
-            }
-
-            // Check if has appointments
-            if (citasPorFecha[dateStr]) {
-                day.classList.add('has-appointments');
-                day.title = `${citasPorFecha[dateStr].length} cita(s)`;
-            }
-
-            // Click to filter by date
-            day.addEventListener('click', () => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('fecha_desde', dateStr);
-                url.searchParams.set('fecha_hasta', dateStr);
-                window.location.href = url.toString();
-            });
-
-            calendar.appendChild(day);
-        }
-    }
-
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function (e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.appointment-card');
-
-            cards.forEach(card => {
-                const searchData = card.getAttribute('data-search');
-                if (searchData.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-
-        // Submit search on enter
-        searchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                const url = new URL(window.location.href);
-                url.searchParams.set('buscar', e.target.value);
-                window.location.href = url.toString();
-            }
-        });
-    }
-
-    // Initialize on load
-    document.addEventListener('DOMContentLoaded', function () {
-        updateDate();
-        generateMiniCalendar();
+// Generate mini calendar
+function generateMiniCalendar() {
+    const calendar = document.getElementById('miniCalendar');
+    const monthYearLabel = document.getElementById('calendarMonthYear');
+    
+    const year = currentCalendarYear;
+    const month = currentCalendarMonth;
+    const now = new Date();
+    
+    const monthName = new Date(year, month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    monthYearLabel.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    
+    calendar.innerHTML = '';
+    
+    // Headers
+    const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    days.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'cal-header';
+        header.textContent = day;
+        calendar.appendChild(header);
     });
+    
+    // Days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startingDayOfWeek = firstDay.getDay();
+    
+    // Previous month days
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const day = document.createElement('div');
+        day.className = 'cal-day other-month';
+        day.textContent = prevMonthDays - i;
+        calendar.appendChild(day);
+    }
+    
+    // Current month days
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+        const day = document.createElement('div');
+        day.className = 'cal-day';
+        day.textContent = i;
+        
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        
+        // Check if today
+        if (i === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+            day.classList.add('today');
+        }
+        
+        // Check if has appointments
+        if (citasPorFecha[dateStr]) {
+            day.classList.add('has-appointments');
+            day.title = `${citasPorFecha[dateStr].length} cita(s)`;
+        }
+        
+        // Click to filter by date
+        day.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('fecha_desde', dateStr);
+            url.searchParams.set('fecha_hasta', dateStr);
+            window.location.href = url.toString();
+        });
+        
+        calendar.appendChild(day);
+    }
+}
+
+function changeMonth(delta) {
+    currentCalendarMonth += delta;
+    if (currentCalendarMonth > 11) {
+        currentCalendarMonth = 0;
+        currentCalendarYear++;
+    } else if (currentCalendarMonth < 0) {
+        currentCalendarMonth = 11;
+        currentCalendarYear--;
+    }
+    generateMiniCalendar();
+}
+
+// Tab filtering
+document.querySelectorAll('.citas-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.citas-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        const cards = document.querySelectorAll('.cita-card');
+        const today = new Date().toISOString().split('T')[0];
+        
+        cards.forEach(card => {
+            const status = card.dataset.status;
+            const date = card.dataset.date;
+            
+            if (filter === 'all') {
+                card.style.display = '';
+            } else if (filter === 'urgente') {
+                card.style.display = date === today ? '' : 'none';
+            } else {
+                card.style.display = status === filter ? '' : 'none';
+            }
+        });
+    });
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    generateMiniCalendar();
+});
 </script>
 {% endblock %}

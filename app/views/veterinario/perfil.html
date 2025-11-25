@@ -1,13 +1,548 @@
 ﻿{% extends "layouts/veterinario_base.html" %}
+{% block title %}Mi Perfil - RamboPet{% endblock %}
+
 {% block content %}
-<h1>Mi Perfil</h1>
-<div class="card">
-    <div class="card-body">
-        <form method="POST">
-            <div class="form-group"><label>Nombre</label><input type="text" class="form-control" name="nombre"
-                    value="{{ current_user.nombre }}" required></div>
-            <button type="submit" class="btn btn-success">Actualizar</button>
+<!-- Modern Page Header -->
+<div class="vet-page-header vet-animate-fade-in vet-mb-3">
+    <div class="vet-page-header-content">
+        <div class="vet-page-header-icon">
+            <i class="bi bi-person-badge-fill"></i>
+        </div>
+        <div class="vet-page-header-text">
+            <h1 class="vet-page-header-title">Mi Perfil</h1>
+            <p class="vet-page-header-subtitle">Configuración de tu cuenta y datos personales</p>
+        </div>
+    </div>
+    <div class="vet-page-header-right">
+        <div class="vet-page-header-badge">
+            <i class="bi bi-patch-check-fill"></i>
+            <span>Veterinario Activo</span>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <!-- Left Column - Profile Card -->
+    <div class="col-lg-4">
+        <div class="vet-profile-card vet-animate-fade-in">
+            <div class="vet-profile-header">
+                <div class="vet-profile-avatar">
+                    <div class="vet-profile-avatar-placeholder">
+                        {{ current_user.nombre[0]|upper if current_user.nombre else 'D' }}{{ current_user.apellido[0]|upper if current_user.apellido else 'R' }}
+                    </div>
+                </div>
+                <h3 class="vet-profile-name">Dr. {{ current_user.nombre_completo if current_user.nombre_completo else current_user.nombre }}</h3>
+                <div class="vet-profile-badges">
+                    <span class="vet-badge vet-badge-gold">
+                        <i class="bi bi-patch-check-fill"></i> Veterinario
+                    </span>
+                    {% if current_user.especialidad %}
+                    <span class="vet-badge vet-badge-primary">{{ current_user.especialidad }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="vet-profile-body">
+                <div class="vet-profile-info-list">
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Correo Electrónico</span>
+                            <span class="vet-profile-info-value">{{ current_user.email }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if current_user.telefono %}
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Teléfono</span>
+                            <span class="vet-profile-info-value">{{ current_user.telefono }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if current_user.licencia_profesional %}
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-award-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Licencia Profesional</span>
+                            <span class="vet-profile-info-value">{{ current_user.licencia_profesional }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="vet-profile-info-item">
+                        <div class="vet-profile-info-icon">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <div class="vet-profile-info-content">
+                            <span class="vet-profile-info-label">Miembro desde</span>
+                            <span class="vet-profile-info-value">{{ current_user.fecha_registro.strftime('%B %Y') if current_user.fecha_registro else 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="vet-card vet-mt-3 vet-animate-fade-in vet-stagger-1">
+            <div class="vet-card-header">
+                <h3><i class="bi bi-activity"></i> Actividad</h3>
+            </div>
+            <div class="vet-card-body">
+                <div class="vet-quick-stats">
+                    <a href="{{ url_for('veterinario.mis_citas') }}" class="vet-quick-stat-item">
+                        <div class="vet-quick-stat-icon">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <div class="vet-quick-stat-content">
+                            <span class="vet-quick-stat-label">Ver Citas</span>
+                            <span class="vet-quick-stat-action">Ir <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('veterinario.historial_medico') }}" class="vet-quick-stat-item">
+                        <div class="vet-quick-stat-icon icon-gold">
+                            <i class="bi bi-file-medical-fill"></i>
+                        </div>
+                        <div class="vet-quick-stat-content">
+                            <span class="vet-quick-stat-label">Historial</span>
+                            <span class="vet-quick-stat-action">Ir <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column - Edit Form -->
+    <div class="col-lg-8">
+        <form method="POST" action="{{ url_for('veterinario.perfil') }}">
+            <!-- Personal Information -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-1 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-person-fill"></i> Información Personal</h3>
+                </div>
+                <div class="vet-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="nombre">
+                                    <i class="bi bi-person me-1"></i> Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="vet-form-control" id="nombre" name="nombre" 
+                                       value="{{ current_user.nombre }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="apellido">
+                                    <i class="bi bi-person me-1"></i> Apellido
+                                </label>
+                                <input type="text" class="vet-form-control" id="apellido" name="apellido" 
+                                       value="{{ current_user.apellido }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="email">
+                                    <i class="bi bi-envelope me-1"></i> Correo Electrónico <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="vet-form-control" id="email" name="email" 
+                                       value="{{ current_user.email }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="telefono">
+                                    <i class="bi bi-telephone me-1"></i> Teléfono
+                                </label>
+                                <input type="tel" class="vet-form-control" id="telefono" name="telefono" 
+                                       value="{{ current_user.telefono }}" placeholder="+591 ...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Professional Information -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-2 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-briefcase-fill"></i> Información Profesional</h3>
+                </div>
+                <div class="vet-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="especialidad">
+                                    <i class="bi bi-star me-1"></i> Especialidad
+                                </label>
+                                <select class="vet-form-control" id="especialidad" name="especialidad">
+                                    <option value="">Seleccionar especialidad...</option>
+                                    <option value="Medicina General" {% if current_user.especialidad == 'Medicina General' %}selected{% endif %}>Medicina General</option>
+                                    <option value="Cirugía" {% if current_user.especialidad == 'Cirugía' %}selected{% endif %}>Cirugía</option>
+                                    <option value="Dermatología" {% if current_user.especialidad == 'Dermatología' %}selected{% endif %}>Dermatología</option>
+                                    <option value="Cardiología" {% if current_user.especialidad == 'Cardiología' %}selected{% endif %}>Cardiología</option>
+                                    <option value="Oftalmología" {% if current_user.especialidad == 'Oftalmología' %}selected{% endif %}>Oftalmología</option>
+                                    <option value="Ortopedia" {% if current_user.especialidad == 'Ortopedia' %}selected{% endif %}>Ortopedia</option>
+                                    <option value="Oncología" {% if current_user.especialidad == 'Oncología' %}selected{% endif %}>Oncología</option>
+                                    <option value="Neurología" {% if current_user.especialidad == 'Neurología' %}selected{% endif %}>Neurología</option>
+                                    <option value="Odontología" {% if current_user.especialidad == 'Odontología' %}selected{% endif %}>Odontología</option>
+                                    <option value="Emergencias" {% if current_user.especialidad == 'Emergencias' %}selected{% endif %}>Emergencias</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="licencia_profesional">
+                                    <i class="bi bi-award me-1"></i> Licencia Profesional
+                                </label>
+                                <input type="text" class="vet-form-control" id="licencia_profesional" name="licencia_profesional" 
+                                       value="{{ current_user.licencia_profesional }}" placeholder="Número de licencia">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Change Password -->
+            <div class="vet-card vet-animate-fade-in vet-stagger-3 vet-mb-3">
+                <div class="vet-card-header">
+                    <h3><i class="bi bi-shield-lock-fill"></i> Cambiar Contraseña</h3>
+                    <span class="vet-badge vet-badge-gold">Opcional</span>
+                </div>
+                <div class="vet-card-body">
+                    <div class="vet-password-notice vet-mb-3">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Deja estos campos vacíos si no deseas cambiar tu contraseña.</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="password_actual">
+                                    <i class="bi bi-key me-1"></i> Contraseña Actual
+                                </label>
+                                <input type="password" class="vet-form-control" id="password_actual" name="password_actual" 
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="password_nueva">
+                                    <i class="bi bi-lock me-1"></i> Nueva Contraseña
+                                </label>
+                                <input type="password" class="vet-form-control" id="password_nueva" name="password_nueva" 
+                                       placeholder="••••••••" minlength="6">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="vet-form-group">
+                                <label class="vet-form-label" for="password_confirmar">
+                                    <i class="bi bi-lock-fill me-1"></i> Confirmar Contraseña
+                                </label>
+                                <input type="password" class="vet-form-control" id="password_confirmar" name="password_confirmar" 
+                                       placeholder="••••••••" minlength="6">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="vet-form-actions vet-animate-fade-in vet-stagger-4">
+                <button type="submit" class="vet-btn vet-btn-primary vet-btn-lg">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Guardar Cambios
+                </button>
+            </div>
         </form>
     </div>
 </div>
+
+<style>
+/* ============================================
+   Page-Specific Styles - Perfil
+   ============================================ */
+
+/* Profile Card */
+.vet-profile-card {
+    background: var(--vet-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.vet-profile-header {
+    background: linear-gradient(135deg, var(--vet-primary) 0%, var(--vet-primary-dark) 100%);
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.vet-profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.vet-profile-avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--vet-gold) 0%, var(--vet-gold-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--vet-white);
+    font-family: 'Playfair Display', serif;
+}
+
+.vet-profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--vet-white);
+    margin: 0 0 1rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-badges {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.vet-profile-body {
+    padding: 1.5rem;
+}
+
+.vet-profile-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.vet-profile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vet-profile-info-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vet-primary);
+    flex-shrink: 0;
+}
+
+.vet-profile-info-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.vet-profile-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vet-gray-500);
+}
+
+.vet-profile-info-value {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+}
+
+/* Quick Stats */
+.vet-quick-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.vet-quick-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--vet-gray-50);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.vet-quick-stat-item:hover {
+    background: var(--vet-primary);
+    transform: translateX(4px);
+}
+
+.vet-quick-stat-item:hover .vet-quick-stat-icon {
+    background: rgba(255,255,255,0.2);
+    color: var(--vet-white);
+}
+
+.vet-quick-stat-item:hover .vet-quick-stat-label,
+.vet-quick-stat-item:hover .vet-quick-stat-action {
+    color: var(--vet-white);
+}
+
+.vet-quick-stat-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vet-primary);
+    font-size: 1.25rem;
+    transition: all var(--transition-fast);
+}
+
+.vet-quick-stat-icon.icon-gold {
+    background: rgba(218, 165, 32, 0.1);
+    color: var(--vet-gold);
+}
+
+.vet-quick-stat-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vet-quick-stat-label {
+    font-weight: 600;
+    color: var(--vet-gray-800);
+    transition: color var(--transition-fast);
+}
+
+.vet-quick-stat-action {
+    font-size: 0.85rem;
+    color: var(--vet-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color var(--transition-fast);
+}
+
+/* Password Notice */
+.vet-password-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(218, 165, 32, 0.1);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--vet-gold);
+    font-size: 0.9rem;
+    color: var(--vet-gray-700);
+}
+
+.vet-password-notice i {
+    color: var(--vet-gold);
+    font-size: 1.1rem;
+}
+
+/* Form Actions */
+.vet-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .vet-profile-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .vet-profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .vet-profile-avatar-placeholder {
+        font-size: 2rem;
+    }
+    
+    .vet-profile-name {
+        font-size: 1.25rem;
+    }
+    
+    .vet-form-actions {
+        justify-content: stretch;
+    }
+    
+    .vet-form-actions .vet-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Password validation
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordNueva = document.getElementById('password_nueva');
+    const passwordConfirmar = document.getElementById('password_confirmar');
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        if (passwordNueva.value || passwordConfirmar.value) {
+            if (passwordNueva.value !== passwordConfirmar.value) {
+                e.preventDefault();
+                toastr.error('Las contraseñas no coinciden');
+                passwordConfirmar.focus();
+                return false;
+            }
+            
+            if (passwordNueva.value.length < 6) {
+                e.preventDefault();
+                toastr.error('La contraseña debe tener al menos 6 caracteres');
+                passwordNueva.focus();
+                return false;
+            }
+            
+            const passwordActual = document.getElementById('password_actual');
+            if (!passwordActual.value) {
+                e.preventDefault();
+                toastr.error('Debes ingresar tu contraseña actual');
+                passwordActual.focus();
+                return false;
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

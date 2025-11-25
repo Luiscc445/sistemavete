@@ -1,30 +1,25 @@
 ﻿{% extends "layouts/admin_base.html" %}
-{% block title %}Reportes y Estadísticas{% endblock %}
+{% block title %}Reportes y Estadisticas{% endblock %}
 
-{% block page_title %}
-<div class="page-header-modern">
-    <div class="page-header-content">
-        <div class="page-header-icon">
+{% block content %}
+<!-- Modern Page Header -->
+<div class="admin-page-header admin-animate-fade-in">
+    <div class="admin-page-header-content">
+        <div class="admin-page-header-icon">
             <i class="bi bi-bar-chart-fill"></i>
         </div>
-        <div class="page-header-text">
-            <h1 class="page-header-title-modern">Reportes y Estadísticas</h1>
-            <p class="page-header-subtitle-modern">Panel de control y análisis de datos</p>
+        <div class="admin-page-header-text">
+            <h1 class="admin-page-header-title">Reportes y Estadisticas</h1>
+            <p class="admin-page-header-subtitle">Panel de control y analisis de datos</p>
         </div>
     </div>
-    <div class="page-header-actions">
-        <div class="dashboard-date">
-            <i class="bi bi-calendar-event me-2"></i> {{ now.strftime('%d %b, %Y') if now else 'Hoy' }}
+    <div class="admin-page-header-right">
+        <div class="admin-page-header-badge">
+            <i class="bi bi-calendar-event"></i>
+            <span>{{ now.strftime('%d %b, %Y') if now else 'Hoy' }}</span>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-<!-- Breadcrumb hidden in modern view -->
-{% endblock %}
-
-{% block content %}
 <!-- PANEL DE CONTROLES MODERNIZADO -->
 <div class="card modern-activity-card mb-4">
     <div class="card-header">
