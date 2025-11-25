@@ -1,0 +1,96 @@
+﻿{% extends "layouts/admin_base.html" %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <!-- Header Background -->
+                <div class="bg-light position-relative"
+                    style="height: 120px; background: linear-gradient(to right, #e8f0fe, #f8f9fa);">
+                </div>
+
+                <!-- Profile Image & Info -->
+                <div class="card-body text-center pt-0 position-relative">
+                    <div class="position-absolute top-0 start-50 translate-middle">
+                        <div class="rounded-circle bg-white p-1 shadow-sm">
+                            <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}+{{ current_user.apellido }}&background=0d6efd&color=fff&size=128"
+                                alt="Profile" class="rounded-circle" width="100" height="100">
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-4">
+                        <h2 class="h3 mb-1 fw-normal">{{ current_user.nombre }} {{ current_user.apellido }}</h2>
+                        <p class="text-muted mb-4">{{ current_user.email }}</p>
+
+                        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill bg-light border">
+                            <span class="badge rounded-pill bg-primary me-2">Admin</span>
+                            <span class="text-secondary small">Administrador del Sistema</span>
+                        </div>
+                    </div>
+
+                    <!-- Details Section -->
+                    <div class="mt-5 text-start px-md-4">
+                        <h5 class="mb-4 fw-normal border-bottom pb-2">Información Personal</h5>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="text-muted small text-uppercase fw-bold">Nombre Completo</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="mb-0">{{ current_user.nombre }} {{ current_user.apellido }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="text-muted small text-uppercase fw-bold">Email</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="mb-0">{{ current_user.email }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="text-muted small text-uppercase fw-bold">Rol</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="mb-0">Administrador</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="text-muted small text-uppercase fw-bold">Estado</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Activo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4 mb-3 d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <button class="btn btn-outline-primary rounded-pill px-4" type="button">
+                            <i class="bi bi-pencil me-2"></i>Editar Perfil
+                        </button>
+                        <button class="btn btn-outline-secondary rounded-pill px-4" type="button">
+                            <i class="bi bi-shield-lock me-2"></i>Cambiar Contraseña
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Tu cuenta está protegida y segura.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

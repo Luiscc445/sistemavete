@@ -1,0 +1,407 @@
+﻿{% extends "dashboards/tutor_base.html" %}
+{% block title %}Pago Exitoso - Rambopet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tutor/pago_exitoso.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="success-card" data-aos="zoom-in">
+                    <div class="success-icon-wrapper">
+                        <div class="success-checkmark-simple">
+                            <div class="checkmark-circle-bg"></div>
+                            <div class="checkmark-icon">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="success-message">
+                        <h1 class="success-title">¡Pago Exitoso!</h1>
+                        <p class="success-subtitle">Tu cita ha sido confirmada y reservada correctamente</p>
+                    </div>
+
+                    <div class="transaction-badge">
+                        <div class="badge-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="badge-content">
+                            <span class="badge-label">Código de Transacción</span>
+                            <span class="badge-code">{{ pago.codigo_pago }}</span>
+                        </div>
+                    </div>
+
+                    <div class="details-grid">
+                        <div class="detail-card appointment-card" data-aos="fade-right" data-aos-delay="100">
+                            <div class="detail-card-header">
+                                <div class="header-icon bg-gradient-primary">
+                                    <i class="bi bi-calendar-check-fill"></i>
+                                </div>
+                                <h3>Detalles de la Cita</h3>
+                            </div>
+                            <div class="detail-card-body">
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Fecha y Hora</span>
+                                        <span class="detail-value">{{ pago.cita.fecha.strftime('%d/%m/%Y') }}</span>
+                                        <span class="detail-time">{{ pago.cita.fecha.strftime('%H:%M') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-person-badge"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Veterinario</span>
+                                        <span class="detail-value">Dr. {{ pago.cita.veterinario.nombre_completo
+                                            }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-clipboard2-pulse"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Tipo de Servicio</span>
+                                        <span class="detail-value">{{ pago.cita.tipo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-card payment-card" data-aos="fade-left" data-aos-delay="200">
+                            <div class="detail-card-header">
+                                <div class="header-icon bg-gradient-success">
+                                    <i class="bi bi-credit-card-fill"></i>
+                                </div>
+                                <h3>Información de Pago</h3>
+                            </div>
+                            <div class="detail-card-body">
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-wallet2"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Método de Pago</span>
+                                        <span class="detail-value text-capitalize">{{ pago.metodo_pago.replace('_', ' ')
+                                            }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Fecha de Pago</span>
+                                        <span class="detail-value">{{ pago.fecha_pago.strftime('%d/%m/%Y') }}</span>
+                                        <span class="detail-time">{{ pago.fecha_pago.strftime('%H:%M') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Estado</span>
+                                        <span class="status-badge success">
+                                            <i class="bi bi-check-lg me-1"></i>Aprobado
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="amount-summary" data-aos="fade-up" data-aos-delay="300">
+                        <div class="amount-content">
+                            <span class="amount-label">Monto Total Pagado</span>
+                            <div class="amount-value">Bs. {{ "%.2f"|format(pago.monto) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons" data-aos="fade-up" data-aos-delay="400">
+                        <a href="{{ url_for('tutor.dashboard') }}" class="btn-action btn-secondary">
+                            <i class="bi bi-house-door me-2"></i>
+                            <span>Ir al Inicio</span>
+                        </a>
+                        <a href="{{ url_for('tutor.ver_cita', id=pago.cita_id) }}" class="btn-action btn-primary">
+                            <i class="bi bi-ticket-detailed me-2"></i>
+                            <span>Ver Detalles de Cita</span>
+                            <div class="btn-shine"></div>
+                        </a>
+                        <button onclick="downloadReceipt()" class="btn-action btn-download" id="btn-descargar-pdf">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>
+                            <span>Descargar Comprobante</span>
+                        </button>
+                    </div>
+
+                    <div class="additional-info" data-aos="fade-up" data-aos-delay="500">
+                        <div class="info-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>Se ha enviado un comprobante a tu correo electrónico</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-bell"></i>
+                            <span>Recibirás un recordatorio 24 horas antes de tu cita</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section" data-aos="fade-up" data-aos-delay="600">
+                    <div class="help-card">
+                        <div class="help-icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <div class="help-content">
+                            <h4>¿Necesitas ayuda?</h4>
+                            <p>Si tienes alguna pregunta o necesitas modificar tu cita, contáctanos</p>
+                        </div>
+                        <a href="#" class="help-button">
+                            <i class="bi bi-telephone"></i>
+                            <span>Contactar</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="receiptTemplate" style="display: none; width: 800px; background: white;">
+    <table
+        style="width: 100%; max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; border-collapse: collapse;">
+        <tr>
+            <td
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                <h1 style="color: white; font-size: 36px; margin: 0 0 10px 0; font-weight: 700;">RAMBOPET</h1>
+                <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0 0 20px 0;">Veterinaria</p>
+                <div
+                    style="background: white; color: #667eea; display: inline-block; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                    COMPROBANTE DE PAGO
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 30px; text-align: center; background: #f8fafc;">
+                <div
+                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; display: inline-block; padding: 15px 40px; border-radius: 50px; font-size: 18px; font-weight: 700;">
+                    &#10003; PAGO APROBADO
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 20px 30px; background: white; border-bottom: 2px solid #e2e8f0;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #64748b; font-size: 14px; font-weight: 600;">CÓDIGO DE
+                                TRANSACCIÓN</p>
+                            <p
+                                style="margin: 0; color: #1e293b; font-size: 24px; font-weight: 700; letter-spacing: 2px;">
+                                {{ pago.codigo_pago }}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 30px; background: white;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top; padding-right: 15px;">
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; height: 100%;">
+                                <h3
+                                    style="color: #667eea; font-size: 16px; margin: 0 0 20px 0; font-weight: 700; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                                    &#128197; DETALLES DE LA CITA
+                                </h3>
+
+                                <table style="width: 100%; font-size: 14px;">
+                                    <tr>
+                                        <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #64748b; font-size: 12px; font-weight: 600;">
+                                                Fecha y Hora</p>
+                                            <p style="margin: 0; color: #1e293b; font-weight: 700;">{{
+                                                pago.cita.fecha.strftime('%d/%m/%Y') }}</p>
+                                            <p style="margin: 0; color: #667eea; font-weight: 600;">{{
+                                                pago.cita.fecha.strftime('%H:%M') }}</p>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #64748b; font-size: 12px; font-weight: 600;">
+                                                Veterinario</p>
+                                            <p style="margin: 0; color: #1e293b; font-weight: 700;">Dr. {{
+                                                pago.cita.veterinario.nombre_completo }}</p>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 12px 0;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #64748b; font-size: 12px; font-weight: 600;">
+                                                Tipo de Servicio</p>
+                                            <p style="margin: 0; color: #1e293b; font-weight: 700;">{{ pago.cita.tipo }}
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+
+                        <td style="width: 50%; vertical-align: top; padding-left: 15px;">
+                            <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; height: 100%;">
+                                <h3
+                                    style="color: #10b981; font-size: 16px; margin: 0 0 20px 0; font-weight: 700; border-bottom: 2px solid #10b981; padding-bottom: 10px;">
+                                    &#128179; INFORMACIÓN DE PAGO
+                                </h3>
+
+                                <table style="width: 100%; font-size: 14px;">
+                                    <tr>
+                                        <td style="padding: 12px 0; border-bottom: 1px solid #d1fae5;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #064e3b; font-size: 12px; font-weight: 600;">
+                                                Método de Pago</p>
+                                            <p
+                                                style="margin: 0; color: #1e293b; font-weight: 700; text-transform: capitalize;">
+                                                {{ pago.metodo_pago.replace('_', ' ') }}
+                                            </p>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 12px 0; border-bottom: 1px solid #d1fae5;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #064e3b; font-size: 12px; font-weight: 600;">
+                                                Fecha de Pago</p>
+                                            <p style="margin: 0; color: #1e293b; font-weight: 700;">{{
+                                                pago.fecha_pago.strftime('%d/%m/%Y') }}</p>
+                                            <p style="margin: 0; color: #10b981; font-weight: 600;">{{
+                                                pago.fecha_pago.strftime('%H:%M') }}</p>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 12px 0;">
+                                            <p
+                                                style="margin: 0 0 5px 0; color: #064e3b; font-size: 12px; font-weight: 600;">
+                                                Estado</p>
+                                            <p style="margin: 0; color: #10b981; font-weight: 700;">&#10003; Aprobado
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td
+                style="padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;">
+                <p
+                    style="margin: 0 0 10px 0; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    Monto Total Pagado
+                </p>
+                <p style="margin: 0; color: white; font-size: 48px; font-weight: 900;">
+                    Bs. {{ '%.2f'|format(pago.monto) }}
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 30px; background: #f8fafc; text-align: center; border-top: 3px solid #667eea;">
+                <p style="margin: 0 0 10px 0; color: #1e293b; font-size: 16px; font-weight: 700;">Gracias por confiar en
+                    RamboPet</p>
+                <p style="margin: 0 0 5px 0; color: #64748b; font-size: 12px;">Este documento es un comprobante válido
+                    de pago</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 11px;">
+                    Generado el {{ pago.fecha_pago.strftime('%d/%m/%Y a las %H:%M') }}
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Inicializar animaciones
+    AOS.init({
+        duration: 800,
+        once: true
+    });
+
+    // Función principal de descarga
+    function downloadReceipt() {
+        const receiptElement = document.getElementById('receiptTemplate');
+
+        // 1. Mostrar temporalmente el recibo fuera de la pantalla
+        receiptElement.style.display = 'block';
+        receiptElement.style.position = 'absolute';
+        receiptElement.style.top = '-9999px';
+        receiptElement.style.left = '0';
+
+        // 2. Convertir a Canvas con alta calidad
+        html2canvas(receiptElement, {
+            scale: 2,               // Doble resolución para que no salga borroso
+            useCORS: true,          // Permitir imágenes externas
+            logging: false,
+            backgroundColor: '#ffffff',
+            windowWidth: 800        // Asegurar ancho fijo
+        }).then(canvas => {
+            // 3. Ocultar el recibo original
+            receiptElement.style.display = 'none';
+
+            // 4. Generar PDF
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+
+            // PDF A4 vertical
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = 210;
+            const pdfHeight = 297;
+
+            // Calcular altura proporcional
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+
+            // 5. Guardar archivo (Aquí SÍ funciona Jinja porque es HTML)
+            pdf.save('Comprobante_Rambopet_{{ pago.codigo_pago }}.pdf');
+        }).catch(err => {
+            console.error("Error al generar PDF:", err);
+            receiptElement.style.display = 'none';
+            alert("Error al descargar el comprobante. Por favor intente nuevamente.");
+        });
+    }
+</script>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tutor/pago_exitoso.js') }}"></script>
+{% endblock %}
+
+{% endblock %}

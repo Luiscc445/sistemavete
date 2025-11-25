@@ -1,0 +1,299 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Gestión de Inventario{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-box-seam-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Gestión de Inventario</h1>
+            <p class="page-header-subtitle-modern">Administra medicamentos, lotes y vencimientos</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="dashboard-date">
+            <i class="bi bi-calendar-event me-2"></i> {{ now.strftime('%d %b, %Y') if now else 'Hoy' }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Total Medicamentos</div>
+                    <div class="stat-icon-wrapper stat-icon-primary">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-trend">
+                    <i class="bi bi-check-circle"></i> Registrados
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Bajo Stock</div>
+                    <div class="stat-icon-wrapper stat-icon-warning"
+                        style="background: rgba(255, 167, 38, 0.1); color: #FFA726;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.bajo_stock }}</div>
+                <div class="stat-trend text-warning">
+                    <i class="bi bi-arrow-down-circle"></i> Reponer pronto
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Por Vencer</div>
+                    <div class="stat-icon-wrapper stat-icon-info">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.por_vencer }}</div>
+                <div class="stat-trend text-info">
+                    <i class="bi bi-info-circle"></i> Próximos 30 días
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Vencidos</div>
+                    <div class="stat-icon-wrapper stat-icon-danger">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.vencidos }}</div>
+                <div class="stat-trend text-danger">
+                    <i class="bi bi-x-octagon"></i> Retirar
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-funnel me-1"></i> Filtros</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('inventario.lista') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Buscar..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="categoria">
+                    <option value="">Todas las Categorías</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat }}" {% if categoria==cat %}selected{% endif %}>{{ cat|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="estado">
+                    <option value="">Todos los Estados</option>
+                    <option value="activo" {% if estado=='activo' %}selected{% endif %}>Activos</option>
+                    <option value="bajo_stock" {% if estado=='bajo_stock' %}selected{% endif %}>Bajo Stock</option>
+                    <option value="por_vencer" {% if estado=='por_vencer' %}selected{% endif %}>Por Vencer</option>
+                    <option value="vencido" {% if estado=='vencido' %}selected{% endif %}>Vencidos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary-modern w-100"><i class="bi bi-search me-1"></i>
+                    Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card modern-activity-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom-0 pt-4 pb-0 px-4">
+        <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-table me-2"></i>Lista de Medicamentos</h6>
+        <div>
+            <a href="{{ url_for('inventario.reporte') }}" target="_blank" class="btn btn-info-modern me-2"><i
+                    class="bi bi-printer me-1"></i> Reporte</a>
+            <a href="{{ url_for('inventario.alertas') }}" class="btn btn-warning-modern me-2"><i
+                    class="bi bi-bell me-1"></i> Alertas</a>
+            <a href="{{ url_for('inventario.nuevo') }}" class="btn btn-success-modern"><i
+                    class="bi bi-plus-circle me-1"></i> Nuevo</a>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="modern-table-container">
+            <table class="table table-modern datatable">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if medicamentos and medicamentos.items %}
+                    {% for med in medicamentos.items %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ med.codigo or 'N/A' }}</td>
+                        <td>
+                            <div class="fw-bold">{{ med.nombre }}</div>
+                            <small class="text-muted">{{ med.principio_activo or '' }}</small>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ med.categoria or 'N/A' }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold me-2">{{ med.stock_actual }}</span>
+                                <span class="text-muted small">{{ med.unidad_medida or 'unid' }}</span>
+                                {% if med.necesita_restock %}
+                                <span class="badge bg-warning-subtle text-warning ms-2" title="Bajo Stock"><i
+                                        class="bi bi-exclamation-triangle-fill"></i></span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="fw-bold text-success">{{ med.precio_venta|currency }}</td>
+                        <td>
+                            {% if med.fecha_vencimiento %}
+                            <div class="d-flex flex-column">
+                                <span>
+                                    {% if med.fecha_vencimiento.strftime is defined %}
+                                    {{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                    {{ med.fecha_vencimiento[:10] if med.fecha_vencimiento else 'N/A' }}
+                                    {% endif %}
+                                </span>
+                                {% if med.esta_vencido %}
+                                <span
+                                    class="badge bg-danger-subtle text-danger border border-danger mt-1">Vencido</span>
+                                {% elif med.esta_por_vencer %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning mt-1">Por
+                                    vencer</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if med.activo %}
+                            <span
+                                class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">Activo</span>
+                            {% else %}
+                            <span
+                                class="badge bg-danger-subtle text-danger border border-danger px-3 py-2 rounded-pill">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('inventario.ver', med_id=med.id) }}"
+                                    class="action-btn-modern action-btn-view" title="Ver Detalle"><i
+                                        class="bi bi-eye"></i></a>
+                                <a href="{{ url_for('inventario.editar', med_id=med.id) }}"
+                                    class="action-btn-modern action-btn-edit" title="Editar"><i
+                                        class="bi bi-pencil"></i></a>
+                                <button type="button" class="action-btn-modern action-btn-delete" title="Eliminar"
+                                    onclick="confirmarEliminacion({{ med.id }}, '{{ med.nombre }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+                                No hay medicamentos registrados.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalEliminarLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">¿Estás seguro de que deseas desactivar el medicamento <strong
+                        id="nombreMedicamento"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Advertencia:</strong> Esta acción desactivará el medicamento y no se mostrará en el
+                    inventario activo.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <form id="formEliminar" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Desactivar Medicamento
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .action-btn-delete {
+        background: rgba(239, 83, 80, 0.1);
+        color: #EF5350;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn-delete:hover {
+        background: #EF5350;
+        color: white;
+        transform: scale(1.05);
+    }
+</style>
+
+<script>
+    function confirmarEliminacion(medId, nombreMed) {
+        document.getElementById('nombreMedicamento').textContent = nombreMed;
+        document.getElementById('formEliminar').action = `/admin/inventario/${medId}/eliminar`;
+
+        var modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+        modal.show();
+    }
+</script>
+{% endblock %}

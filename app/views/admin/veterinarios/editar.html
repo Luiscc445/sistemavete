@@ -1,0 +1,108 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Editar Veterinario{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Editar Veterinario</h1>
+            <p class="page-header-subtitle-modern">Modificar información del profesional</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('admin_veterinarios.lista') }}" class="btn btn-secondary-modern">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="card modern-activity-card">
+    <div class="card-header">
+        <h5 class="mb-0 text-secondary">Editando a {{ veterinario.nombre_completo }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="form-veterinario-editar">
+            <h6 class="text-uppercase text-muted small fw-bold mb-3 border-bottom pb-2">Información Personal</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="nombre">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ veterinario.nombre }}"
+                        required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="apellido">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" name="apellido"
+                        value="{{ veterinario.apellido }}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="email">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ veterinario.email }}"
+                        required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="telefono">Teléfono</label>
+                    <input type="text" class="form-control" id="telefono" name="telefono"
+                        value="{{ veterinario.telefono or '' }}">
+                </div>
+            </div>
+
+            <h6 class="text-uppercase text-muted small fw-bold mb-3 border-bottom pb-2 mt-4">Información Profesional
+            </h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="especialidad">Especialidad</label>
+                    <select class="form-select" id="especialidad" name="especialidad">
+                        <option value="">-- Seleccione una --</option>
+                        {% for servicio in servicios %}
+                        <option value="{{ servicio.nombre }}" {% if veterinario.especialidad==servicio.nombre
+                            %}selected{% endif %}>{{ servicio.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold text-muted" for="licencia_profesional">Licencia
+                        Profesional</label>
+                    <input type="text" class="form-control" id="licencia_profesional" name="licencia_profesional"
+                        value="{{ veterinario.licencia_profesional or '' }}">
+                </div>
+            </div>
+
+            <h6 class="text-uppercase text-muted small fw-bold mb-3 border-bottom pb-2 mt-4">Administración</h6>
+            <div class="col-md-12 mb-3">
+                <label class="form-label small fw-bold text-muted" for="nueva_password">Nueva Contraseña</label>
+                <input type="password" class="form-control" id="nueva_password" name="nueva_password">
+                <small class="form-text text-muted">Dejar en blanco para no cambiar la contraseña.</small>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if veterinario.activo
+                    %}checked{% endif %}>
+                <label class="form-check-label small fw-bold text-muted" for="activo">
+                    Cuenta Activa
+                </label>
+            </div>
+
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary-modern">
+                    <i class="bi bi-check-circle me-1"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('admin_veterinarios.lista') }}" class="btn btn-secondary-modern">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

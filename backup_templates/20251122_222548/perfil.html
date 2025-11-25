@@ -1,0 +1,1842 @@
+{% extends "dashboards/tutor_base.html" %}
+{% block title %}Mi Perfil - Rambopet{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="container-fluid">
+        <!-- Cover & Profile Section -->
+        <div class="profile-header">
+            <div class="cover-photo" id="coverPhoto" onclick="viewCoverPhoto()">
+                <div class="cover-gradient"></div>
+                <div class="cover-pattern"></div>
+                <button class="btn-edit-cover" type="button"
+                    onclick="event.stopPropagation(); document.getElementById('coverInput').click()">
+                    <i class="bi bi-camera-fill me-2"></i>
+                    Editar portada
+                </button>
+                <input type="file" id="coverInput" accept="image/*" style="display: none;"
+                    onchange="previewCover(event)">
+            </div>
+
+            <div class="container">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-section">
+                        <div class="avatar-container" onclick="viewAvatarPhoto()">
+                            <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}&background=6366f1&color=fff&size=200&bold=true"
+                                class="profile-avatar" id="profileAvatar" alt="{{ current_user.nombre }}">
+                            <button class="btn-edit-avatar" type="button"
+                                onclick="event.stopPropagation(); document.getElementById('avatarInput').click()">
+                                <i class="bi bi-camera-fill"></i>
+                            </button>
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;"
+                                onchange="previewAvatar(event)">
+                        </div>
+                    </div>
+
+                    <div class="profile-info">
+                        <h1 class="profile-name">{{ current_user.nombre }}</h1>
+                        <p class="profile-email">{{ current_user.email }}</p>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <i class="bi bi-heart-pulse"></i>
+                                <span>5 Mascotas</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>12 Citas</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Miembro desde 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="container">
+            <div class="row g-4 mt-4">
+                <!-- Left Sidebar -->
+                <div class="col-lg-4">
+                    <!-- About Card -->
+                    <div class="info-card" data-aos="fade-right">
+                        <div class="card-header-custom">
+                            <h3>
+                                <i class="bi bi-person-circle me-2"></i>
+                                Acerca de
+                            </h3>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Email</span>
+                                    <span class="info-value">{{ current_user.email }}</span>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="bi bi-calendar3"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Miembro desde</span>
+                                    <span class="info-value">Enero 2024</span>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Estado de cuenta</span>
+                                    <span class="status-badge active">Activa</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Card -->
+                    <div class="info-card mt-4" data-aos="fade-right" data-aos-delay="100">
+                        <div class="card-header-custom">
+                            <h3>
+                                <i class="bi bi-lightning-charge-fill me-2"></i>
+                                Acciones Rápidas
+                            </h3>
+                        </div>
+                        <div class="card-body-custom">
+                            <a href="{{ url_for('tutor.dashboard') }}" class="quick-action-btn">
+                                <div class="action-icon bg-primary">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </div>
+                                <span>Nueva Cita</span>
+                                <i class="bi bi-chevron-right ms-auto"></i>
+                            </a>
+
+                            <a href="{{ url_for('tutor.mascotas') }}" class="quick-action-btn">
+                                <div class="action-icon bg-success">
+                                    <i class="bi bi-heart"></i>
+                                </div>
+                                <span>Mis Mascotas</span>
+                                <i class="bi bi-chevron-right ms-auto"></i>
+                            </a>
+
+                            <a href="{{ url_for('tutor.citas') }}" class="quick-action-btn">
+                                <div class="action-icon bg-info">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <span>Historial</span>
+                                <i class="bi bi-chevron-right ms-auto"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Edit Profile Card -->
+                    <div class="info-card" data-aos="fade-left">
+                        <div class="card-header-custom">
+                            <h3>
+                                <i class="bi bi-pencil-square me-2"></i>
+                                Editar Perfil
+                            </h3>
+                        </div>
+                        <div class="card-body-custom">
+                            <form method="POST" class="profile-form" enctype="multipart/form-data">
+                                <!-- Hidden inputs for images -->
+                                <input type="hidden" name="avatar_data" id="avatarData">
+                                <input type="hidden" name="cover_data" id="coverData">
+
+                                <div class="row g-4">
+                                    <div class="col-md-12">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">
+                                                <i class="bi bi-person me-2"></i>
+                                                Nombre Completo
+                                            </label>
+                                            <input type="text" class="form-input-modern" name="nombre"
+                                                value="{{ current_user.nombre }}"
+                                                placeholder="Ingresa tu nombre completo" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">
+                                                <i class="bi bi-envelope me-2"></i>
+                                                Correo Electrónico
+                                            </label>
+                                            <input type="email" class="form-input-modern" name="email"
+                                                value="{{ current_user.email }}" placeholder="tu@email.com" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">
+                                                <i class="bi bi-telephone me-2"></i>
+                                                Teléfono
+                                            </label>
+                                            <input type="tel" class="form-input-modern" name="telefono"
+                                                placeholder="+591 XXX XXXXX">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">
+                                                <i class="bi bi-geo-alt me-2"></i>
+                                                Ciudad
+                                            </label>
+                                            <input type="text" class="form-input-modern" name="ciudad"
+                                                placeholder="La Paz">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-actions">
+                                            <button type="button" class="btn-secondary-modern">
+                                                <i class="bi bi-x-lg me-2"></i>
+                                                Cancelar
+                                            </button>
+                                            <button type="submit" class="btn-primary-modern">
+                                                <i class="bi bi-check-lg me-2"></i>
+                                                Guardar Cambios
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Security Card -->
+                    <div class="info-card mt-4" data-aos="fade-left" data-aos-delay="100">
+                        <div class="card-header-custom">
+                            <h3>
+                                <i class="bi bi-shield-lock-fill me-2"></i>
+                                Seguridad y Privacidad
+                            </h3>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="security-item">
+                                <div class="security-icon">
+                                    <i class="bi bi-key-fill"></i>
+                                </div>
+                                <div class="security-content">
+                                    <h4>Contraseña</h4>
+                                    <p>Última actualización hace 3 meses</p>
+                                </div>
+                                <button class="btn-security" onclick="openPasswordModal()">
+                                    Cambiar
+                                </button>
+                            </div>
+
+                            <div class="security-item">
+                                <div class="security-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div class="security-content">
+                                    <h4>Verificación en dos pasos</h4>
+                                    <p>Añade una capa extra de seguridad</p>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="2fa" disabled>
+                                    <label for="2fa"></label>
+                                </div>
+                            </div>
+
+                            <div class="security-item">
+                                <div class="security-icon">
+                                    <i class="bi bi-bell-fill"></i>
+                                </div>
+                                <div class="security-content">
+                                    <h4>Notificaciones por email</h4>
+                                    <p>Recibe actualizaciones importantes</p>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notifications" checked>
+                                    <label for="notifications"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="info-card danger-card mt-4" data-aos="fade-left" data-aos-delay="200">
+                        <div class="card-header-custom">
+                            <h3>
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Zona de Peligro
+                            </h3>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="danger-item">
+                                <div>
+                                    <h4>Eliminar cuenta</h4>
+                                    <p>Una vez eliminada, no podrás recuperar tu cuenta</p>
+                                </div>
+                                <button class="btn-danger-modern" onclick="confirmDeleteAccount()">
+                                    Eliminar cuenta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ==================== Variables ==================== */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --success: #10b981;
+        --info: #06b6d4;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ==================== Profile Page ==================== */
+    .profile-page {
+        background: var(--light);
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    /* ==================== Profile Header ==================== */
+    .profile-header {
+        background: white;
+        box-shadow: var(--shadow);
+        margin-bottom: 40px;
+    }
+
+    .cover-photo {
+        position: relative;
+        height: 400px;
+        background: var(--gradient-primary);
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cover-photo:hover {
+        filter: brightness(0.95);
+    }
+
+    .cover-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+        transition: opacity 0.3s ease;
+    }
+
+    .cover-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        transition: opacity 0.3s ease;
+    }
+
+    .btn-edit-cover {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        color: var(--dark);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-edit-cover:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .profile-info-wrapper {
+        display: flex;
+        align-items: flex-end;
+        gap: 32px;
+        padding: 0 24px 24px;
+        position: relative;
+    }
+
+    .profile-avatar-section {
+        margin-top: -80px;
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .avatar-container:hover .profile-avatar {
+        opacity: 0.9;
+    }
+
+    .profile-avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 6px solid white;
+        box-shadow: var(--shadow-lg);
+        display: block;
+        object-fit: cover;
+    }
+
+    .btn-edit-avatar {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: 3px solid white;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-edit-avatar:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+    }
+
+    .profile-info {
+        flex: 1;
+        padding-bottom: 8px;
+    }
+
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin: 0 0 8px 0;
+    }
+
+    .profile-email {
+        font-size: 1rem;
+        color: #64748b;
+        margin: 0 0 16px 0;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9375rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .stat-item i {
+        font-size: 1.125rem;
+        color: var(--primary);
+    }
+
+    /* ==================== Info Cards ==================== */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .card-header-custom {
+        padding: 20px 24px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .card-header-custom h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-header-custom h3 i {
+        color: var(--primary);
+    }
+
+    .card-body-custom {
+        padding: 24px;
+    }
+
+    /* Info Items */
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--light);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .info-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-item:hover {
+        background: #e0e7ff;
+        transform: translateX(4px);
+    }
+
+    .info-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .info-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 700;
+    }
+
+    .status-badge.active {
+        background: #d1fae5;
+        color: var(--success);
+    }
+
+    /* Quick Actions */
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--light);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        text-decoration: none;
+        color: var(--dark);
+        transition: all 0.3s ease;
+    }
+
+    .quick-action-btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .quick-action-btn:hover {
+        background: #e0e7ff;
+        transform: translateX(4px);
+        color: var(--primary);
+    }
+
+    .action-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .action-icon.bg-primary {
+        background: var(--gradient-primary);
+    }
+
+    .action-icon.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .action-icon.bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    /* ==================== Profile Form ==================== */
+    .profile-form {
+        width: 100%;
+    }
+
+    .form-group-modern {
+        margin-bottom: 0;
+    }
+
+    .form-label-modern {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .form-input-modern {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-input-modern:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 8px;
+    }
+
+    .btn-secondary-modern,
+    .btn-primary-modern {
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-secondary-modern {
+        background: var(--light);
+        color: #64748b;
+    }
+
+    .btn-secondary-modern:hover {
+        background: #e2e8f0;
+        color: var(--dark);
+    }
+
+    .btn-primary-modern {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    /* ==================== Security Section ==================== */
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: var(--light);
+        border-radius: 12px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .security-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .security-item:hover {
+        background: #e0e7ff;
+    }
+
+    .security-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .security-content {
+        flex: 1;
+    }
+
+    .security-content h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0 0 4px 0;
+    }
+
+    .security-content p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .btn-security {
+        padding: 10px 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-security:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+    }
+
+    .toggle-switch input {
+        display: none;
+    }
+
+    .toggle-switch label {
+        display: block;
+        width: 52px;
+        height: 28px;
+        background: #cbd5e1;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0;
+    }
+
+    .toggle-switch label::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .toggle-switch input:checked+label {
+        background: var(--primary);
+    }
+
+    .toggle-switch input:checked+label::after {
+        left: 27px;
+    }
+
+    .toggle-switch input:disabled+label {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ==================== Danger Zone ==================== */
+    .danger-card {
+        border: 2px solid #fee2e2;
+    }
+
+    .danger-card .card-header-custom {
+        background: #fef2f2;
+        border-bottom-color: #fee2e2;
+    }
+
+    .danger-card .card-header-custom h3 {
+        color: var(--danger);
+    }
+
+    .danger-card .card-header-custom h3 i {
+        color: var(--danger);
+    }
+
+    .danger-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .danger-item h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0 0 4px 0;
+    }
+
+    .danger-item p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .btn-danger-modern {
+        padding: 12px 24px;
+        background: var(--danger);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-danger-modern:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* ==================== Upload Overlay ==================== */
+    .upload-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .upload-overlay.active {
+        display: flex;
+    }
+
+    .upload-modal {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        animation: modalAppear 0.3s ease;
+    }
+
+    /* Bootstrap Close Button Style */
+    .btn-close {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .btn-close::before {
+        content: '×';
+        font-size: 2rem;
+        line-height: 1;
+        color: var(--dark);
+    }
+
+    @keyframes modalAppear {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+    }
+
+    .upload-modal h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 12px;
+    }
+
+    .upload-modal p {
+        color: #64748b;
+        margin-bottom: 32px;
+    }
+
+    .upload-progress {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .upload-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        animation: progress-shine 2s infinite;
+    }
+
+    @keyframes progress-shine {
+        0% {
+            background-position: -100% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Image Preview */
+    .image-preview-container {
+        position: relative;
+        max-width: 100%;
+        margin: 20px 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .image-preview {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 16px;
+    }
+
+    /* Success Toast */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .toast-notification.success {
+        border-left: 4px solid var(--success);
+    }
+
+    .toast-notification.warning {
+        border-left: 4px solid var(--warning);
+    }
+
+    .toast-notification.error {
+        border-left: 4px solid var(--danger);
+    }
+
+    .toast-notification i {
+        font-size: 1.5rem;
+    }
+
+    .toast-notification.success i {
+        color: var(--success);
+    }
+
+    .toast-notification.warning i {
+        color: var(--warning);
+    }
+
+    .toast-notification.error i {
+        color: var(--danger);
+    }
+
+    .toast-notification .toast-content h4 {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0 0 4px 0;
+    }
+
+    .toast-notification .toast-content p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* ==================== Photo Viewer ==================== */
+    .photo-viewer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .photo-viewer.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .photo-viewer-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .photo-viewer-header {
+        position: absolute;
+        top: -80px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 10;
+    }
+
+    .photo-viewer-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .viewer-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 3px solid white;
+    }
+
+    .viewer-user-info h3 {
+        color: white;
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+    }
+
+    .viewer-user-info p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .photo-viewer-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .viewer-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .viewer-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .btn-close-viewer {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-close-viewer:hover {
+        background: rgba(239, 68, 68, 0.8);
+    }
+
+    .photo-viewer-image-container {
+        position: relative;
+        max-width: 100%;
+        max-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo-viewer-image {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: imageZoomIn 0.3s ease;
+    }
+
+    @keyframes imageZoomIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .photo-viewer-controls {
+        position: absolute;
+        bottom: -70px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 16px 24px;
+        border-radius: 50px;
+    }
+
+    .zoom-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .zoom-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: white;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .zoom-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .zoom-level {
+        color: white;
+        font-weight: 600;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .download-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .download-btn:hover {
+        background: rgba(99, 102, 241, 0.8);
+    }
+
+    /* ==================== Responsive ==================== */
+    @media (max-width: 991.98px) {
+        .cover-photo {
+            height: 240px;
+        }
+
+        .profile-info-wrapper {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .profile-avatar-section {
+            margin-top: -60px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+        }
+
+        .profile-stats {
+            justify-content: center;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-secondary-modern,
+        .btn-primary-modern {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .profile-name {
+            font-size: 1.5rem;
+        }
+
+        .profile-stats {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .danger-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .btn-danger-modern {
+            width: 100%;
+        }
+    }
+</style>
+
+<!-- AOS Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<!-- Upload Overlay -->
+<div class="upload-overlay" id="uploadOverlay">
+    <div class="upload-modal">
+        <div class="upload-icon">
+            <i class="bi bi-cloud-upload-fill"></i>
+        </div>
+        <h3 id="uploadTitle">Subiendo foto...</h3>
+        <p id="uploadMessage">Por favor espera un momento</p>
+        <div class="upload-progress">
+            <div class="upload-progress-bar" id="uploadProgressBar" style="width: 0%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Viewer -->
+<div class="photo-viewer" id="photoViewer" onclick="closePhotoViewer(event)">
+    <div class="photo-viewer-content" onclick="event.stopPropagation()">
+        <div class="photo-viewer-header">
+            <div class="photo-viewer-info">
+                <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}&background=6366f1&color=fff&size=96&bold=true"
+                    class="viewer-avatar" alt="{{ current_user.nombre }}">
+                <div class="viewer-user-info">
+                    <h3>{{ current_user.nombre }}</h3>
+                    <p id="viewerPhotoType">Foto de perfil</p>
+                </div>
+            </div>
+            <div class="photo-viewer-actions">
+                <button class="viewer-btn" onclick="closePhotoViewer()" title="Cerrar (Esc)">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="photo-viewer-image-container">
+            <img src="" id="viewerImage" class="photo-viewer-image" alt="Foto">
+        </div>
+
+        <div class="photo-viewer-controls">
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut()">
+                    <i class="bi bi-dash-lg"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="zoom-btn" onclick="zoomIn()">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+            <button class="download-btn" onclick="downloadPhoto()">
+                <i class="bi bi-download"></i>
+                <span>Descargar</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 50
+    });
+
+    // Cargar imágenes guardadas al iniciar
+    window.addEventListener('load', function () {
+        loadSavedImages();
+    });
+
+    // Función para comprimir imagen antes de guardar
+    function compressImage(file, maxWidth = 1920, quality = 0.85) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Redimensionar si es necesario
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convertir a base64 con compresión
+                    canvas.toBlob(
+                        (blob) => {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(blob);
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.onerror = reject;
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+
+    // Guardar imagen en localStorage con manejo de errores
+    function saveImageToStorage(key, imageData) {
+        try {
+            localStorage.setItem(key, imageData);
+            return true;
+        } catch (e) {
+            console.error('Error guardando en localStorage:', e);
+
+            // Si falla, intentar limpiar espacio y reintentar
+            if (e.name === 'QuotaExceededError') {
+                console.log('Limpiando espacio en localStorage...');
+
+                // Limpiar solo imágenes antiguas si existen
+                const keysToClean = ['temp_uploads', 'old_images', 'cache_'];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const storageKey = localStorage.key(i);
+                    if (keysToClean.some(prefix => storageKey && storageKey.startsWith(prefix))) {
+                        localStorage.removeItem(storageKey);
+                    }
+                }
+
+                // Reintentar
+                try {
+                    localStorage.setItem(key, imageData);
+                    return true;
+                } catch (retryError) {
+                    console.error('Error en reintento:', retryError);
+                    showToast('Advertencia', 'La imagen es muy grande. Se mostrará pero no se guardará permanentemente.', 'warning');
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+
+    // Cargar imágenes desde localStorage
+    function loadSavedImages() {
+        try {
+            // Cargar avatar
+            const savedAvatar = localStorage.getItem('rambopet_profile_avatar');
+            if (savedAvatar) {
+                const avatar = document.getElementById('profileAvatar');
+                avatar.src = savedAvatar;
+                document.getElementById('avatarData').value = savedAvatar;
+            }
+
+            // Cargar portada
+            const savedCover = localStorage.getItem('rambopet_profile_cover');
+            if (savedCover) {
+                const coverPhoto = document.getElementById('coverPhoto');
+                coverPhoto.style.backgroundImage = `url(${savedCover})`;
+                coverPhoto.style.backgroundSize = 'cover';
+                coverPhoto.style.backgroundPosition = 'center';
+                coverPhoto.style.backgroundRepeat = 'no-repeat';
+
+                // Ocultar gradient y pattern
+                const gradient = coverPhoto.querySelector('.cover-gradient');
+                const pattern = coverPhoto.querySelector('.cover-pattern');
+                if (gradient) gradient.style.opacity = '0';
+                if (pattern) pattern.style.opacity = '0';
+
+                document.getElementById('coverData').value = savedCover;
+            }
+        } catch (error) {
+            console.error('Error cargando imágenes:', error);
+        }
+    }
+
+    // Variables globales
+    let avatarFile = null;
+    let coverFile = null;
+    let currentZoom = 1;
+    let currentPhotoSrc = '';
+
+    // View Avatar Photo
+    function viewAvatarPhoto() {
+        const avatar = document.getElementById('profileAvatar');
+        const viewer = document.getElementById('photoViewer');
+        const viewerImage = document.getElementById('viewerImage');
+        const photoType = document.getElementById('viewerPhotoType');
+
+        currentPhotoSrc = avatar.src;
+        viewerImage.src = currentPhotoSrc;
+        photoType.textContent = 'Foto de perfil';
+        viewer.classList.add('active');
+        currentZoom = 1;
+        updateZoom();
+
+        document.body.style.overflow = 'hidden';
+    }
+
+    // View Cover Photo
+    function viewCoverPhoto() {
+        const cover = document.getElementById('coverPhoto');
+        const viewer = document.getElementById('photoViewer');
+        const viewerImage = document.getElementById('viewerImage');
+        const photoType = document.getElementById('viewerPhotoType');
+
+        // Get background image or use gradient
+        const bgImage = cover.style.backgroundImage;
+        if (bgImage && bgImage !== 'none') {
+            currentPhotoSrc = bgImage.slice(5, -2); // Remove url(" and ")
+            viewerImage.src = currentPhotoSrc;
+            photoType.textContent = 'Foto de portada';
+            viewer.classList.add('active');
+            currentZoom = 1;
+            updateZoom();
+
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Close Photo Viewer
+    function closePhotoViewer(event) {
+        if (event && event.target !== event.currentTarget) return;
+
+        const viewer = document.getElementById('photoViewer');
+        viewer.classList.remove('active');
+        document.body.style.overflow = '';
+        currentZoom = 1;
+    }
+
+    // Zoom In
+    function zoomIn() {
+        if (currentZoom < 3) {
+            currentZoom += 0.25;
+            updateZoom();
+        }
+    }
+
+    // Zoom Out
+    function zoomOut() {
+        if (currentZoom > 0.5) {
+            currentZoom -= 0.25;
+            updateZoom();
+        }
+    }
+
+    // Update Zoom
+    function updateZoom() {
+        const viewerImage = document.getElementById('viewerImage');
+        const zoomLevel = document.getElementById('zoomLevel');
+
+        viewerImage.style.transform = `scale(${currentZoom})`;
+        zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+    }
+
+    // Download Photo
+    function downloadPhoto() {
+        const link = document.createElement('a');
+        link.href = currentPhotoSrc;
+        link.download = 'foto_perfil_rambopet_' + Date.now() + '.jpg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('¡Descargado!', 'La foto se ha descargado correctamente', 'success');
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+        const viewer = document.getElementById('photoViewer');
+        if (!viewer.classList.contains('active')) return;
+
+        if (e.key === 'Escape') {
+            closePhotoViewer();
+        } else if (e.key === '+' || e.key === '=') {
+            zoomIn();
+        } else if (e.key === '-') {
+            zoomOut();
+        }
+    });
+
+    // Preview Avatar con compresión
+    async function previewAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+            showToast('Error', 'Por favor selecciona una imagen válida', 'error');
+            return;
+        }
+
+        // Validar tamaño (máximo 10MB antes de compresión)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('Error', 'La imagen no debe superar 10MB', 'error');
+            return;
+        }
+
+        try {
+            // Comprimir imagen
+            const compressedImage = await compressImage(file, 800, 0.85);
+
+            const img = document.getElementById('profileAvatar');
+            img.src = compressedImage;
+            avatarFile = file;
+
+            // Guardar en hidden input
+            document.getElementById('avatarData').value = compressedImage;
+
+            // Guardar en localStorage con clave única
+            const saved = saveImageToStorage('rambopet_profile_avatar', compressedImage);
+
+            if (saved) {
+                showToast('¡Perfecto!', 'Foto de perfil actualizada y guardada correctamente', 'success');
+            } else {
+                showToast('Actualizado', 'Foto de perfil actualizada (temporal)', 'warning');
+            }
+        } catch (error) {
+            console.error('Error procesando imagen:', error);
+            showToast('Error', 'No se pudo procesar la imagen', 'error');
+        }
+    }
+
+    // Preview Cover con compresión
+    async function previewCover(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+            showToast('Error', 'Por favor selecciona una imagen válida', 'error');
+            return;
+        }
+
+        // Validar tamaño (máximo 10MB antes de compresión)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('Error', 'La imagen no debe superar 10MB', 'error');
+            return;
+        }
+
+        try {
+            // Comprimir imagen
+            const compressedImage = await compressImage(file, 1920, 0.85);
+
+            const coverPhoto = document.getElementById('coverPhoto');
+
+            // Aplicar imagen como background
+            coverPhoto.style.backgroundImage = `url(${compressedImage})`;
+            coverPhoto.style.backgroundSize = 'cover';
+            coverPhoto.style.backgroundPosition = 'center';
+            coverPhoto.style.backgroundRepeat = 'no-repeat';
+
+            coverFile = file;
+
+            // Guardar en hidden input
+            document.getElementById('coverData').value = compressedImage;
+
+            // Ocultar gradient y pattern para ver mejor la imagen
+            const gradient = coverPhoto.querySelector('.cover-gradient');
+            const pattern = coverPhoto.querySelector('.cover-pattern');
+            if (gradient) gradient.style.opacity = '0';
+            if (pattern) pattern.style.opacity = '0';
+
+            // Guardar en localStorage con clave única
+            const saved = saveImageToStorage('rambopet_profile_cover', compressedImage);
+
+            if (saved) {
+                showToast('¡Perfecto!', 'Foto de portada actualizada y guardada correctamente', 'success');
+            } else {
+                showToast('Actualizado', 'Foto de portada actualizada (temporal)', 'warning');
+            }
+        } catch (error) {
+            console.error('Error procesando imagen:', error);
+            showToast('Error', 'No se pudo procesar la imagen', 'error');
+        }
+    }
+
+    // Upload con simulación de progreso
+    function simulateUpload(callback) {
+        const overlay = document.getElementById('uploadOverlay');
+        const progressBar = document.getElementById('uploadProgressBar');
+
+        overlay.classList.add('active');
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            progress += Math.random() * 30;
+            if (progress > 100) progress = 100;
+
+            progressBar.style.width = progress + '%';
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                    if (callback) callback();
+                }, 500);
+            }
+        }, 200);
+    }
+
+    // Show Toast Notification
+    function showToast(title, message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+
+        let icon, iconColor;
+        if (type === 'success') {
+            icon = 'bi-check-circle-fill';
+            iconColor = 'var(--success)';
+        } else if (type === 'warning') {
+            icon = 'bi-exclamation-triangle-fill';
+            iconColor = 'var(--warning)';
+        } else {
+            icon = 'bi-x-circle-fill';
+            iconColor = 'var(--danger)';
+        }
+
+        toast.innerHTML = `
+            <i class="bi ${icon}" style="color: ${iconColor}"></i>
+            <div class="toast-content">
+                <h4>${title}</h4>
+                <p>${message}</p>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // Handle form submission
+    document.querySelector('.profile-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        simulateUpload(() => {
+            showToast('¡Éxito!', 'Perfil actualizado correctamente', 'success');
+            // Aquí enviarías el formulario al servidor
+            // this.submit();
+        });
+    });
+
+    // Password Modal Functions
+    function openPasswordModal() {
+        const modal = document.getElementById('passwordModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePasswordModal() {
+        const modal = document.getElementById('passwordModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Confirm Delete Account
+    function confirmDeleteAccount() {
+        if (confirm('⚠️ ADVERTENCIA\n\n¿Estás seguro de que deseas eliminar tu cuenta?\n\nEsta acción es permanente e irreversible. Se eliminarán:\n\n• Todos tus datos personales\n• Información de tus mascotas\n• Historial de citas\n• Archivos adjuntos\n\n¿Deseas continuar?')) {
+            if (confirm('⚠️ ÚLTIMA CONFIRMACIÓN\n\nPor favor confirma una vez más que deseas eliminar permanentemente tu cuenta.\n\n¿Estás absolutamente seguro?')) {
+                // Aquí iría la lógica para eliminar la cuenta
+                showToast('Procesando', 'Eliminando cuenta...', 'warning');
+
+                setTimeout(() => {
+                    showToast('Cuenta Eliminada', 'Tu cuenta ha sido eliminada exitosamente', 'success');
+                    // Redirigir al logout o página de inicio
+                    // window.location.href = '/logout';
+                }, 2000);
+            }
+        }
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const passwordModal = document.getElementById('passwordModal');
+            if (passwordModal.classList.contains('active')) {
+                closePasswordModal();
+            }
+        }
+    });
+
+    // Animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+{% endblock %}

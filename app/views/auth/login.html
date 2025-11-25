@@ -1,0 +1,322 @@
+﻿{% extends "base_auth.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+    }
+
+    .login-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1e4c8a 0%, #1e6ba8 25%, #2e8b6c 75%, #45b08e 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    }
+
+    .login-card {
+        background: rgba(10, 25, 47, 0.85);
+        backdrop-filter: blur(20px);
+        border-radius: 12px;
+        padding: 0;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-header {
+        padding: 40px 40px 30px;
+        text-align: center;
+    }
+
+    .icon-container {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 25px;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+    }
+
+    .icon-container i {
+        color: #ffffff;
+        font-size: 42px;
+    }
+
+    .login-title {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+    }
+
+    .login-body {
+        padding: 0 40px 40px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 18px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 16px 14px 48px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        color: #ffffff;
+        outline: none;
+    }
+
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: #22c55e;
+        border-color: #22c55e;
+    }
+
+    .form-check-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 13px;
+        margin-left: 8px;
+        cursor: pointer;
+    }
+
+    .forgot-link {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .forgot-link:hover {
+        color: #22c55e;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        border: none;
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+        color: #ffffff;
+    }
+
+    .divider {
+        margin: 30px 0 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider-text {
+        background: rgba(10, 25, 47, 0.85);
+        padding: 0 16px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .register-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .register-link {
+        color: #22c55e;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .register-link:hover {
+        color: #16a34a;
+        text-decoration: underline;
+    }
+
+    .alert {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #86efac;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="icon-container">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <h1 class="login-title">Bienvenido</h1>
+            <p class="login-subtitle">Ingresa a tu cuenta</p>
+        </div>
+
+        <div class="login-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div
+                class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else category }}">
+                <i class="bi bi-{{ 'exclamation-circle-fill' if category == 'error' else 'check-circle-fill' }}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-group">
+                    <label class="form-label" for="username">Usuario</label>
+                    <div class="input-group">
+                        <i class="bi bi-person input-icon"></i>
+                        <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Ingresa tu usuario" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Contraseña</label>
+                    <div class="input-group">
+                        <i class="bi bi-lock-fill input-icon"></i>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="Ingresa tu contraseña" required>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Recordarme</label>
+                    </div>
+                    <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn btn-login">LOGIN</button>
+
+                <div class="divider">
+                    <span class="divider-text">O</span>
+                </div>
+
+                <p class="register-text">
+                    ¿No tienes cuenta?
+                    <a href="{{ url_for('auth.register') }}" class="register-link">Regístrate</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

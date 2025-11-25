@@ -1,0 +1,301 @@
+﻿{% extends "layouts/veterinario_base.html" %}
+{% block title %}Citas Pendientes{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern vet-theme">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Citas Pendientes</h1>
+            <p class="page-header-subtitle-modern">Gestiona las solicitudes de citas de tus pacientes</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="date-widget-modern">
+            <div class="date-display fw-semibold" id="current-date-full">--</div>
+            <div class="day-display text-white-50" id="current-day">--</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card modern-activity-card">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
+                <div>
+                    <i class="bi bi-clock-history me-2 text-brown"></i>
+                    <span class="fw-semibold">Solicitudes por Confirmar</span>
+                </div>
+                <span class="badge bg-brown-subtle text-brown">{{ citas|length }} pendientes</span>
+            </div>
+            <div class="card-body p-0">
+                {% if citas %}
+                <div class="activity-list">
+                    {% for c in citas %}
+                    <div class="activity-item-modern p-3 border-bottom">
+                        <div class="d-flex align-items-center w-100 flex-wrap gap-3">
+                            <!-- Icon -->
+                            <div class="activity-icon activity-icon-brown flex-shrink-0">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="activity-content flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <div>
+                                        <h5 class="mb-1 fw-bold text-dark">{{ c.mascota.nombre }}</h5>
+                                        <div class="text-muted small mb-1">
+                                            <i class="bi bi-person me-1"></i>Tutor: {{ c.tutor.nombre_completo }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-chat-left-text me-1"></i>{{ c.motivo }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Date Badge -->
+                                    <div class="text-end">
+                                        <div class="badge bg-brown-subtle text-brown border-0 mb-1">
+                                            <i class="bi bi-calendar3 me-1"></i>{{ c.fecha.strftime('%d/%m/%Y') }}
+                                        </div>
+                                        <div class="d-block text-muted small fw-semibold">
+                                            <i class="bi bi-clock me-1"></i>{{ c.fecha.strftime('%H:%M') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="activity-actions flex-shrink-0 ms-auto">
+                                <form method="POST" action="{{ url_for('veterinario.aceptar_cita', id=c.id) }}">
+                                    <button type="submit"
+                                        class="btn btn-brown-modern btn-sm d-flex align-items-center gap-2 shadow-sm">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Aceptar Cita</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state p-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle text-brown" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                    <h5 class="text-muted fw-semibold">¡Todo al día!</h5>
+                    <p class="text-muted small mb-0">No tienes citas pendientes de confirmación.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Brown Theme Palette */
+    :root {
+        --brown-primary: #5D4037;
+        --brown-secondary: #8D6E63;
+        --brown-light: #D7CCC8;
+        --brown-dark: #3E2723;
+    }
+
+    /* Header Card Styling */
+    .page-header-modern.vet-theme {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Decorative background element */
+    .page-header-modern.vet-theme::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .page-header-modern.vet-theme .page-header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header-modern.vet-theme .page-header-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        backdrop-filter: blur(5px);
+    }
+
+    .page-header-modern.vet-theme .page-header-title-modern {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        color: white;
+    }
+
+    .page-header-modern.vet-theme .page-header-subtitle-modern {
+        font-size: 1rem;
+        margin: 0.25rem 0 0 0;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .page-header-modern.vet-theme .page-header-actions {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Date Widget */
+    .date-widget-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .date-display {
+        font-size: 1.125rem;
+        color: white;
+        line-height: 1;
+    }
+
+    .day-display {
+        font-size: 0.875rem;
+        text-transform: capitalize;
+    }
+
+    /* Brown Theme Colors */
+    .text-brown {
+        color: var(--brown-primary) !important;
+    }
+
+    .bg-brown {
+        background-color: var(--brown-primary) !important;
+        color: white;
+    }
+
+    .bg-brown-subtle {
+        background-color: #EFEBE9 !important;
+        color: var(--brown-dark);
+    }
+
+    .btn-brown-modern {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-brown-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(93, 64, 55, 0.4) !important;
+        color: white;
+        background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-primary) 100%);
+    }
+
+    /* Activity Icons */
+    .activity-icon-brown {
+        background-color: rgba(93, 64, 55, 0.1);
+        color: var(--brown-primary);
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    /* Activity Item Hover */
+    .activity-item-modern {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .activity-item-modern:hover {
+        background-color: #f8f9fa;
+        transform: translateX(4px);
+    }
+
+    .activity-item-modern:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Modern Card */
+    .modern-activity-card {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .modern-activity-card .card-header {
+        border-radius: 0 !important;
+        background-color: white !important;
+    }
+</style>
+
+<script>
+    // Update current date and day
+    function updateDate() {
+        const now = new Date();
+        const laPazTime = new Date(now.toLocaleString('en-US', {
+            timeZone: 'America/La_Paz'
+        }));
+
+        const dateStr = laPazTime.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const dayStr = laPazTime.toLocaleDateString('es-ES', {
+            weekday: 'long'
+        });
+
+        document.getElementById('current-date-full').textContent = dateStr;
+        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+        updateDate();
+    });
+</script>
+{% endblock %}

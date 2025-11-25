@@ -17,7 +17,7 @@ migrate = Migrate()
 
 def create_app(config_name='default'):
     """Factory para crear la aplicación"""
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='views')
     
     # Cargar configuración
     from config import config
@@ -70,7 +70,7 @@ def create_app(config_name='default'):
     @app.context_processor
     def inject_config():
         return {
-            'app_name': app.config.get('APP_NAME', 'Sistema Veterinario'),
+            'app_name': app.config.get('APP_NAME', 'Rambopet'),
             'app_version': app.config.get('APP_VERSION', '2.0.0'),
             'primary_color': app.config.get('PRIMARY_COLOR', '#2563eb'),
             'secondary_color': app.config.get('SECONDARY_COLOR', '#10b981')

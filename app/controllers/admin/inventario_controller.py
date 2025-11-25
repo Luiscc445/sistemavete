@@ -147,13 +147,13 @@ def nuevo():
                 concentracion=concentracion,
                 categoria=categoria,
                 via_administracion=via_administracion,
-                stock_actual=stock_actual,
+                stock_actual=0, # Se inicializa en 0 y se agrega el lote después
                 stock_minimo=stock_minimo,
                 unidad_medida=unidad_medida,
                 precio_compra=precio_compra,
                 precio_venta=precio_venta,
                 laboratorio=laboratorio,
-                lote=lote,
+                lote=lote, # Lote informativo del medicamento (opcional)
                 fecha_vencimiento=datetime.strptime(fecha_vencimiento, '%Y-%m-%d').date() if fecha_vencimiento else None,
                 requiere_receta=requiere_receta,
                 controlado=controlado,
@@ -162,6 +162,17 @@ def nuevo():
             )
 
             db.session.add(medicamento)
+            db.session.flush() # Para obtener el ID
+
+            # Si hay stock inicial, crear el primer lote
+            if stock_actual > 0:
+                medicamento.aumentar_stock(
+                    cantidad=stock_actual,
+                    lote_codigo=lote,
+                    fecha_vencimiento=medicamento.fecha_vencimiento,
+                    precio_compra=precio_compra
+                )
+
             db.session.commit()
 
             flash(f'Medicamento "{nombre}" creado exitosamente.', 'success')
@@ -181,7 +192,10 @@ def nuevo():
 def ver(med_id):
     """Ver detalles de un medicamento"""
     medicamento = Medicamento.query.get_or_404(med_id)
-    return render_template('admin/inventario/ver.html', medicamento=medicamento)
+    return render_template('admin/inventario/ver.html', 
+                         medicamento=medicamento,
+                         fecha_actual=date.today(),
+                         fecha_limite=date.today() + timedelta(days=30))
 
 
 @inventario_bp.route('/<int:med_id>/editar', methods=['GET', 'POST'])
@@ -200,12 +214,13 @@ def editar(med_id):
             medicamento.concentracion = request.form.get('concentracion')
             medicamento.categoria = request.form.get('categoria')
             medicamento.via_administracion = request.form.get('via_administracion')
-            medicamento.stock_actual = int(request.form.get('stock_actual', 0))
+            # El stock no se edita directamente aquí, solo via ajustes
             medicamento.stock_minimo = int(request.form.get('stock_minimo', 5))
             medicamento.unidad_medida = request.form.get('unidad_medida')
             medicamento.precio_compra = float(request.form.get('precio_compra', 0))
             medicamento.precio_venta = float(request.form.get('precio_venta', 0))
             medicamento.laboratorio = request.form.get('laboratorio')
+            # Lote y vencimiento informativos principales
             medicamento.lote = request.form.get('lote')
 
             fecha_vencimiento = request.form.get('fecha_vencimiento')
@@ -241,17 +256,28 @@ def ajustar_stock(med_id):
         tipo_ajuste = request.form.get('tipo_ajuste')
         cantidad = int(request.form.get('cantidad', 0))
         motivo = request.form.get('motivo', '')
+        
+        # Datos para entrada de lote
+        lote_codigo = request.form.get('lote_codigo')
+        fecha_vencimiento_str = request.form.get('fecha_vencimiento')
+        fecha_vencimiento = None
+        if fecha_vencimiento_str:
+             fecha_vencimiento = datetime.strptime(fecha_vencimiento_str, '%Y-%m-%d').date()
 
         if cantidad <= 0:
             flash('La cantidad debe ser mayor a 0.', 'danger')
             return redirect(url_for('inventario.ver', med_id=med_id))
 
         if tipo_ajuste == 'entrada':
-            medicamento.aumentar_stock(cantidad)
+            medicamento.aumentar_stock(
+                cantidad=cantidad,
+                lote_codigo=lote_codigo,
+                fecha_vencimiento=fecha_vencimiento
+            )
             flash(f'Se agregaron {cantidad} {medicamento.unidad_medida} al stock. Motivo: {motivo}', 'success')
         elif tipo_ajuste == 'salida':
             if medicamento.reducir_stock(cantidad):
-                flash(f'Se retiraron {cantidad} {medicamento.unidad_medida} del stock. Motivo: {motivo}', 'success')
+                flash(f'Se retiraron {cantidad} {medicamento.unidad_medida} del stock (PEPS). Motivo: {motivo}', 'success')
             else:
                 flash('Stock insuficiente para realizar la salida.', 'danger')
                 return redirect(url_for('inventario.ver', med_id=med_id))
@@ -263,6 +289,21 @@ def ajustar_stock(med_id):
         flash(f'Error al ajustar stock: {str(e)}', 'danger')
 
     return redirect(url_for('inventario.ver', med_id=med_id))
+
+
+@inventario_bp.route('/reporte')
+@admin_required
+def reporte():
+    """Generar reporte de inventario para impresión"""
+    medicamentos = Medicamento.query.filter_by(activo=True).order_by(Medicamento.nombre.asc()).all()
+    
+    # Calcular valor total del inventario
+    valor_total = sum(m.stock_actual * m.precio_compra for m in medicamentos if m.stock_actual and m.precio_compra)
+    
+    return render_template('admin/inventario/reporte.html', 
+                          medicamentos=medicamentos,
+                          valor_total=valor_total,
+                          fecha=datetime.now())
 
 
 @inventario_bp.route('/<int:med_id>/eliminar', methods=['POST'])

@@ -1,0 +1,395 @@
+/* ============================================
+   MOBILE FIXES ONLY - No afecta desktop
+   Solo para pantallas < 992px
+   ============================================ */
+
+/* ==========================================
+   PAGE HEADERS PREMIUM - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Page headers que se salen */
+    .page-header-modern {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        overflow: hidden;
+    }
+
+    .page-header-content {
+        width: 100%;
+        gap: 0.75rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .page-header-icon {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.25rem !important;
+        flex-shrink: 0;
+    }
+
+    .page-header-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-header-title-modern {
+        font-size: 1.25rem !important;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+
+    .page-header-subtitle-modern {
+        font-size: 0.8rem !important;
+        line-height: 1.4;
+    }
+
+    .page-header-actions {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .page-header-actions .btn,
+    .page-header-actions .dashboard-date {
+        width: 100% !important;
+        justify-content: center !important;
+        font-size: 0.875rem !important;
+    }
+
+    /* Stat Cards - Stack en móvil */
+    .row.g-3 .col-xl-3,
+    .row.g-3 .col-lg-3,
+    .row.g-3 .col-md-6 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .modern-stat-card {
+        margin-bottom: 0.75rem;
+    }
+
+    .modern-stat-card .stat-value {
+        font-size: 1.75rem !important;
+    }
+
+    .stat-icon-wrapper {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ==========================================
+   TABLAS - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Container de tablas con scroll horizontal */
+    .modern-table-container,
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+    }
+
+    /* Tablas con ancho mínimo para scroll */
+    .table-modern {
+        min-width: 600px;
+        font-size: 0.85rem !important;
+    }
+
+    .table-modern thead th {
+        font-size: 0.7rem !important;
+        padding: 0.75rem 0.5rem !important;
+        white-space: nowrap;
+    }
+
+    .table-modern tbody td {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Botones de acción más grandes para touch */
+    .action-btn-modern {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1rem !important;
+        margin: 0 2px !important;
+    }
+
+    /* Cards de tablas */
+    .modern-activity-card .card-header {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+    }
+
+    .modern-activity-card .card-header .d-flex {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .modern-activity-card .card-header .btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .modern-activity-card .card-header h6 {
+        font-size: 0.9rem !important;
+    }
+
+    .modern-activity-card .card-body {
+        padding: 1rem !important;
+    }
+}
+
+/* ==========================================
+   FORMULARIOS - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Todos los campos de formulario a ancho completo */
+    .row.g-3 .col-md-6,
+    .row.g-3 .col-md-4,
+    .row.g-3 .col-md-3,
+    .row.g-3 .col-md-2 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 16px !important;
+        /* Evita zoom en iOS */
+        padding: 0.75rem !important;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Botones de acción en headers */
+    .btn-primary-modern,
+    .btn-success-modern,
+    .btn-warning-modern,
+    .btn-info-modern {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.875rem !important;
+        white-space: nowrap;
+    }
+}
+
+/* ==========================================
+   MODALES - Mobile Fix
+   ========================================== */
+@media (max-width: 767.98px) {
+
+    .modal-dialog {
+        margin: 0.5rem !important;
+        max-width: calc(100% - 1rem) !important;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem !important;
+    }
+
+    .modal-title {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* ==========================================
+   FILTROS Y BÚSQUEDA - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Formularios de filtros */
+    .card-header form.row {
+        gap: 0.75rem !important;
+    }
+
+    .card-header form.row .col-md-4,
+    .card-header form.row .col-md-3,
+    .card-header form.row .col-md-2 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================
+   BREADCRUMBS Y NAVEGACIÓN - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    .breadcrumb {
+        font-size: 0.8rem !important;
+        margin-bottom: 1rem !important;
+        padding: 0.5rem !important;
+    }
+
+    h1.mt-4 {
+        font-size: 1.5rem !important;
+        margin-top: 1rem !important;
+    }
+
+    h2 {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ==========================================
+   PAGINACIÓN - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+}
+
+/* ==========================================
+   DASHBOARD ESPECÍFICOS - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Calendario si existe */
+    .calendar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Gráficos */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Activity items */
+    .activity-item {
+        padding: 0.75rem !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .activity-icon {
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+/* ==========================================
+   BADGES Y ALERTAS - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    .badge {
+        font-size: 0.75rem !important;
+        padding: 0.35rem 0.65rem !important;
+    }
+
+    .alert {
+        padding: 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+
+    .alert i {
+        font-size: 1rem !important;
+    }
+}
+
+/* ==========================================
+   FOOTERS - Mobile Fix
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    footer .d-flex {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 0.5rem !important;
+    }
+
+    footer {
+        font-size: 0.8rem !important;
+        padding: 1rem 0 !important;
+    }
+}
+
+/* ==========================================
+   UTILITY CLASSES - Mobile Override
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Ocultar en móvil cuando sea necesario */
+    .d-mobile-none {
+        display: none !important;
+    }
+
+    /* Stack elementos d-flex en móvil */
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+
+    /* Padding reducido en móvil */
+    .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Márgenes reducidos */
+    .mt-4 {
+        margin-top: 1rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* ==========================================
+   FIX para elementos que se salen
+   ========================================== */
+@media (max-width: 991.98px) {
+
+    /* Prevenir overflow horizontal */
+    body {
+        overflow-x: hidden !important;
+    }
+
+    main {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    .container-fluid {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Forzar word wrap en textos largos */
+    .card-body,
+    .modal-body,
+    .alert,
+    p {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* Imágenes responsivas */
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}

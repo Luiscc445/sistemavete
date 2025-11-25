@@ -1,163 +1,207 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-:root {
-    --primary-color: #6C63FF;
-    /* Purple/Blue from image */
-    --primary-hover: #5a52d5;
-    --bg-color: #F0F2F5;
-    --text-color: #333;
-    --text-muted: #666;
-    --input-border: #ddd;
-    --white: #ffffff;
+/* =========================================
+   Fondo Animado (Verde, Púrpura, Café)
+   ========================================= */
+.login-bg-gradient {
+    /* Mezcla moderna de verdes oscuros, púrpuras vibrantes y tonos café/tierra */
+    background: linear-gradient(135deg,
+            #2d5016 0%,
+            /* Verde bosque oscuro */
+            #4a7c59 25%,
+            /* Verde salvia */
+            #6b5b95 50%,
+            /* Púrpura apagado */
+            #8e44ad 75%,
+            /* Violeta vibrante */
+            #5f3e2f 100%
+            /* Café oscuro */
+        );
+    background-size: 400% 400%;
+    background-attachment: fixed;
+    animation: gradientShift 15s ease infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    /* Asegura que quede detrás del contenido */
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
-/* Hide unwanted elements from base template if they leak */
-.sb-nav-fixed #layoutSidenav #layoutSidenav_nav,
-.sb-topnav,
-footer,
-.container-fluid h1.mt-4,
-.breadcrumb {
+/* =========================================
+   Tarjeta de Login (Efecto Cristal)
+   ========================================= */
+.login-card {
+    background: rgba(20, 40, 30, 0.93) !important;
+    /* Fondo oscuro verdoso semitransparente */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 6px !important;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5) !important;
+    animation: slideUp 0.6s ease-out;
+}
+
+/* Animación de entrada de la tarjeta */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   Botones y Acentos (Color Teal/Turquesa)
+   ========================================= */
+.bg-teal {
+    background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.btn-teal {
+    background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);
+    border: none;
+    transition: all 0.3s ease;
+    color: white;
+    /* Aseguramos texto blanco */
+}
+
+.btn-teal:hover {
+    background: linear-gradient(135deg, #26a69a 0%, #00897b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(38, 166, 154, 0.5) !important;
+}
+
+.btn-teal:active {
+    transform: translateY(0);
+}
+
+/* =========================================
+   Inputs (Campos de texto)
+   ========================================= */
+.input-group {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.input-group-text {
+    border: none;
+    padding: 10px 12px;
+    background-color: #f8f9fa;
+}
+
+.input-group .form-control {
+    border: none;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 3px 10px rgba(77, 182, 172, 0.3);
+    border-color: #4db6ac;
+}
+
+/* =========================================
+   Tipografía y Colores de Texto
+   ========================================= */
+.login-card h4,
+.login-card .text-white {
+    color: #ffffff !important;
+}
+
+.login-card .text-white-50,
+.login-card .text-secondary {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.login-card a.text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+.login-card a.text-white-50:hover {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.login-card a.text-white {
+    color: #ffffff !important;
+    font-weight: 400;
+    text-decoration: none;
+}
+
+.login-card a.text-white:hover {
+    color: #4db6ac !important;
+}
+
+/* =========================================
+   Checkboxes
+   ========================================= */
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #4db6ac;
+    border-color: #4db6ac;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* =========================================
+   Utilidades de Limpieza (Ocultar elementos extra)
+   ========================================= */
+/* Oculta elementos comunes de plantillas de admin si se usa este login */
+.login-bg-gradient~* .sb-topnav,
+.login-bg-gradient~* footer,
+.login-bg-gradient~* .offcanvas,
+.login-bg-gradient~* main {
     display: none !important;
 }
 
-.sb-nav-fixed #layoutSidenav #layoutSidenav_content {
-    margin-left: 0 !important;
+body.sb-nav-fixed {
     padding-left: 0 !important;
-    top: 0 !important;
-    background: transparent !important;
 }
 
-.login-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
-}
+/* =========================================
+   Responsive (Móvil)
+   ========================================= */
+@media (max-width: 576px) {
+    .login-bg-gradient .card {
+        margin: 1rem;
+        max-width: 100% !important;
+    }
 
-.login-card {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 40px 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    text-align: center;
-}
+    .bg-teal {
+        width: 75px !important;
+        height: 75px !important;
+    }
 
-.illustration-container {
-    margin-bottom: 15px;
-}
-
-.illustration-container img {
-    max-width: 100%;
-    height: auto;
-    max-height: 120px;
-}
-
-.login-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-.login-subtitle {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 30px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px 20px;
-    border: 1px solid var(--input-border);
-    border-radius: 50px;
-    /* Fully rounded */
-    font-size: 14px;
-    font-family: 'Poppins', sans-serif;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.form-label {
-    display: none;
-    /* Hiding labels as placeholders are used in the design */
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--primary-color);
-    border: none;
-    border-radius: 50px;
-    color: var(--white);
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-hover);
-}
-
-.login-footer {
-    margin-top: 20px;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-.create-account {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    margin-left: 5px;
-}
-
-.create-account:hover {
-    text-decoration: underline;
-}
-
-/* Password toggle eye icon (if we add it later) */
-.password-wrapper {
-    position: relative;
-}
-
-.password-toggle {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #999;
-}
-
-/* Checkbox style */
-.form-check {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 15px;
-    font-size: 13px;
-    color: var(--text-muted);
+    .bg-teal i {
+        font-size: 34px !important;
+    }
 }

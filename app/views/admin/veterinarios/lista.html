@@ -1,0 +1,220 @@
+{% extends "layouts/admin_base.html" %}
+{% block title %}Gestión de Veterinarios{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Gestión de Veterinarios</h1>
+            <p class="page-header-subtitle-modern">Administra el equipo médico y especialistas</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('admin_veterinarios.nuevo') }}" class="btn btn-primary-modern">
+            <i class="bi bi-person-plus-fill me-1"></i> Nuevo Veterinario
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-funnel me-1"></i> Filtrar Personal</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin_veterinarios.lista') }}" class="row g-3">
+            <div class="col-md-8">
+                <select class="form-select" name="especialidad" onchange="this.form.submit()">
+                    <option value="">Todas las Especialidades</option>
+                    {% for servicio in servicios %}
+                    <option value="{{ servicio.nombre }}" {% if especialidad_actual==servicio.nombre %}selected{% endif
+                        %}>
+                        {{ servicio.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('admin_veterinarios.lista') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar Filtros
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card modern-activity-card mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+        <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-table me-2"></i>Equipo Médico</h6>
+    </div>
+    <div class="card-body p-4">
+        <div class="modern-table-container">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr>
+                        <th>Profesional</th>
+                        <th>Especialidad</th>
+                        <th>Licencia</th>
+                        <th>Estadísticas</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if veterinarios and veterinarios.items %}
+                    {% for vet in veterinarios.items %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3 bg-success-subtle text-success">
+                                    Dr.
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ vet.nombre }} {{ vet.apellido }}</div>
+                                    <div class="small text-muted">{{ vet.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary px-2">
+                                {{ vet.especialidad or 'General' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="font-monospace text-secondary small">{{ vet.licencia_profesional or 'N/D'
+                                }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 text-muted small">
+                                <span title="Citas Completadas"><i class="bi bi-check-circle-fill text-success"></i> {{
+                                    vet.stats.citas_completadas }}</span>
+                                <span title="Citas Pendientes"><i class="bi bi-clock-fill text-warning"></i> {{
+                                    vet.stats.citas_pendientes }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if vet.activo %}
+                            <span
+                                class="badge bg-success-subtle text-success border border-success rounded-pill px-2">Activo</span>
+                            {% else %}
+                            <span
+                                class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-2">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('admin_veterinarios.ver', vet_id=vet.id) }}"
+                                    class="action-btn-modern action-btn-view" title="Ver Detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin_veterinarios.editar', vet_id=vet.id) }}"
+                                    class="action-btn-modern action-btn-edit" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="action-btn-modern action-btn-delete" title="Eliminar"
+                                    onclick="confirmarEliminacion({{ vet.id }}, '{{ vet.nombre }} {{ vet.apellido }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-person-x display-4 d-block mb-3 opacity-25"></i>
+                                No hay veterinarios registrados con estos criterios.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if veterinarios.pages > 1 %}
+        <nav aria-label="Navegación" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% for page_num in veterinarios.iter_pages() %}
+                {% if page_num %}
+                <li class="page-item {% if page_num == veterinarios.page %}active{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('admin_veterinarios.lista', page=page_num, especialidad=especialidad_actual) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar Veterinario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Confirma que desea eliminar al veterinario <strong id="nombreVet"></strong>?</p>
+                <div class="alert alert-warning small">
+                    <i class="bi bi-info-circle me-1"></i> Se eliminarán también todas las citas asignadas a este
+                    profesional.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminar" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+
+    .action-btn-delete {
+        background: rgba(239, 83, 80, 0.1);
+        color: #EF5350;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn-delete:hover {
+        background: #EF5350;
+        color: white;
+        transform: scale(1.05);
+    }
+</style>
+
+<script>
+    function confirmarEliminacion(id, nombre) {
+        document.getElementById('nombreVet').textContent = nombre;
+        // Ajustamos la ruta para que coincida con tu Blueprint (/admin/veterinario/ID/eliminar)
+        document.getElementById('formEliminar').action = `/admin/veterinario/${id}/eliminar`;
+        var modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+        modal.show();
+    }
+</script>
+{% endblock %}

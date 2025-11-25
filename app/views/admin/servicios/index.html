@@ -1,0 +1,82 @@
+﻿{% extends "layouts/admin_base.html" %}
+
+{% block title %}Gestión de Servicios{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-tags-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Servicios y Precios</h1>
+            <p class="page-header-subtitle-modern">Administra las áreas médicas y sus costos</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('servicios_admin.nuevo') }}" class="btn btn-primary-modern">
+            <i class="bi bi-plus-lg me-2"></i>Nuevo Servicio
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card card-modern">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Código</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Duración</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for servicio in servicios %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-secondary">{{ servicio.codigo }}</td>
+                        <td>
+                            <div class="fw-bold">{{ servicio.nombre }}</div>
+                            {% if servicio.descripcion %}
+                            <small class="text-muted">{{ servicio.descripcion|truncate(50) }}</small>
+                            {% else %}
+                            <small class="text-muted">Sin descripción</small>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-info bg-opacity-10 text-info">{{ servicio.categoria }}</span></td>
+                        <td class="fw-bold text-success">Bs. {{ "%.2f"|format(servicio.precio) }}</td>
+                        <td>{{ servicio.duracion_estimada }} min</td>
+                        <td>
+                            {% if servicio.activo %}
+                            <span class="badge bg-success bg-opacity-10 text-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{{ url_for('servicios_admin.editar', id=servicio.id) }}"
+                                class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            No hay servicios registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

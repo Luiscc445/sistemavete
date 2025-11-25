@@ -1,0 +1,303 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Lista de Pagos{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-wallet2"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Gestión de Pagos</h1>
+            <p class="page-header-subtitle-modern">Administra y visualiza todos los pagos registrados</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('pagos.crear') }}" class="btn btn-primary-modern">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Pago
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+
+<!-- Filtros de Búsqueda -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-funnel me-2"></i>Filtros de Búsqueda</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('pagos.listar') }}" class="row g-3">
+            <!-- Búsqueda -->
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary">Buscar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" name="buscar" value="{{ buscar }}"
+                        placeholder="Código, descripción, transacción...">
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-secondary">Estado</label>
+                <select class="form-select" name="estado">
+                    <option value="">Todos</option>
+                    <option value="pendiente" {% if estado=='pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="procesando" {% if estado=='procesando' %}selected{% endif %}>Procesando</option>
+                    <option value="completado" {% if estado=='completado' %}selected{% endif %}>Completado</option>
+                    <option value="fallido" {% if estado=='fallido' %}selected{% endif %}>Fallido</option>
+                    <option value="reembolsado" {% if estado=='reembolsado' %}selected{% endif %}>Reembolsado</option>
+                    <option value="cancelado" {% if estado=='cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+
+            <!-- Método de Pago -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-secondary">Método de Pago</label>
+                <select class="form-select" name="metodo">
+                    <option value="">Todos</option>
+                    <option value="efectivo" {% if metodo=='efectivo' %}selected{% endif %}>Efectivo</option>
+                    <option value="tarjeta_credito" {% if metodo=='tarjeta_credito' %}selected{% endif %}>Tarjeta de
+                        Crédito</option>
+                    <option value="tarjeta_debito" {% if metodo=='tarjeta_debito' %}selected{% endif %}>Tarjeta de
+                        Débito</option>
+                    <option value="transferencia_bancaria" {% if metodo=='transferencia_bancaria' %}selected{% endif %}>
+                        Transferencia</option>
+                    <option value="qr_simple" {% if metodo=='qr_simple' %}selected{% endif %}>QR Simple</option>
+                    <option value="qr_tigo_money" {% if metodo=='qr_tigo_money' %}selected{% endif %}>Tigo Money QR
+                    </option>
+                    <option value="qr_banco" {% if metodo=='qr_banco' %}selected{% endif %}>QR Bancario</option>
+                </select>
+            </div>
+
+            <!-- Botones -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary-modern w-100">
+                    <i class="bi bi-search me-1"></i> Filtrar
+                </button>
+            </div>
+        </form>
+
+        {% if estado or metodo or buscar %}
+        <div class="mt-3">
+            <a href="{{ url_for('pagos.listar') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Limpiar Filtros
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabla de Pagos -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0 text-secondary">
+                <i class="bi bi-table me-2"></i>
+                <strong>Lista de Pagos</strong>
+                <span class="badge bg-light text-dark ms-2 border">{{ pagos.total }} registros</span>
+            </h6>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-secondary">Código</th>
+                        <th class="py-3 text-secondary">Fecha</th>
+                        <th class="py-3 text-secondary">Cliente</th>
+                        <th class="py-3 text-secondary">Monto</th>
+                        <th class="py-3 text-secondary">Pagado</th>
+                        <th class="py-3 text-secondary">Método</th>
+                        <th class="text-center py-3 text-secondary">Estado</th>
+                        <th class="text-end pe-4 py-3 text-secondary">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pagos.items %}
+                    {% for pago in pagos.items %}
+                    <tr>
+                        <!-- Código -->
+                        <td class="ps-4">
+                            <a href="{{ url_for('pagos.ver', pago_id=pago.id) }}"
+                                class="fw-bold text-primary-modern text-decoration-none">
+                                {{ pago.codigo_pago }}
+                            </a>
+                            {% if pago.cita_id %}
+                            <br>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-check me-1"></i>Cita #{{ pago.cita_id }}
+                            </small>
+                            {% endif %}
+                        </td>
+
+                        <!-- Fecha -->
+                        <td>
+                            <div>{{ pago.fecha_creacion.strftime('%d/%m/%Y') }}</div>
+                            <small class="text-muted">{{ pago.fecha_creacion.strftime('%H:%M') }}</small>
+                        </td>
+
+                        <!-- Cliente -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle-sm bg-light-primary text-primary-modern me-2">
+                                    {{ pago.usuario.nombre_completo[:1] }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ pago.usuario.nombre_completo }}</div>
+                                    {% if pago.requiere_factura %}
+                                    <small class="text-info">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Factura
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Monto -->
+                        <td>
+                            <strong class="text-dark">{{ pago.monto|currency }}</strong>
+                        </td>
+
+                        <!-- Pagado -->
+                        <td>
+                            {% if pago.saldo_pendiente > 0 %}
+                            <span class="text-warning" title="Pendiente: {{ pago.saldo_pendiente|currency }}">
+                                {{ pago.monto_pagado|currency }}
+                            </span>
+                            {% else %}
+                            <span class="text-success">{{ pago.monto_pagado|currency }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Método -->
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                {{ pago.metodo_pago_label }}
+                            </span>
+                            {% if 'qr' in pago.metodo_pago %}
+                            <span class="text-muted ms-1" title="QR">
+                                <i class="bi bi-qr-code"></i>
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Estado -->
+                        <td class="text-center">
+                            <span class="badge bg-{{ pago.estado_badge_class }} rounded-pill px-3">
+                                {{ pago.estado|title }}
+                            </span>
+                            {% if pago.esta_vencido %}
+                            <br>
+                            <small class="text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Vencido
+                            </small>
+                            {% endif %}
+                        </td>
+
+                        <!-- Acciones -->
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end">
+                                <a href="{{ url_for('pagos.ver', pago_id=pago.id) }}"
+                                    class="action-btn-modern action-btn-view" data-bs-toggle="tooltip"
+                                    title="Ver Detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p class="h5">No se encontraron pagos</p>
+                            <p class="small">Intenta ajustar los filtros de búsqueda</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    {% if pagos.pages > 1 %}
+    <div class="card-footer bg-white border-top-0 py-3">
+        <nav aria-label="Paginación de pagos">
+            <ul class="pagination justify-content-center mb-0">
+                <!-- Primera Página -->
+                <li class="page-item {% if not pagos.has_prev %}disabled{% endif %}">
+                    <a class="page-link border-0"
+                        href="{{ url_for('pagos.listar', page=1, estado=estado, metodo=metodo, buscar=buscar) }}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+
+                <!-- Anterior -->
+                <li class="page-item {% if not pagos.has_prev %}disabled{% endif %}">
+                    <a class="page-link border-0"
+                        href="{{ url_for('pagos.listar', page=pagos.prev_num, estado=estado, metodo=metodo, buscar=buscar) if pagos.has_prev else '#' }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+
+                <!-- Páginas -->
+                {% for page_num in pagos.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                <li class="page-item {% if page_num == pagos.page %}active{% endif %}">
+                    <a class="page-link border-0 rounded-circle mx-1 {% if page_num == pagos.page %}bg-primary-modern{% endif %}"
+                        href="{{ url_for('pagos.listar', page=page_num, estado=estado, metodo=metodo, buscar=buscar) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link border-0">...</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Siguiente -->
+                <li class="page-item {% if not pagos.has_next %}disabled{% endif %}">
+                    <a class="page-link border-0"
+                        href="{{ url_for('pagos.listar', page=pagos.next_num, estado=estado, metodo=metodo, buscar=buscar) if pagos.has_next else '#' }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+                <!-- Última Página -->
+                <li class="page-item {% if not pagos.has_next %}disabled{% endif %}">
+                    <a class="page-link border-0"
+                        href="{{ url_for('pagos.listar', page=pagos.pages, estado=estado, metodo=metodo, buscar=buscar) }}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted small mt-2">
+            Mostrando {{ pagos.items|length }} de {{ pagos.total }} pagos (Página {{ pagos.page }} de {{ pagos.pages }})
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}

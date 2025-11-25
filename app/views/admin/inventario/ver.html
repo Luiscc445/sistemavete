@@ -1,0 +1,246 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Detalle de Medicamento{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-box-seam-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Detalle de Medicamento</h1>
+            <p class="page-header-subtitle-modern">Información detallada y movimientos de stock</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('inventario.lista') }}" class="btn btn-secondary-modern me-2">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+        <a href="{{ url_for('inventario.editar', med_id=medicamento.id) }}" class="btn btn-primary-modern">
+            <i class="bi bi-pencil me-1"></i> Editar
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>Información Detallada</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Información General</h6>
+                <div class="mb-2"><strong class="text-secondary">Código:</strong> <span class="ms-2">{{
+                        medicamento.codigo or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Nombre:</strong> <span class="ms-2">{{
+                        medicamento.nombre }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Principio Activo:</strong> <span class="ms-2">{{
+                        medicamento.principio_activo or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Presentación:</strong> <span class="ms-2">{{
+                        medicamento.presentacion or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Concentración:</strong> <span class="ms-2">{{
+                        medicamento.concentracion or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Categoría:</strong> <span class="ms-2">{{
+                        medicamento.categoria|title if medicamento.categoria else 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Vía Administración:</strong> <span class="ms-2">{{
+                        medicamento.via_administracion|title if medicamento.via_administracion else 'N/A' }}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Stock y Precios</h6>
+                <div class="p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary fw-bold">Stock Actual</span>
+                        <span class="h4 mb-0 text-primary">{{ medicamento.stock_actual }} <small
+                                class="fs-6 text-muted">{{ medicamento.unidad_medida }}</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if medicamento.necesita_restock %}bg-warning{% else %}bg-success{% endif %}"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <div class="mt-2 small text-muted">Mínimo requerido: {{ medicamento.stock_minimo }} {{
+                        medicamento.unidad_medida }}</div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="p-2 border rounded text-center">
+                            <div class="small text-muted">Compra</div>
+                            <div class="fw-bold">{{ medicamento.precio_compra|currency }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border rounded text-center">
+                            <div class="small text-muted">Venta</div>
+                            <div class="fw-bold text-success">{{ medicamento.precio_venta|currency }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4 text-muted opacity-25">
+
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Información Adicional</h6>
+                <div class="mb-2"><strong class="text-secondary">Laboratorio:</strong> <span class="ms-2">{{
+                        medicamento.laboratorio or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Lote:</strong> <span class="ms-2">{{ medicamento.lote
+                        or 'N/A' }}</span></div>
+                <div class="mb-2"><strong class="text-secondary">Vencimiento:</strong>
+                    <span class="ms-2">
+                        {% if medicamento.fecha_vencimiento %}
+                        {{ medicamento.fecha_vencimiento.strftime('%d/%m/%Y') if medicamento.fecha_vencimiento.strftime
+                        is defined else medicamento.fecha_vencimiento[:10] }}
+                        {% if medicamento.esta_vencido %}
+                        <span class="badge bg-danger ms-1">Vencido</span>
+                        {% elif medicamento.esta_por_vencer %}
+                        <span class="badge bg-warning ms-1">Por vencer</span>
+                        {% endif %}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="mb-2"><strong class="text-secondary">Ubicación:</strong> <span class="ms-2">{{
+                        medicamento.ubicacion_almacen or 'N/A' }}</span></div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Control</h6>
+                <div class="d-flex gap-2">
+                    <span
+                        class="badge {% if medicamento.requiere_receta %}bg-info{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+                        {% if medicamento.requiere_receta %}Requiere Receta{% else %}Venta Libre{% endif %}
+                    </span>
+                    <span
+                        class="badge {% if medicamento.controlado %}bg-warning{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+                        {% if medicamento.controlado %}Controlado{% else %}No Controlado{% endif %}
+                    </span>
+                    <span
+                        class="badge {% if medicamento.activo %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-2">
+                        {% if medicamento.activo %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lotes Disponibles -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-layers me-2"></i>Lotes Disponibles (PEPS)</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Lote</th>
+                        <th>Vencimiento</th>
+                        <th>Cantidad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lote in medicamento.lotes %}
+                    {% if lote.cantidad > 0 %}
+                    <tr
+                        class="{% if lote.fecha_vencimiento and lote.fecha_vencimiento <= fecha_actual %}table-danger{% elif lote.fecha_vencimiento and lote.fecha_vencimiento <= fecha_limite %}table-warning{% endif %}">
+                        <td class="ps-4 fw-bold text-secondary">{{ lote.lote }}</td>
+                        <td>{{ lote.fecha_vencimiento.strftime('%d/%m/%Y') if lote.fecha_vencimiento else 'N/A' }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ lote.cantidad }}</span></td>
+                        <td>
+                            {% if lote.fecha_vencimiento and lote.fecha_vencimiento <= fecha_actual %} <span
+                                class="badge bg-danger-subtle text-danger border border-danger">Vencido</span>
+                                {% elif lote.fecha_vencimiento and lote.fecha_vencimiento <= fecha_limite %} <span
+                                    class="badge bg-warning-subtle text-warning border border-warning">Por Vencer</span>
+                                    {% else %}
+                                    <span class="badge bg-success-subtle text-success border border-success">Ok</span>
+                                    {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="bi bi-box-seam display-6 d-block mb-2 opacity-25"></i>
+                            No hay lotes con stock disponible.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de ajuste de stock -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header bg-light">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-arrow-left-right me-2"></i>Ajustar Stock</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('inventario.ajustar_stock', med_id=medicamento.id) }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Tipo de Ajuste</label>
+                    <select class="form-select" name="tipo_ajuste" id="tipo_ajuste" required
+                        onchange="toggleLoteFields()">
+                        <option value="entrada">Entrada (Agregar)</option>
+                        <option value="salida">Salida (Retirar)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Cantidad</label>
+                    <input type="number" class="form-control" name="cantidad" min="1" required>
+                </div>
+
+                <!-- Campos específicos para Entrada -->
+                <div class="col-md-3 lote-field">
+                    <label class="form-label small fw-bold text-muted">Código de Lote</label>
+                    <input type="text" class="form-control" name="lote_codigo" placeholder="Nuevo o Existente">
+                </div>
+                <div class="col-md-3 lote-field">
+                    <label class="form-label small fw-bold text-muted">Vencimiento</label>
+                    <input type="date" class="form-control" name="fecha_vencimiento">
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold text-muted">Motivo</label>
+                    <input type="text" class="form-control" name="motivo" placeholder="Ej: Compra, Venta, Vencimiento">
+                </div>
+
+                <div class="col-md-12 text-end">
+                    <button type="submit" class="btn btn-primary-modern">
+                        <i class="bi bi-check-lg me-2"></i>Realizar Ajuste
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleLoteFields() {
+        const tipo = document.getElementById('tipo_ajuste').value;
+        const fields = document.querySelectorAll('.lote-field');
+        fields.forEach(f => {
+            f.style.display = tipo === 'entrada' ? 'block' : 'none';
+        });
+    }
+    // Run on load
+    document.addEventListener('DOMContentLoaded', toggleLoteFields);
+</script>
+
+<div class="mt-3 mb-5">
+    <!-- Buttons moved to header actions, keeping this empty or removing -->
+</div>
+{% endblock %}

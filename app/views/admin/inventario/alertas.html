@@ -1,0 +1,178 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Alertas de Inventario{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-bell-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Alertas de Inventario</h1>
+            <p class="page-header-subtitle-modern">Monitoreo de vencimientos y stock bajo</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('inventario.lista') }}" class="btn btn-secondary-modern">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Inventario
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<!-- Medicamentos vencidos -->
+<div class="card modern-activity-card mb-4 border-danger border-start border-4">
+    <div class="card-header bg-danger bg-opacity-10">
+        <h6 class="mb-0 text-danger fw-bold"><i class="bi bi-x-circle me-2"></i>Medicamentos Vencidos ({{
+            vencidos|length }})</h6>
+    </div>
+    <div class="card-body">
+        {% if vencidos %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Lote</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Stock</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in vencidos %}
+                    <tr>
+                        <td><span class="fw-bold text-secondary">{{ med.codigo or 'N/A' }}</span></td>
+                        <td>{{ med.nombre }}</td>
+                        <td>{{ med.lote or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-danger-subtle text-danger border border-danger">
+                                {% if med.fecha_vencimiento.strftime is defined %}{{
+                                med.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ med.fecha_vencimiento[:10] if
+                                med.fecha_vencimiento else 'N/A' }}{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ med.stock_actual }} {{ med.unidad_medida }}</td>
+                        <td>
+                            <a href="{{ url_for('inventario.ver', med_id=med.id) }}"
+                                class="btn btn-sm btn-primary-modern py-1 px-3">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-check-circle display-6 d-block mb-2 text-success opacity-50"></i>
+            No hay medicamentos vencidos
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Medicamentos por vencer -->
+<div class="card modern-activity-card mb-4 border-warning border-start border-4">
+    <div class="card-header bg-warning bg-opacity-10">
+        <h6 class="mb-0 text-warning fw-bold text-dark"><i class="bi bi-clock me-2"></i>Medicamentos por Vencer
+            (próximos 30 días) ({{ por_vencer|length }})</h6>
+    </div>
+    <div class="card-body">
+        {% if por_vencer %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Lote</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Stock</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in por_vencer %}
+                    <tr>
+                        <td><span class="fw-bold text-secondary">{{ med.codigo or 'N/A' }}</span></td>
+                        <td>{{ med.nombre }}</td>
+                        <td>{{ med.lote or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning border border-warning">
+                                {% if med.fecha_vencimiento.strftime is defined %}{{
+                                med.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}{{ med.fecha_vencimiento[:10] if
+                                med.fecha_vencimiento else 'N/A' }}{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ med.stock_actual }} {{ med.unidad_medida }}</td>
+                        <td>
+                            <a href="{{ url_for('inventario.ver', med_id=med.id) }}"
+                                class="btn btn-sm btn-primary-modern py-1 px-3">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-check-circle display-6 d-block mb-2 text-success opacity-50"></i>
+            No hay medicamentos por vencer en los próximos 30 días
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Medicamentos con bajo stock -->
+<div class="card modern-activity-card mb-4 border-info border-start border-4">
+    <div class="card-header bg-info bg-opacity-10">
+        <h6 class="mb-0 text-info fw-bold text-dark"><i class="bi bi-exclamation-triangle me-2"></i>Medicamentos con
+            Bajo Stock ({{ bajo_stock|length }})</h6>
+    </div>
+    <div class="card-body">
+        {% if bajo_stock %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Stock Actual</th>
+                        <th>Stock Mínimo</th>
+                        <th>Diferencia</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in bajo_stock %}
+                    <tr>
+                        <td><span class="fw-bold text-secondary">{{ med.codigo or 'N/A' }}</span></td>
+                        <td>{{ med.nombre }}</td>
+                        <td><span class="fw-bold text-danger">{{ med.stock_actual }} {{ med.unidad_medida }}</span></td>
+                        <td>{{ med.stock_minimo }} {{ med.unidad_medida }}</td>
+                        <td><span class="badge bg-danger-subtle text-danger">{{ med.stock_minimo - med.stock_actual }}
+                                faltantes</span></td>
+                        <td>
+                            <a href="{{ url_for('inventario.ver', med_id=med.id) }}"
+                                class="btn btn-sm btn-primary-modern py-1 px-3">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-check-circle display-6 d-block mb-2 text-success opacity-50"></i>
+            No hay medicamentos con bajo stock
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

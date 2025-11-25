@@ -1,0 +1,162 @@
+﻿{% extends "dashboards/tutor_base.html" %}
+{% block title %}Detalle de Cita{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5 animate-fade-up">
+        <div>
+            <h2 class="fw-bold mb-1">Detalle de Cita</h2>
+            <p class="text-muted mb-0">Información completa de tu visita veterinaria</p>
+        </div>
+        <a href="{{ url_for('tutor.citas') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-8 animate-fade-up delay-100">
+            <!-- Ticket Card -->
+            <div class="card-modern overflow-hidden">
+                <!-- Status Banner -->
+                <div class="p-4 text-center text-white position-relative overflow-hidden
+                    {% if cita.estado == 'pendiente' %}bg-warning
+                    {% elif cita.estado == 'confirmada' %}bg-info
+                    {% elif cita.estado == 'completada' %}bg-success
+                    {% elif cita.estado == 'cancelada' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+
+                    <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10"
+                        style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 20px 20px;">
+                    </div>
+
+                    <div class="position-relative z-1">
+                        <div class="mb-2">
+                            {% if cita.estado == 'pendiente' %}<i class="bi bi-clock-history fs-1"></i>
+                            {% elif cita.estado == 'confirmada' %}<i class="bi bi-check-circle fs-1"></i>
+                            {% elif cita.estado == 'completada' %}<i class="bi bi-check-all fs-1"></i>
+                            {% elif cita.estado == 'cancelada' %}<i class="bi bi-x-circle fs-1"></i>
+                            {% else %}<i class="bi bi-info-circle fs-1"></i>{% endif %}
+                        </div>
+                        <h3 class="fw-bold text-uppercase mb-0">{{ cita.estado }}</h3>
+                    </div>
+                </div>
+
+                <div class="card-body-modern p-5">
+                    <!-- Date & Time -->
+                    <div class="row text-center mb-5">
+                        <div class="col-6 border-end">
+                            <small class="text-muted text-uppercase fw-bold">Fecha</small>
+                            <div class="fs-4 fw-bold text-dark">{{ cita.fecha.strftime('%d/%m/%Y') }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted text-uppercase fw-bold">Hora</small>
+                            <div class="fs-4 fw-bold text-dark">{{ cita.fecha.strftime('%H:%M') }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Info Grid -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                {% if cita.mascota.foto %}
+                                <img src="data:image/jpeg;base64,{{ cita.mascota.foto }}"
+                                    class="rounded-circle object-fit-cover shadow-sm" width="60" height="60">
+                                {% else %}
+                                <div class="rounded-circle bg-soft-secondary d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 60px; height: 60px;">
+                                    <i class="bi bi-heart-fill text-muted fs-4"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold d-block">Paciente</small>
+                                    <h5 class="fw-bold mb-0">{{ cita.mascota.nombre }}</h5>
+                                    <span class="text-muted small">{{ cita.mascota.especie }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="rounded-circle bg-soft-primary d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person-badge text-primary fs-4"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold d-block">Veterinario</small>
+                                    <h5 class="fw-bold mb-0">Dr. {{ cita.veterinario.nombre_completo }}</h5>
+                                    <span class="text-muted small">{{ cita.veterinario.especialidad or 'General'
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Section -->
+                    <div class="bg-light rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-data me-2"></i>Detalles Médicos
+                        </h6>
+
+                        <div class="mb-3">
+                            <span class="fw-semibold d-block">Motivo de Consulta</span>
+                            <p class="text-muted mb-0">{{ cita.motivo }}</p>
+                        </div>
+
+                        {% if cita.diagnostico %}
+                        <hr class="my-3">
+                        <div class="mb-3">
+                            <span class="fw-semibold d-block text-success">Diagnóstico</span>
+                            <p class="text-muted mb-0">{{ cita.diagnostico }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if cita.tratamiento %}
+                        <hr class="my-3">
+                        <div>
+                            <span class="fw-semibold d-block text-info">Tratamiento</span>
+                            <p class="text-muted mb-0">{{ cita.tratamiento }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Info -->
+                    {% if cita.pagos %}
+                    <div class="bg-soft-success rounded-4 p-4 mb-4 border border-success border-opacity-10">
+                        <h6 class="fw-bold text-success mb-3"><i class="bi bi-receipt me-2"></i>Información de Pago</h6>
+                        {% for pago in cita.pagos %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-medium">Pago #{{ loop.index }}</span>
+                                <small class="text-muted d-block">{{ pago.fecha_pago.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-success">Bs. {{ "%.2f"|format(pago.monto) }}</span>
+                                <span class="badge bg-success rounded-pill ms-2">Pagado</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-center gap-3 mt-5">
+                        {% if cita.estado == 'pendiente' %}
+                        <button class="btn btn-outline-danger rounded-pill px-4"
+                            onclick="alert('Función cancelar pendiente')">
+                            Cancelar Cita
+                        </button>
+                        {% endif %}
+
+                        {% if cita.estado == 'confirmada' and not cita.pagos %}
+                        <a href="{{ url_for('tutor.pagar_cita', cita_id=cita.id) }}"
+                            class="btn btn-success rounded-pill px-5 shadow-lg fw-bold">
+                            <i class="bi bi-credit-card me-2"></i>Pagar Ahora
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

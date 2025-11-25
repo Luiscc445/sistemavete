@@ -1,0 +1,349 @@
+﻿{% extends "layouts/veterinario_base.html" %}
+{% block title %}Atender Cita{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern vet-theme">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-clipboard2-pulse-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Atender Cita</h1>
+            <p class="page-header-subtitle-modern">Registra el diagnóstico y tratamiento del paciente</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="date-widget-modern">
+            <div class="date-display fw-semibold" id="current-date-full">--</div>
+            <div class="day-display text-white-50" id="current-day">--</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card modern-form-card">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-file-medical me-2 text-brown"></i>
+                    <span class="fw-semibold">Detalles de la Consulta</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <!-- Diagnosis Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-search me-1 text-brown"></i>Diagnóstico <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control form-control-modern" name="diagnostico" rows="4"
+                            placeholder="Describe el diagnóstico del paciente..." required></textarea>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i>Describe los hallazgos clínicos y la condición del
+                            paciente
+                        </div>
+                    </div>
+
+                    <!-- Treatment Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-bandaid me-1 text-brown"></i>Tratamiento <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control form-control-modern" name="tratamiento" rows="4"
+                            placeholder="Detalla el tratamiento a seguir..." required></textarea>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i>Incluye medicación, cuidados y recomendaciones
+                        </div>
+                    </div>
+
+                    <hr class="my-4 border-light">
+
+                    <!-- Medicines Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label fw-semibold text-dark mb-0">
+                                <i class="bi bi-capsule me-1 text-brown"></i>Receta Médica
+                            </label>
+                            <span class="badge bg-brown-subtle text-brown">Opcional</span>
+                        </div>
+
+                        <div class="medicine-section p-4 bg-light rounded-3 border-0">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-7">
+                                    <label class="form-label small fw-semibold text-muted mb-2">
+                                        <i class="bi bi-prescription2 me-1"></i>Medicamento
+                                    </label>
+                                    <select class="form-select form-select-modern" name="medicamento_id[]">
+                                        <option value="">Seleccionar medicamento...</option>
+                                        {% for m in medicamentos %}
+                                        <option value="{{ m.id }}">{{ m.nombre }} (Stock: {{ m.stock }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold text-muted mb-2">
+                                        <i class="bi bi-hash me-1"></i>Cantidad
+                                    </label>
+                                    <input type="number" class="form-control form-control-modern" name="cantidad[]"
+                                        min="0" placeholder="0">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-light border w-100" disabled>
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock-history me-1"></i>Función de múltiples medicamentos
+                                    próximamente
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
+                        <a href="{{ url_for('veterinario.mis_citas') }}" class="btn btn-light-modern px-4">
+                            <i class="bi bi-x-lg me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-brown-modern px-5 d-flex align-items-center gap-2">
+                            <i class="bi bi-check-lg"></i>
+                            <span>Completar Consulta</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Brown Theme Palette */
+    :root {
+        --brown-primary: #5D4037;
+        --brown-secondary: #8D6E63;
+        --brown-light: #D7CCC8;
+        --brown-dark: #3E2723;
+    }
+
+    /* Header Card Styling */
+    .page-header-modern.vet-theme {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Decorative background element */
+    .page-header-modern.vet-theme::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .page-header-modern.vet-theme .page-header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header-modern.vet-theme .page-header-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        backdrop-filter: blur(5px);
+    }
+
+    .page-header-modern.vet-theme .page-header-title-modern {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        color: white;
+    }
+
+    .page-header-modern.vet-theme .page-header-subtitle-modern {
+        font-size: 1rem;
+        margin: 0.25rem 0 0 0;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .page-header-modern.vet-theme .page-header-actions {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Date Widget */
+    .date-widget-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .date-display {
+        font-size: 1.125rem;
+        color: white;
+        line-height: 1;
+    }
+
+    .day-display {
+        font-size: 0.875rem;
+        text-transform: capitalize;
+    }
+
+    /* Brown Theme Colors */
+    .text-brown {
+        color: var(--brown-primary) !important;
+    }
+
+    .bg-brown-subtle {
+        background-color: #EFEBE9 !important;
+        color: var(--brown-dark);
+    }
+
+    /* Modern Form Card */
+    .modern-form-card {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    /* Form Controls */
+    .form-control-modern,
+    .form-select-modern {
+        border: 2px solid #e9ecef;
+        padding: 0.875rem 1.25rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        background-color: white;
+        font-size: 0.95rem;
+    }
+
+    .form-control-modern:focus,
+    .form-select-modern:focus {
+        border-color: var(--brown-primary);
+        box-shadow: 0 0 0 4px rgba(93, 64, 55, 0.1);
+        background-color: #fff;
+        outline: none;
+    }
+
+    .form-control-modern::placeholder {
+        color: #adb5bd;
+    }
+
+    /* Medicine Section */
+    .medicine-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%) !important;
+        border: 2px dashed #dee2e6 !important;
+    }
+
+    /* Buttons */
+    .btn-brown-modern {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2);
+    }
+
+    .btn-brown-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(93, 64, 55, 0.35) !important;
+        color: white;
+        background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-primary) 100%);
+    }
+
+    .btn-light-modern {
+        background: white;
+        border: 2px solid #e9ecef;
+        color: #6c757d;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-light-modern:hover {
+        border-color: #dee2e6;
+        background: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form Labels */
+    .form-label {
+        color: #495057;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-text {
+        display: flex;
+        align-items: center;
+    }
+</style>
+
+<script>
+    // Update current date and day
+    function updateDate() {
+        const now = new Date();
+        const laPazTime = new Date(now.toLocaleString('en-US', {
+            timeZone: 'America/La_Paz'
+        }));
+
+        const dateStr = laPazTime.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const dayStr = laPazTime.toLocaleDateString('es-ES', {
+            weekday: 'long'
+        });
+
+        document.getElementById('current-date-full').textContent = dateStr;
+        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+        updateDate();
+    });
+</script>
+{% endblock %}

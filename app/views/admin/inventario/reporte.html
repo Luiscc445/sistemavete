@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Inventario - Sistema Veterinario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+
+        .btn-print {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-print:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print" style="text-align: right;">
+        <button onclick="window.print()" class="btn-print" style="background-color: #26A69A;">🖨️ Imprimir / Guardar
+            como PDF</button>
+        <a href="{{ url_for('inventario.lista') }}" class="btn-print" style="background-color: #37474F;">🔙 Volver</a>
+    </div>
+
+    <div class="header">
+        <h1>Reporte de Inventario General</h1>
+        <p>Sistema de Gestión Veterinaria</p>
+        <p>Fecha de Emisión: {{ fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+
+    <div class="info-bar">
+        <span>Total Medicamentos: {{ medicamentos|length }}</span>
+        <span>Valor Total Inventario: {{ "Bs. {:,.2f}".format(valor_total) }}</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Laboratorio</th>
+                <th>Stock</th>
+                <th>Unidad</th>
+                <th>Precio Compra</th>
+                <th>Precio Venta</th>
+                <th>Vencimiento</th>
+                <th>Valor Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in medicamentos %}
+            <tr>
+                <td>{{ med.codigo or '-' }}</td>
+                <td>{{ med.nombre }}</td>
+                <td>{{ med.categoria or '-' }}</td>
+                <td>{{ med.laboratorio or '-' }}</td>
+                <td class="text-center"><strong>{{ med.stock_actual }}</strong></td>
+                <td class="text-center">{{ med.unidad_medida or 'unid' }}</td>
+                <td class="text-right">{{ "Bs. {:,.2f}".format(med.precio_compra) if med.precio_compra else '-' }}</td>
+                <td class="text-right">{{ "Bs. {:,.2f}".format(med.precio_venta) if med.precio_venta else '-' }}</td>
+                <td class="text-center">
+                    {% if med.fecha_vencimiento %}
+                    {{ med.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if med.stock_actual and med.precio_compra %}
+                    {{ "Bs. {:,.2f}".format(med.stock_actual * med.precio_compra) }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Este documento es un reporte generado automáticamente por el Sistema de Gestión Veterinaria.</p>
+        <p>Página 1 de 1 (La paginación real depende de la impresora)</p>
+    </div>
+</body>
+
+</html>

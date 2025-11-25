@@ -57,10 +57,14 @@ def dashboard():
         ).filter(Medicamento.activo == True).scalar() or 0
     }
 
-    # Citas por estado
+    # --- GENERACIÓN DE GRÁFICOS CON PLOTLY ---
+    import plotly.express as px
+    import plotly.io as pio
+
+    # 1. Citas por estado
     citas_por_estado = db.session.query(
         Cita.estado,
-        func.count(Cita.id)
+        func.count(Cita.id).label('cantidad')
     ).filter(
         and_(
             func.cast(Cita.fecha, db.Date) >= fecha_inicio,
@@ -68,7 +72,17 @@ def dashboard():
         )
     ).group_by(Cita.estado).all()
 
-    # Citas por mes (últimos 6 meses)
+    if citas_por_estado:
+        df_estado = pd.DataFrame(citas_por_estado, columns=['Estado', 'Cantidad'])
+        df_estado['Estado'] = df_estado['Estado'].str.title()
+        fig_estado = px.pie(df_estado, values='Cantidad', names='Estado', 
+                            color_discrete_sequence=px.colors.qualitative.Pastel)
+        fig_estado.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=350)
+        graph_estado = pio.to_html(fig_estado, full_html=False, config={'displayModeBar': False})
+    else:
+        graph_estado = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
+
+    # 2. Citas por mes (últimos 6 meses)
     hace_6_meses = fecha_fin - timedelta(days=180)
     citas_por_mes = db.session.query(
         extract('year', Cita.fecha).label('año'),
@@ -77,6 +91,42 @@ def dashboard():
     ).filter(
         func.cast(Cita.fecha, db.Date) >= hace_6_meses
     ).group_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).order_by(extract('year', Cita.fecha), extract('month', Cita.fecha)).all()
+
+    if citas_por_mes:
+        df_mes = pd.DataFrame(citas_por_mes, columns=['Año', 'Mes', 'Total'])
+        df_mes['Periodo'] = df_mes.apply(lambda x: f"{int(x['Mes'])}/{int(x['Año'])}", axis=1)
+        fig_mes = px.line(df_mes, x='Periodo', y='Total', markers=True,
+                          line_shape='spline', render_mode='svg')
+        fig_mes.update_traces(line_color='#0d6efd', line_width=3)
+        fig_mes.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
+                              xaxis_title=None, yaxis_title=None)
+        graph_mes = pio.to_html(fig_mes, full_html=False, config={'displayModeBar': False})
+    else:
+        graph_mes = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
+
+    # 3. Ingresos por mes
+    from app.models import Pago
+    ingresos_por_mes = db.session.query(
+        extract('year', Pago.fecha_pago).label('año'),
+        extract('month', Pago.fecha_pago).label('mes'),
+        func.sum(Pago.monto).label('total')
+    ).filter(
+        and_(
+            func.cast(Pago.fecha_pago, db.Date) >= hace_6_meses,
+            Pago.estado == 'completado'
+        )
+    ).group_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).order_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).all()
+
+    if ingresos_por_mes:
+        df_ingresos = pd.DataFrame(ingresos_por_mes, columns=['Año', 'Mes', 'Total'])
+        df_ingresos['Periodo'] = df_ingresos.apply(lambda x: f"{int(x['Mes'])}/{int(x['Año'])}", axis=1)
+        fig_ingresos = px.bar(df_ingresos, x='Periodo', y='Total', text='Total')
+        fig_ingresos.update_traces(marker_color='#198754', texttemplate='$%{text:.2s}', textposition='outside')
+        fig_ingresos.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
+                                   xaxis_title=None, yaxis_title=None)
+        graph_ingresos = pio.to_html(fig_ingresos, full_html=False, config={'displayModeBar': False})
+    else:
+        graph_ingresos = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
 
     # Top 5 veterinarios más activos
     top_veterinarios = db.session.query(
@@ -98,27 +148,14 @@ def dashboard():
         Medicamento.activo == True
     ).count()
 
-    # Ingresos por mes (desde tabla de pagos - datos reales)
-    from app.models import Pago
-    ingresos_por_mes = db.session.query(
-        extract('year', Pago.fecha_pago).label('año'),
-        extract('month', Pago.fecha_pago).label('mes'),
-        func.sum(Pago.monto).label('total')
-    ).filter(
-        and_(
-            func.cast(Pago.fecha_pago, db.Date) >= hace_6_meses,
-            Pago.estado == 'completado'
-        )
-    ).group_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).order_by(extract('year', Pago.fecha_pago), extract('month', Pago.fecha_pago)).all()
-
     return render_template(
         'admin/reportes/dashboard.html',
         stats=stats,
-        citas_por_estado=citas_por_estado,
-        citas_por_mes=citas_por_mes,
+        graph_estado=graph_estado,
+        graph_mes=graph_mes,
+        graph_ingresos=graph_ingresos,
         top_veterinarios=top_veterinarios,
         medicamentos_bajo_stock=medicamentos_bajo_stock,
-        ingresos_por_mes=ingresos_por_mes,
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin
     )

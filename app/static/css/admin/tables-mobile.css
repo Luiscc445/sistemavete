@@ -1,0 +1,32 @@
+/* Tablas responsivas para móvil - Solo Bootstrap */
+@media (max-width: 767.98px) {
+
+    /* Hacer scroll horizontal en tablas */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Reducir tamaño de fuente en tablas móviles */
+    table {
+        font-size: 0.875rem;
+    }
+
+    /* Ajustar padding de celdas */
+    table th,
+    table td {
+        padding: 0.5rem !important;
+    }
+
+    /* Botones más pequeños en tablas */
+    table .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    table .btn i {
+        font-size: 0.875rem;
+    }
+}

@@ -1,0 +1,264 @@
+{% extends "dashboards/tutor_base.html" %}
+{% block title %}Dashboard - Rambopet{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 pb-5">
+
+    <!-- Hero Section with Carousel (Presentation) -->
+    <div class="row g-0 mb-5 animate-fade-up">
+        <div class="col-12">
+            <div class="card-modern overflow-hidden border-0 shadow-lg position-relative"
+                style="border-radius: 0 0 2rem 2rem; margin-top: -1.5rem;">
+                <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"
+                            aria-current="true"></button>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+                    </div>
+                    <div class="carousel-inner" style="height: 400px;">
+                        <div class="carousel-item active h-100">
+                            <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=2069&auto=format&fit=crop"
+                                class="d-block w-100 h-100 object-fit-cover" alt="Perros jugando">
+                            <div class="carousel-caption d-none d-md-block bg-glass-dark rounded-xl p-4 mb-4">
+                                <h1 class="display-4 fw-bold text-white mb-2">Bienvenido a Rambopet</h1>
+                                <p class="lead text-white-50">Cuidando a tus mejores amigos con amor y tecnología.</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-100">
+                            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=2043&auto=format&fit=crop"
+                                class="d-block w-100 h-100 object-fit-cover" alt="Gato curioso">
+                            <div class="carousel-caption d-none d-md-block bg-glass-dark rounded-xl p-4 mb-4">
+                                <h1 class="display-4 fw-bold text-white mb-2">Salud y Bienestar</h1>
+                                <p class="lead text-white-50">Especialistas comprometidos con la salud de tu mascota.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-100">
+                            <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=2688&auto=format&fit=crop"
+                                class="d-block w-100 h-100 object-fit-cover" alt="Cuidado veterinario">
+                            <div class="carousel-caption d-none d-md-block bg-glass-dark rounded-xl p-4 mb-4">
+                                <h1 class="display-4 fw-bold text-white mb-2">Fundada en 2024</h1>
+                                <p class="lead text-white-50">Una nueva era en atención veterinaria moderna.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
+                </div>
+
+                <!-- Overlay Branding -->
+                <div class="position-absolute top-0 start-0 p-4 z-2">
+                    <span class="badge bg-white text-primary shadow-sm px-3 py-2 rounded-pill fw-bold fs-6">
+                        <i class="bi bi-star-fill text-warning me-2"></i>Est. 2024
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Greeting Section -->
+        <div class="row mb-5 animate-fade-up delay-100">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold text-dark mb-2">Hola, <span class="text-primary">{{ current_user.nombre }}</span> 👋
+                </h2>
+                <p class="text-muted">Aquí tienes un resumen de la actividad de tus mascotas hoy.</p>
+            </div>
+        </div>
+
+        <!-- Windows Layout (Grid of Cards) -->
+        <div class="row g-4">
+
+            <!-- Window 1: Quick Stats -->
+            <div class="col-lg-8 animate-fade-up delay-200">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card-modern h-100 bg-soft-primary border-0">
+                            <div class="card-body-modern text-center p-4">
+                                <div class="rounded-circle bg-white p-3 d-inline-flex mb-3 shadow-sm text-primary">
+                                    <i class="bi bi-heart-fill fs-3"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0">{{ total_mascotas }}</h3>
+                                <p class="text-muted small mb-0">Mascotas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-modern h-100 bg-soft-success border-0">
+                            <div class="card-body-modern text-center p-4">
+                                <div class="rounded-circle bg-white p-3 d-inline-flex mb-3 shadow-sm text-success">
+                                    <i class="bi bi-calendar-check-fill fs-3"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0">{{ total_citas }}</h3>
+                                <p class="text-muted small mb-0">Citas Totales</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-modern h-100 bg-soft-warning border-0">
+                            <div class="card-body-modern text-center p-4">
+                                <div class="rounded-circle bg-white p-3 d-inline-flex mb-3 shadow-sm text-warning">
+                                    <i class="bi bi-hourglass-split fs-3"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0">{{ citas_pendientes }}</h3>
+                                <p class="text-muted small mb-0">Pendientes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Window 2: Upcoming Appointments -->
+                <div class="card-modern mt-4 border-0 shadow-sm">
+                    <div class="card-header-modern bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i>Próximas Citas
+                        </h5>
+                        <a href="{{ url_for('tutor.citas') }}" class="btn btn-sm btn-light rounded-pill px-3">Ver
+                            todas</a>
+                    </div>
+                    <div class="card-body-modern p-0">
+                        {% if citas_proximas %}
+                        <div class="list-group list-group-flush">
+                            {% for cita in citas_proximas %}
+                            <div class="list-group-item border-0 p-3 hover-bg-light transition-all">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 text-center bg-light rounded-3 p-2"
+                                        style="min-width: 60px;">
+                                        <span class="d-block fw-bold text-dark">{{ cita.fecha.strftime('%d') }}</span>
+                                        <small class="d-block text-uppercase text-muted" style="font-size: 0.7rem;">{{
+                                            cita.fecha.strftime('%b') }}</small>
+                                    </div>
+                                    <div class="ms-3 flex-grow-1">
+                                        <h6 class="fw-bold mb-0 text-dark">{{ cita.motivo }}</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>{{ cita.fecha.strftime('%H:%M') }} •
+                                            <span class="text-primary">{{ cita.mascota.nombre }}</span>
+                                        </small>
+                                    </div>
+                                    <div class="ms-3">
+                                        <span class="badge bg-soft-warning text-warning rounded-pill">Pendiente</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center p-5">
+                            <i class="bi bi-calendar-x text-muted opacity-25 fs-1"></i>
+                            <p class="text-muted mt-2">No tienes citas próximas.</p>
+                            <a href="{{ url_for('tutor.nueva_cita') }}"
+                                class="btn btn-primary btn-sm rounded-pill px-4">Agendar Cita</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Window 3: My Pets & Quick Actions -->
+            <div class="col-lg-4 animate-fade-up delay-300">
+                <!-- My Pets Window -->
+                <div class="card-modern border-0 shadow-sm mb-4">
+                    <div class="card-header-modern bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-heart me-2 text-danger"></i>Mis Mascotas</h5>
+                        <a href="{{ url_for('tutor.mascotas') }}" class="btn btn-sm btn-light rounded-pill px-3">Ver
+                            todas</a>
+                    </div>
+                    <div class="card-body-modern p-3">
+                        <div class="d-flex gap-3 overflow-auto pb-2" style="scrollbar-width: none;">
+                            {% for mascota in mis_mascotas %}
+                            <a href="{{ url_for('tutor.ver_mascota', id=mascota.id) }}"
+                                class="text-decoration-none text-center min-w-80">
+                                {% if mascota.foto %}
+                                <img src="data:image/jpeg;base64,{{ mascota.foto }}"
+                                    class="rounded-circle border border-2 border-white shadow-sm object-fit-cover"
+                                    width="60" height="60" alt="{{ mascota.nombre }}">
+                                {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-2 border-white shadow-sm mx-auto"
+                                    style="width: 60px; height: 60px;">
+                                    <span class="fs-4">
+                                        {% if mascota.especie == 'Perro' %}🐶
+                                        {% elif mascota.especie == 'Gato' %}🐱
+                                        {% elif mascota.especie == 'Ave' %}🦜
+                                        {% else %}🐾{% endif %}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                <span class="d-block small fw-bold text-dark mt-2 text-truncate"
+                                    style="max-width: 80px;">{{ mascota.nombre }}</span>
+                            </a>
+                            {% endfor %}
+
+                            <!-- Add Pet Button -->
+                            <a href="{{ url_for('tutor.nueva_mascota') }}"
+                                class="text-decoration-none text-center min-w-80">
+                                <div class="rounded-circle bg-soft-primary d-flex align-items-center justify-content-center border border-2 border-white shadow-sm mx-auto transition-transform hover-scale"
+                                    style="width: 60px; height: 60px;">
+                                    <i class="bi bi-plus-lg text-primary fs-4"></i>
+                                </div>
+                                <span class="d-block small fw-bold text-primary mt-2">Agregar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Window -->
+                <div
+                    class="card-modern border-0 shadow-sm bg-gradient-primary text-white overflow-hidden position-relative">
+                    <div class="position-absolute top-0 end-0 opacity-10 p-3">
+                        <i class="bi bi-lightning-charge-fill fs-1"></i>
+                    </div>
+                    <div class="card-body-modern p-4 position-relative z-1">
+                        <h5 class="fw-bold mb-3">Acciones Rápidas</h5>
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('tutor.nueva_cita') }}"
+                                class="btn btn-light text-primary fw-bold rounded-pill shadow-sm text-start px-4">
+                                <i class="bi bi-calendar-plus me-2"></i>Nueva Cita Médica
+                            </a>
+                            <a href="{{ url_for('tutor.nueva_mascota') }}"
+                                class="btn btn-outline-light fw-bold rounded-pill text-start px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Registrar Mascota
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-glass-dark {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .rounded-xl {
+        border-radius: 1rem;
+    }
+
+    .hover-bg-light:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .min-w-80 {
+        min-width: 80px;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    }
+</style>
+{% endblock %}

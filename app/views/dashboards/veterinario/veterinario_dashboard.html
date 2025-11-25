@@ -1,0 +1,987 @@
+﻿{% extends "layouts/veterinario_base.html" %}
+{% block title %}Dashboard Médico{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern vet-theme">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-clipboard2-pulse-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Consultorio Médico</h1>
+            <p class="page-header-subtitle-modern">Bienvenido Dr(a). {{ current_user.nombre_completo }}</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="clock-widget-modern">
+            <div class="clock-time-display">
+                <i class="bi bi-clock-fill me-2 text-white-50"></i>
+                <span id="la-paz-time" class="fw-bold">--:--:--</span>
+            </div>
+            <div class="clock-location">
+                <i class="bi bi-geo-alt-fill me-1 text-white-50"></i>
+                <span class="text-white-50">La Paz, Bolivia</span>
+            </div>
+        </div>
+        <div class="vr mx-3 bg-white opacity-25"></div>
+        <div class="date-widget-modern">
+            <div class="date-display fw-semibold" id="current-date-full">--</div>
+            <div class="day-display text-white-50" id="current-day">--</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards - All 4 in One Row -->
+<div class="row g-2 mb-3">
+    <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6">
+        <div class="card admin-stat-card modern-stat-card accent-brown h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Pendientes Hoy</div>
+                        <div class="stat-value">{{ citas_pendientes }}</div>
+                        <div class="stat-trend text-brown">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Por atender</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-brown">
+                        <i class="bi bi-clipboard-data-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6">
+        <div class="card admin-stat-card modern-stat-card accent-coffee h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Confirmadas</div>
+                        <div class="stat-value">{{ citas_aceptadas }}</div>
+                        <div class="stat-trend text-coffee">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Listas</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-coffee">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6">
+        <div class="card admin-stat-card modern-stat-card accent-latte h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Atendidas</div>
+                        <div class="stat-value">{{ total_atendidas }}</div>
+                        <div class="stat-trend text-latte">
+                            <i class="bi bi-person-check"></i>
+                            <span>Completadas</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-latte">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6">
+        <div class="card admin-stat-card modern-stat-card accent-gold h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Ingresos</div>
+                        <div class="stat-value">{{ total_pagos }}</div>
+                        <div class="stat-trend text-gold">
+                            <i class="bi bi-cash-coin"></i>
+                            <span>Transacciones</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-gold">
+                        <i class="bi bi-wallet-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Centered Calendar Section -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card modern-activity-card">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+                <div>
+                    <i class="bi bi-calendar3 me-2 text-brown"></i>
+                    <span class="fw-semibold">Calendario - <span id="calendar-month-year"></span></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="previousMonth()">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="nextMonth()">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-brown-modern" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                        <i class="bi bi-plus-circle me-1"></i>Nueva Nota
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <!-- Calendar Container with Max Width -->
+                <div class="calendar-wrapper mx-auto" style="max-width: 750px;">
+                    <div id="compact-calendar"></div>
+                </div>
+
+                <!-- Compact Holidays -->
+                <div class="holidays-compact mt-3 p-2 bg-light rounded-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="mb-0 fw-bold text-dark small">
+                            <i class="bi bi-flag-fill text-danger me-1"></i>Próximos Festivos de Bolivia
+                        </h6>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2" id="upcoming-holidays">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Cards - All 3 in One Row -->
+<div class="row g-2">
+    <!-- Citas de Hoy -->
+    <div class="col-xl-4 col-lg-4 col-md-4">
+        <div class="card modern-activity-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-2">
+                <div>
+                    <i class="bi bi-clock-history me-2 text-brown"></i>
+                    <span class="fw-semibold small">Citas de Hoy</span>
+                </div>
+                <span class="badge bg-brown-subtle text-brown">{{ citas_hoy|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if citas_hoy %}
+                <div class="activity-list">
+                    {% for cita in citas_hoy %}
+                    <div class="activity-item">
+                        <div class="activity-icon activity-icon-brown">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">{{ cita.mascota.nombre }}</div>
+                            <div class="activity-subtitle">{{ cita.tutor.nombre_completo }}</div>
+                            <div class="activity-description">{{ cita.motivo }}</div>
+                        </div>
+                        <div class="activity-time">
+                            <span class="badge bg-brown">
+                                {% if cita.fecha.strftime is defined %}
+                                {{ cita.fecha.strftime('%H:%M') }}
+                                {% else %}
+                                {{ cita.fecha[:16].split(' ')[1][:5] if ' ' in cita.fecha else 'N/A' }}
+                                {% endif %}
+                            </span>
+                            <a href="{{ url_for('veterinario.atender_cita', id=cita.id) }}"
+                                class="btn btn-xs btn-outline-brown ms-2">
+                                Atender
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-calendar-x"></i>
+                    <p>No hay citas programadas para hoy</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Mis Notas -->
+    <div class="col-xl-4 col-lg-4 col-md-4">
+        <div class="card modern-activity-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-2">
+                <div>
+                    <i class="bi bi-sticky-fill me-2 text-gold"></i>
+                    <span class="fw-semibold small">Mis Notas</span>
+                </div>
+                <span class="badge bg-warning-subtle text-dark" id="notes-count">0 notas</span>
+            </div>
+            <div class="card-body p-0">
+                <div id="notes-container" class="p-2">
+                    <!-- Notes will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen Financiero -->
+    <div class="col-xl-4 col-lg-4 col-md-4">
+        <div class="card modern-activity-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-2">
+                <div>
+                    <i class="bi bi-graph-up me-2 text-success"></i>
+                    <span class="fw-semibold small">Resumen Financiero</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <p class="text-muted mb-1">Ingresos Totales</p>
+                    <h2 class="fw-bold text-success">Bs. {{ "%.2f"|format(ingresos_totales) }}</h2>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <span class="text-muted">Transacciones</span>
+                    <span class="fw-bold">{{ total_pagos }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Consultas Atendidas</span>
+                    <span class="fw-bold">{{ total_atendidas }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-brown-subtle">
+                <h5 class="modal-title text-brown">
+                    <i class="bi bi-sticky-fill me-2"></i>Nueva Nota
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="noteForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Título</label>
+                        <input type="text" class="form-control" id="noteTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Contenido</label>
+                        <textarea class="form-control" id="noteContent" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Fecha de Recordatorio</label>
+                        <input type="date" class="form-control" id="noteDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hora</label>
+                        <input type="time" class="form-control" id="noteTime">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-brown-modern" onclick="saveNote()">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Nota
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Brown Theme Palette */
+    :root {
+        --brown-primary: #5D4037;
+        --brown-secondary: #8D6E63;
+        --brown-light: #D7CCC8;
+        --brown-dark: #3E2723;
+        --coffee: #6F4E37;
+        --latte: #A1887F;
+        --gold: #D4A017;
+    }
+
+    /* Header Card Styling */
+    .page-header-modern.vet-theme {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(93, 64, 55, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Decorative background element */
+    .page-header-modern.vet-theme::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .page-header-modern.vet-theme .page-header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header-modern.vet-theme .page-header-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        backdrop-filter: blur(5px);
+    }
+
+    .page-header-modern.vet-theme .page-header-title-modern {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        color: white;
+    }
+
+    .page-header-modern.vet-theme .page-header-subtitle-modern {
+        font-size: 1rem;
+        margin: 0.25rem 0 0 0;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .page-header-modern.vet-theme .page-header-actions {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Override text colors for header */
+    .page-header-modern.vet-theme .clock-time-display {
+        color: white !important;
+    }
+
+    .page-header-modern.vet-theme .date-display {
+        color: white !important;
+    }
+
+    /* Override Admin Styles for Brown Theme */
+    .text-brown {
+        color: var(--brown-primary) !important;
+    }
+
+    .text-coffee {
+        color: var(--coffee) !important;
+    }
+
+    .text-latte {
+        color: var(--latte) !important;
+    }
+
+    .text-gold {
+        color: var(--gold) !important;
+    }
+
+    .bg-brown {
+        background-color: var(--brown-primary) !important;
+        color: white;
+    }
+
+    .bg-brown-subtle {
+        background-color: #EFEBE9 !important;
+        color: var(--brown-dark);
+    }
+
+    .btn-brown-modern {
+        background-color: var(--brown-primary);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-brown-modern:hover {
+        background-color: var(--brown-dark);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-brown {
+        color: var(--brown-primary);
+        border-color: var(--brown-primary);
+    }
+
+    .btn-outline-brown:hover {
+        background-color: var(--brown-primary);
+        color: white;
+    }
+
+    /* Stat Cards Accents */
+    .accent-brown {
+        border-left: 4px solid var(--brown-primary) !important;
+    }
+
+    .accent-coffee {
+        border-left: 4px solid var(--coffee) !important;
+    }
+
+    .accent-latte {
+        border-left: 4px solid var(--latte) !important;
+    }
+
+    .accent-gold {
+        border-left: 4px solid var(--gold) !important;
+    }
+
+    .stat-icon-brown {
+        background-color: rgba(93, 64, 55, 0.1);
+        color: var(--brown-primary);
+    }
+
+    .stat-icon-coffee {
+        background-color: rgba(111, 78, 55, 0.1);
+        color: var(--coffee);
+    }
+
+    .stat-icon-latte {
+        background-color: rgba(161, 136, 127, 0.1);
+        color: var(--latte);
+    }
+
+    .stat-icon-gold {
+        background-color: rgba(212, 160, 23, 0.1);
+        color: var(--gold);
+    }
+
+    /* Calendar Header Gradient */
+    .compact-cal-header {
+        background: linear-gradient(135deg, var(--brown-secondary) 0%, var(--brown-dark) 100%) !important;
+    }
+
+    .compact-cal-day.today {
+        background: linear-gradient(135deg, var(--brown-secondary) 0%, var(--brown-dark) 100%) !important;
+        border-color: var(--brown-primary) !important;
+    }
+
+    .compact-cal-day:hover {
+        border-color: var(--brown-primary) !important;
+    }
+
+    /* Activity Icons */
+    .activity-icon-brown {
+        background-color: rgba(93, 64, 55, 0.1);
+        color: var(--brown-primary);
+    }
+
+    /* Premium Header Clock Widget */
+    .clock-widget-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .clock-time-display {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .clock-location {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .date-widget-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .date-display {
+        font-size: 1.125rem;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .day-display {
+        font-size: 0.875rem;
+        text-transform: capitalize;
+    }
+
+    /* Compact Modern Calendar */
+    #compact-calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+    }
+
+    .compact-cal-header {
+        text-align: center;
+        font-weight: 600;
+        padding: 6px 3px;
+        background: linear-gradient(135deg, #26A69A 0%, #1E8E7E 100%);
+        color: white;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .compact-cal-day {
+        aspect-ratio: 1;
+        padding: 6px 3px;
+        border: 1.5px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .compact-cal-day:hover {
+        border-color: #26A69A;
+        transform: scale(1.05);
+        box-shadow: 0 3px 10px rgba(38, 166, 154, 0.2);
+        z-index: 1;
+    }
+
+    .compact-cal-day.today {
+        background: linear-gradient(135deg, #26A69A 0%, #1E8E7E 100%);
+        color: white;
+        font-weight: bold;
+        border-color: #26A69A;
+        box-shadow: 0 3px 12px rgba(38, 166, 154, 0.4);
+    }
+
+    .compact-cal-day.holiday {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
+    }
+
+    .compact-cal-day.has-note::after {
+        content: '';
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 5px;
+        height: 5px;
+        background: #ffc107;
+        border-radius: 50%;
+        box-shadow: 0 0 3px rgba(255, 193, 7, 0.7);
+    }
+
+    .compact-cal-day.other-month {
+        opacity: 0.2;
+        pointer-events: none;
+    }
+
+    .compact-cal-day.weekend {
+        background: #f8f9fa;
+    }
+
+    /* Compact Holidays */
+    .holiday-chip {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background: white;
+        border: 1px solid #ffcdd2;
+        color: #c62828;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .holiday-chip:hover {
+        background: #ffebee;
+        border-color: #ef5350;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .holiday-chip i {
+        font-size: 0.7rem;
+    }
+
+    /* Compact Notes */
+    .note-card {
+        padding: 0.75rem;
+        border-left: 3px solid #ffc107;
+        background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .note-card:hover {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        transform: translateX(3px);
+        background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+    }
+
+    .note-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.4rem;
+    }
+
+    .note-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.875rem;
+    }
+
+    .note-date {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .note-content {
+        color: #555;
+        font-size: 0.813rem;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1199px) {
+
+        .compact-cal-header,
+        .compact-cal-day {
+            font-size: 0.7rem;
+            padding: 4px 2px;
+        }
+    }
+</style>
+
+<script>
+    // Bolivian Holidays for 2025
+    const bolivianHolidays = {
+        '2025-01-01': 'Año Nuevo',
+        '2025-01-22': 'Día del Estado Plurinacional',
+        '2025-02-24': 'Carnaval',
+        '2025-02-25': 'Carnaval',
+        '2025-04-18': 'Viernes Santo',
+        '2025-05-01': 'Día del Trabajo',
+        '2025-06-19': 'Corpus Christi',
+        '2025-06-21': 'Año Nuevo Aymara',
+        '2025-08-06': 'Día de la Independencia',
+        '2025-11-02': 'Día de Todos los Santos',
+        '2025-12-25': 'Navidad'
+    };
+
+    // Notes storage
+    let notes = JSON.parse(localStorage.getItem('vetDashboardNotes') || '[]');
+    let currentCalendarMonth = new Date().getMonth();
+    let currentCalendarYear = new Date().getFullYear();
+
+    // Update La Paz time
+    function updateLaPazTime() {
+        const now = new Date();
+        const laPazTime = new Date(now.toLocaleString('en-US', {
+            timeZone: 'America/La_Paz'
+        }));
+
+        const timeStr = laPazTime.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const dateStr = laPazTime.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const dayStr = laPazTime.toLocaleDateString('es-ES', {
+            weekday: 'long'
+        });
+
+        document.getElementById('la-paz-time').textContent = timeStr;
+        document.getElementById('current-date-full').textContent = dateStr;
+        document.getElementById('current-day').textContent = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+    }
+
+    // Generate Compact Calendar
+    function generateCompactCalendar() {
+        const container = document.getElementById('compact-calendar');
+        const now = new Date();
+        const year = currentCalendarYear;
+        const month = currentCalendarMonth;
+
+        // Update month/year display
+        const monthName = new Date(year, month).toLocaleDateString('es-ES', {
+            month: 'long',
+            year: 'numeric'
+        });
+        document.getElementById('calendar-month-year').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        // Clear container
+        container.innerHTML = '';
+
+        // Days header
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        days.forEach(day => {
+            const header = document.createElement('div');
+            header.className = 'compact-cal-header';
+            header.textContent = day;
+            container.appendChild(header);
+        });
+
+        // Get first day of month
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startingDayOfWeek = firstDay.getDay();
+
+        // Previous month days
+        const prevMonthDays = new Date(year, month, 0).getDate();
+        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+            const day = document.createElement('div');
+            day.className = 'compact-cal-day other-month';
+            day.textContent = prevMonthDays - i;
+            container.appendChild(day);
+        }
+
+        // Current month days
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            const day = document.createElement('div');
+            day.className = 'compact-cal-day';
+            day.textContent = i;
+
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            const dayOfWeek = new Date(year, month, i).getDay();
+
+            // Weekend styling
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                day.classList.add('weekend');
+            }
+
+            // Check if today
+            if (i === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+                day.classList.add('today');
+            }
+
+            // Check if holiday
+            if (bolivianHolidays[dateStr]) {
+                day.classList.add('holiday');
+                day.title = bolivianHolidays[dateStr];
+            }
+
+            // Check if has note
+            if (notes.some(note => note.date === dateStr)) {
+                day.classList.add('has-note');
+            }
+
+            container.appendChild(day);
+        }
+    }
+
+    // Previous/Next month
+    function previousMonth() {
+        currentCalendarMonth--;
+        if (currentCalendarMonth < 0) {
+            currentCalendarMonth = 11;
+            currentCalendarYear--;
+        }
+        generateCompactCalendar();
+        displayUpcomingHolidays();
+    }
+
+    function nextMonth() {
+        currentCalendarMonth++;
+        if (currentCalendarMonth > 11) {
+            currentCalendarMonth = 0;
+            currentCalendarYear++;
+        }
+        generateCompactCalendar();
+        displayUpcomingHolidays();
+    }
+
+    // Display upcoming holidays
+    function displayUpcomingHolidays() {
+        const container = document.getElementById('upcoming-holidays');
+        container.innerHTML = '';
+
+        const now = new Date();
+        const upcoming = Object.entries(bolivianHolidays)
+            .filter(([date]) => new Date(date) >= now)
+            .slice(0, 5);
+
+        if (upcoming.length === 0) {
+            container.innerHTML = '<small class="text-muted">No hay festivos próximos</small>';
+            return;
+        }
+
+        upcoming.forEach(([date, name]) => {
+            const [year, month, day] = date.split('-');
+            const holidayDate = new Date(year, month - 1, day);
+
+            const formattedDate = holidayDate.toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'short'
+            });
+
+            const chip = document.createElement('div');
+            chip.className = 'holiday-chip';
+            chip.innerHTML = `<i class="bi bi-calendar-heart-fill me-1"></i><strong>${formattedDate}:</strong> ${name}`;
+            container.appendChild(chip);
+        });
+    }
+
+    // Display notes
+    function renderNotes() {
+        const container = document.getElementById('notes-container');
+        const count = document.getElementById('notes-count');
+
+        if (notes.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-sticky" style="font-size: 2rem; opacity: 0.3;"></i>
+                    <p class="mt-2 mb-0 small">No tienes notas guardadas</p>
+                </div>
+            `;
+            count.textContent = '0 notas';
+            return;
+        }
+
+        count.textContent = `${notes.length} nota${notes.length !== 1 ? 's' : ''}`;
+
+        container.innerHTML = notes.map((note, index) => `
+            <div class="note-card">
+                <div class="note-card-header">
+                    <span class="note-title">${note.title}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="note-content mb-2">${note.content}</div>
+                ${note.date ? `
+                    <div class="note-date">
+                        <i class="bi bi-calendar-event me-1"></i>${new Date(note.date + 'T00:00:00').toLocaleDateString('es-ES')}
+                        ${note.time ? `<i class="bi bi-clock ms-2 me-1"></i>${note.time}` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    // Save note
+    function saveNote() {
+        const title = document.getElementById('noteTitle').value;
+        const content = document.getElementById('noteContent').value;
+        const date = document.getElementById('noteDate').value;
+        const time = document.getElementById('noteTime').value;
+
+        if (!title || !content) {
+            alert('Por favor completa el título y contenido');
+            return;
+        }
+
+        notes.push({
+            title,
+            content,
+            date,
+            time
+        });
+        localStorage.setItem('vetDashboardNotes', JSON.stringify(notes));
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addNoteModal'));
+        modal.hide();
+
+        // Reset form
+        document.getElementById('noteForm').reset();
+
+        // Refresh display
+        renderNotes();
+        generateCompactCalendar();
+
+        // Show notification if date is set
+        if (date && time) {
+            checkNotifications();
+        }
+    }
+
+    // Delete note
+    function deleteNote(index) {
+        if (confirm('¿Estás seguro de eliminar esta nota?')) {
+            notes.splice(index, 1);
+            localStorage.setItem('vetDashboardNotes', JSON.stringify(notes));
+            renderNotes();
+            generateCompactCalendar();
+        }
+    }
+
+    // Check notifications
+    function checkNotifications() {
+        const now = new Date();
+        const currentDate = now.toISOString().split('T')[0];
+        const currentTime = now.toTimeString().slice(0, 5);
+
+        notes.forEach(note => {
+            if (note.date === currentDate && note.time === currentTime && !note.notified) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Recordatorio: ' + note.title, {
+                        body: note.content,
+                        icon: '/static/img/logo.png'
+                    });
+                }
+                note.notified = true;
+                localStorage.setItem('vetDashboardNotes', JSON.stringify(notes));
+            }
+        });
+    }
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+        updateLaPazTime();
+        setInterval(updateLaPazTime, 1000);
+
+        generateCompactCalendar();
+        displayUpcomingHolidays();
+        renderNotes();
+    });
+</script>
+{% endblock %}

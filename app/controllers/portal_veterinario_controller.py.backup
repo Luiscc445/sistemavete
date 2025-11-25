@@ -1,0 +1,386 @@
+"""
+Controlador de Veterinario
+Gestiona las acciones de los veterinarios
+"""
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_required, current_user
+from functools import wraps
+from app import db
+from app.models.cita import Cita
+from app.models.medicamento import Medicamento, Receta
+from app.models.pago import Pago
+from datetime import datetime
+from sqlalchemy import func
+
+veterinario_bp = Blueprint('veterinario', __name__)
+
+
+def veterinario_required(f):
+    """Decorador para rutas que requieren rol de veterinario"""
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_veterinario():
+            flash('No tienes permisos para acceder a esta página.', 'danger')
+            return redirect(url_for('auth.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@veterinario_bp.route('/dashboard')
+@veterinario_required
+def dashboard():
+    """Dashboard del veterinario"""
+    # Estadísticas
+    citas_pendientes = Cita.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='pendiente'
+    ).count()
+
+    citas_aceptadas = Cita.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='aceptada'
+    ).count()
+
+    total_atendidas = Cita.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='atendida'
+    ).count()
+
+    # Citas de hoy - CORREGIDO para SQL Server
+    hoy = datetime.now().date()
+    citas_hoy = Cita.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='pendiente'
+    ).filter(
+        db.func.cast(Cita.fecha, db.Date) == hoy
+    ).order_by(Cita.fecha.asc()).all()
+
+    # Ingresos del veterinario (su porcentaje de los pagos)
+    ingresos_totales = db.session.query(
+        func.sum(Pago.monto_veterinario)
+    ).filter(
+        Pago.veterinario_id == current_user.id,
+        Pago.estado == 'completado'
+    ).scalar() or 0.0
+
+    # Ingresos del mes actual
+    primer_dia_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    ingresos_mes = db.session.query(
+        func.sum(Pago.monto_veterinario)
+    ).filter(
+        Pago.veterinario_id == current_user.id,
+        Pago.estado == 'completado',
+        Pago.fecha_pago >= primer_dia_mes
+    ).scalar() or 0.0
+
+    # Número de pagos recibidos
+    total_pagos = Pago.query.filter_by(
+        veterinario_id=current_user.id,
+        estado='completado'
+    ).count()
+
+    return render_template('dashboards/veterinario/veterinario_dashboard.html',
+                         citas_pendientes=citas_pendientes,
+                         citas_aceptadas=citas_aceptadas,
+                         total_atendidas=total_atendidas,
+                         citas_hoy=citas_hoy,
+                         ingresos_totales=ingresos_totales,
+                         ingresos_mes=ingresos_mes,
+                         total_pagos=total_pagos)
+
+
+@veterinario_bp.route('/citas/pendientes')
+@veterinario_required
+def citas_pendientes():
+    """Ver citas pendientes asignadas a este veterinario"""
+    # Solo mostrar citas pendientes que fueron asignadas a ESTE veterinario
+    citas = Cita.query.filter_by(
+        estado='pendiente',
+        veterinario_id=current_user.id
+    ).order_by(Cita.fecha.asc()).all()
+    
+    return render_template('veterinario/citas/citas_pendientes.html', citas=citas)
+
+
+
+@veterinario_bp.route('/citas/mis-citas')
+@veterinario_required
+def mis_citas():
+    """Ver mis citas aceptadas y atendidas"""
+    # Obtener parámetros de filtro
+    estado_filtro = request.args.get('estado', 'todos')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    buscar = request.args.get('buscar', '')
+    
+    # Query base - todas las citas del veterinario
+    query = Cita.query.filter_by(veterinario_id=current_user.id)
+    
+    # Filtrar por estado si no es "todos"
+    if estado_filtro and estado_filtro != 'todos':
+        query = query.filter_by(estado=estado_filtro)
+    
+    # Filtrar por rango de fechas
+    if fecha_desde:
+        try:
+            fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+            query = query.filter(Cita.fecha >= fecha_desde_dt)
+        except ValueError:
+            pass
+    
+    if fecha_hasta:
+        try:
+            fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            # Agregar un día para incluir todo el día hasta
+            from datetime import timedelta
+            fecha_hasta_dt = fecha_hasta_dt + timedelta(days=1)
+            query = query.filter(Cita.fecha < fecha_hasta_dt)
+        except ValueError:
+            pass
+    
+    # Búsqueda por mascota o tutor
+    if buscar:
+        from app.models.mascota import Mascota
+        from app.models.usuario import Usuario
+        query = query.join(Mascota).join(Usuario, Mascota.tutor_id == Usuario.id).filter(
+            db.or_(
+                Mascota.nombre.ilike(f'%{buscar}%'),
+                Usuario.nombre.ilike(f'%{buscar}%'),
+                Usuario.apellido.ilike(f'%{buscar}%')
+            )
+        )
+    
+    # Ordenar por fecha descendente
+    citas = query.order_by(Cita.fecha.desc()).all()
+    
+    # Obtener citas agrupadas por mes para el calendario
+    citas_por_fecha = {}
+    for cita in Cita.query.filter_by(veterinario_id=current_user.id).all():
+        fecha_str = cita.fecha.strftime('%Y-%m-%d')
+        if fecha_str not in citas_por_fecha:
+            citas_por_fecha[fecha_str] = []
+        citas_por_fecha[fecha_str].append({
+            'estado': cita.estado,
+            'mascota': cita.mascota.nombre if cita.mascota else 'N/A'
+        })
+
+    return render_template('veterinario/citas/mis_citas.html', 
+                         citas=citas,
+                         citas_por_fecha=citas_por_fecha,
+                         estado_filtro=estado_filtro,
+                         fecha_desde=fecha_desde,
+                         fecha_hasta=fecha_hasta,
+                         buscar=buscar)
+
+
+
+@veterinario_bp.route('/cita/<int:id>/aceptar', methods=['POST'])
+@veterinario_required
+def aceptar_cita(id):
+    """Aceptar una cita pendiente"""
+    cita = Cita.query.get_or_404(id)
+
+    if cita.estado != 'pendiente':
+        flash('Esta cita ya no está pendiente.', 'warning')
+        return redirect(url_for('veterinario.citas_pendientes'))
+
+    try:
+        # SIEMPRE asignar al veterinario actual cuando acepta la cita
+        cita.veterinario_id = current_user.id
+        cita.confirmar()
+        db.session.commit()
+        flash(f'Cita aceptada exitosamente. Fecha: {cita.fecha.strftime("%d/%m/%Y %H:%M")}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al aceptar cita: {str(e)}', 'danger')
+
+    return redirect(url_for('veterinario.mis_citas'))
+
+
+
+@veterinario_bp.route('/cita/<int:id>/posponer', methods=['GET', 'POST'])
+@veterinario_required
+def posponer_cita(id):
+    """Posponer una cita"""
+    cita = Cita.query.get_or_404(id)
+
+    if cita.estado not in ['pendiente', 'aceptada']:
+        flash('Esta cita no puede ser pospuesta.', 'warning')
+        return redirect(url_for('veterinario.citas_pendientes'))
+
+    if request.method == 'POST':
+        motivo = request.form.get('motivo')
+        nueva_fecha = request.form.get('nueva_fecha')
+        nueva_hora = request.form.get('nueva_hora')
+
+        if not motivo:
+            flash('Debes proporcionar un motivo para posponer.', 'danger')
+            return render_template('veterinario/citas/posponer_cita.html', cita=cita)
+
+        # Nueva fecha sugerida (opcional)
+        nueva_fecha_hora = None
+        if nueva_fecha and nueva_hora:
+            try:
+                nueva_fecha_hora = datetime.strptime(f"{nueva_fecha} {nueva_hora}", '%Y-%m-%d %H:%M')
+            except ValueError:
+                flash('Formato de fecha u hora inválido.', 'danger')
+                return render_template('veterinario/citas/posponer_cita.html', cita=cita)
+
+        try:
+            if nueva_fecha_hora:
+                cita.fecha = nueva_fecha_hora
+            cita.estado = 'pendiente'
+            cita.razon_cancelacion = f"Pospuesta: {motivo}"
+            db.session.commit()
+            flash('Cita pospuesta. El tutor será notificado.', 'success')
+            return redirect(url_for('veterinario.citas_pendientes'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al posponer cita: {str(e)}', 'danger')
+
+    return render_template('veterinario/citas/posponer_cita.html', cita=cita)
+
+
+@veterinario_bp.route('/cita/<int:id>/atender', methods=['GET', 'POST'])
+@veterinario_required
+def atender_cita(id):
+    """Atender una cita"""
+    cita = Cita.query.get_or_404(id)
+
+    # Verificar que la cita está confirmada y asignada a este veterinario
+    if cita.veterinario_id != current_user.id:
+        flash('No tienes permiso para atender esta cita.', 'danger')
+        return redirect(url_for('veterinario.mis_citas'))
+
+    if cita.estado not in ['confirmada', 'pendiente']:
+        flash('Esta cita no puede ser atendida.', 'warning')
+        return redirect(url_for('veterinario.mis_citas'))
+
+    # Obtener medicamentos disponibles
+    medicamentos = Medicamento.query.filter_by(activo=True).order_by(Medicamento.nombre.asc()).all()
+
+    if request.method == 'POST':
+        diagnostico = request.form.get('diagnostico')
+        tratamiento = request.form.get('tratamiento')
+        observaciones = request.form.get('observaciones')
+
+        # Validaciones
+        if not diagnostico or not tratamiento:
+            flash('Diagnóstico y tratamiento son obligatorios.', 'danger')
+            return render_template('veterinario/citas/atender_cita.html', cita=cita, medicamentos=medicamentos)
+
+        try:
+            # Iniciar atención si aún no se ha iniciado
+            if cita.estado == 'confirmada' or cita.estado == 'pendiente':
+                cita.iniciar_atencion()
+
+            # Registrar datos de la consulta
+            cita.diagnostico = diagnostico
+            cita.tratamiento = tratamiento
+            cita.observaciones = observaciones
+
+            # Procesar medicamentos recetados
+            medicamentos_ids = request.form.getlist('medicamento_id[]')
+            cantidades = request.form.getlist('cantidad[]')
+            dosis_list = request.form.getlist('dosis[]')
+            duraciones = request.form.getlist('duracion[]')
+            indicaciones = request.form.getlist('indicaciones[]')
+
+            for i, med_id in enumerate(medicamentos_ids):
+                if med_id and cantidades[i]:
+                    medicamento = Medicamento.query.get(int(med_id))
+                    cantidad = int(cantidades[i])
+
+                    if medicamento and cantidad > 0:
+                        # Verificar stock
+                        if medicamento.stock_actual < cantidad:
+                            flash(f'Stock insuficiente de {medicamento.nombre}. Disponible: {medicamento.stock_actual}', 'warning')
+                            continue
+
+                        # Crear receta
+                        receta = Receta(
+                            cita_id=cita.id,
+                            medicamento_id=medicamento.id,
+                            cantidad=cantidad,
+                            dosis=dosis_list[i] if i < len(dosis_list) else None,
+                            duracion=duraciones[i] if i < len(duraciones) else None,
+                            indicaciones=indicaciones[i] if i < len(indicaciones) else None
+                        )
+                        db.session.add(receta)
+
+                        # Reducir stock automáticamente
+                        if not medicamento.reducir_stock(cantidad):
+                            flash(f'Error al reducir stock de {medicamento.nombre}', 'warning')
+
+            # Completar la cita y guardar todos los cambios
+            cita.completar()
+            flash('Cita atendida exitosamente. Stock actualizado.', 'success')
+            return redirect(url_for('veterinario.mis_citas'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al atender cita: {str(e)}', 'danger')
+
+    return render_template('veterinario/citas/atender_cita.html', cita=cita, medicamentos=medicamentos)
+
+
+@veterinario_bp.route('/cita/<int:id>')
+@veterinario_required
+def ver_cita(id):
+    """Ver detalles de una cita"""
+    cita = Cita.query.get_or_404(id)
+
+    # Verificar permiso
+    if cita.veterinario_id != current_user.id and cita.estado == 'pendiente':
+        # Puede ver citas pendientes sin asignar
+        pass
+    elif cita.veterinario_id != current_user.id:
+        flash('No tienes permiso para ver esta cita.', 'danger')
+        return redirect(url_for('veterinario.dashboard'))
+
+    return render_template('veterinario/citas/ver_cita.html', cita=cita)
+
+
+@veterinario_bp.route('/perfil', methods=['GET', 'POST'])
+@veterinario_required
+def perfil():
+    """Ver y editar perfil del veterinario"""
+    if request.method == 'POST':
+        # Actualizar información
+        current_user.nombre = request.form.get('nombre')
+        current_user.apellido = request.form.get('apellido')
+        current_user.email = request.form.get('email')
+        current_user.telefono = request.form.get('telefono')
+        current_user.especialidad = request.form.get('especialidad')
+        current_user.licencia_profesional = request.form.get('licencia_profesional')
+
+        # Cambiar contraseña si se proporciona
+        password_actual = request.form.get('password_actual')
+        password_nueva = request.form.get('password_nueva')
+        password_confirmar = request.form.get('password_confirmar')
+
+        if password_actual and password_nueva:
+            if not current_user.check_password(password_actual):
+                flash('La contraseña actual es incorrecta.', 'danger')
+                return render_template('veterinario/perfil.html')
+
+            if password_nueva != password_confirmar:
+                flash('Las contraseñas nuevas no coinciden.', 'danger')
+                return render_template('veterinario/perfil.html')
+
+            if len(password_nueva) < 6:
+                flash('La contraseña debe tener al menos 6 caracteres.', 'danger')
+                return render_template('veterinario/perfil.html')
+
+            current_user.set_password(password_nueva)
+
+        try:
+            db.session.commit()
+            flash('Perfil actualizado exitosamente.', 'success')
+            return redirect(url_for('veterinario.perfil'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al actualizar perfil: {str(e)}', 'danger')
+
+    return render_template('veterinario/perfil.html')

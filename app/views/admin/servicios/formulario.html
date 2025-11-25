@@ -1,0 +1,89 @@
+﻿{% extends "layouts/admin_base.html" %}
+
+{% block title %}{{ 'Editar' if servicio else 'Nuevo' }} Servicio{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-tag-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">{{ 'Editar' if servicio else 'Nuevo' }} Servicio</h1>
+            <p class="page-header-subtitle-modern">Configura los detalles y precios del servicio</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-modern">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Código</label>
+                            <input type="text" class="form-control" name="codigo"
+                                value="{{ servicio.codigo if servicio else '' }}" {{ 'readonly' if servicio
+                                else 'required' }} placeholder="EJ: CONS-GEN">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Categoría</label>
+                            <select class="form-select" name="categoria" required>
+                                <option value="Consulta" {{ 'selected' if servicio and servicio.categoria=='Consulta'
+                                    }}>Consulta</option>
+                                <option value="Especialidad" {{ 'selected' if servicio and
+                                    servicio.categoria=='Especialidad' }}>Especialidad</option>
+                                <option value="Cirugía" {{ 'selected' if servicio and servicio.categoria=='Cirugía' }}>
+                                    Cirugía</option>
+                                <option value="Vacunación" {{ 'selected' if servicio and
+                                    servicio.categoria=='Vacunación' }}>Vacunación</option>
+                                <option value="Laboratorio" {{ 'selected' if servicio and
+                                    servicio.categoria=='Laboratorio' }}>Laboratorio</option>
+                                <option value="Otro" {{ 'selected' if servicio and servicio.categoria=='Otro' }}>Otro
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Nombre del Servicio</label>
+                            <input type="text" class="form-control" name="nombre"
+                                value="{{ servicio.nombre if servicio else '' }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Precio (Bs.)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Bs.</span>
+                                <input type="number" class="form-control" name="precio" step="0.01"
+                                    value="{{ servicio.precio if servicio else '' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Duración Estimada (min)</label>
+                            <input type="number" class="form-control" name="duracion"
+                                value="{{ servicio.duracion_estimada if servicio else '30' }}">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Descripción</label>
+                            <textarea class="form-control" name="descripcion"
+                                rows="3">{{ servicio.descripcion if servicio else '' }}</textarea>
+                        </div>
+
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('servicios_admin.index') }}" class="btn btn-light">Cancelar</a>
+                            <button type="submit" class="btn btn-primary-modern">
+                                <i class="bi bi-save me-2"></i>Guardar Servicio
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

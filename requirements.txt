@@ -34,6 +34,7 @@ marshmallow==3.20.1
 # Gráficos y reportes / manejo de Excel
 pandas==2.2.3
 openpyxl==3.1.2
+plotly==5.18.0
 
 # Generación de códigos QR para pagos
 qrcode==7.4.2

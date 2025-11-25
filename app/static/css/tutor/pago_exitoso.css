@@ -1,0 +1,666 @@
+/* CSS extraido de pago_exitoso.html */
+/* Generado automaticamente el 2025-11-22 22:25:48 */
+
+/* ==================== Variables ==================== */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --success: #10b981;
+        --success-light: #d1fae5;
+        --warning: #f59e0b;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ==================== Success Page ==================== */
+    .success-page {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+        padding: 60px 0;
+    }
+
+    /* ==================== Success Card ==================== */
+    .success-card {
+        background: white;
+        border-radius: 32px;
+        padding: 64px 48px;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+        animation: pulse-bg 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-bg {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    }
+
+    /* ==================== Success Icon ==================== */
+    .success-icon-wrapper {
+        position: relative;
+        margin: 0 auto 48px;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-checkmark-simple {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .checkmark-circle-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--success);
+        border-radius: 50%;
+        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        animation: pulseSuccess 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseSuccess {
+
+        0%,
+        100% {
+            transform: scale(1);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.6);
+        }
+    }
+
+    .checkmark-circle-bg::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border: 3px solid rgba(16, 185, 129, 0.3);
+        border-radius: 50%;
+        animation: ringPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.5;
+        }
+    }
+
+    .checkmark-icon {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 5rem;
+        animation: checkAppear 0.5s ease-out 0.3s both;
+    }
+
+    @keyframes checkAppear {
+        0% {
+            transform: scale(0) rotate(-45deg);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    /* ==================== Success Message ==================== */
+    .success-message {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .success-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+    }
+
+    .success-subtitle {
+        font-size: 1.25rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* ==================== Transaction Badge ==================== */
+    .transaction-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 20px 32px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        border-radius: 20px;
+        margin-bottom: 48px;
+    }
+
+    .badge-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .badge-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .badge-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-code {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--dark);
+        font-family: 'Courier New', monospace;
+    }
+
+    /* ==================== Details Grid ==================== */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .detail-card {
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 24px;
+        padding: 32px;
+        transition: all 0.3s ease;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .detail-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .bg-gradient-primary {
+        background: var(--gradient-primary);
+    }
+
+    .bg-gradient-success {
+        background: var(--gradient-success);
+    }
+
+    .detail-card-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .detail-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        background: var(--light);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+        background: #e0e7ff;
+        transform: translateX(4px);
+    }
+
+    .detail-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .detail-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 700;
+    }
+
+    .detail-time {
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* ==================== Amount Summary ==================== */
+    .amount-summary {
+        padding: 32px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border: 3px solid var(--success);
+        border-radius: 24px;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .amount-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .amount-label {
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .amount-value {
+        font-size: 3rem;
+        font-weight: 900;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ==================== Action Buttons ==================== */
+    .action-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
+
+    .btn-action {
+        flex: 1;
+        max-width: 280px;
+        padding: 18px 32px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-action.btn-secondary {
+        background: white;
+        color: var(--dark);
+        border: 2px solid var(--border);
+    }
+
+    .btn-action.btn-secondary:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .btn-action.btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-action.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-shine {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        to {
+            left: 100%;
+        }
+    }
+
+    /* ==================== Additional Info ==================== */
+    .additional-info {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 24px;
+        background: rgba(99, 102, 241, 0.05);
+        border-radius: 16px;
+        margin-bottom: 32px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9375rem;
+        color: #64748b;
+    }
+
+    .info-item i {
+        font-size: 1.25rem;
+        color: var(--primary);
+    }
+
+    /* ==================== Help Section ==================== */
+    .help-section {
+        margin-top: 32px;
+    }
+
+    .help-card {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 24px 32px;
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .help-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .help-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .help-content {
+        flex: 1;
+    }
+
+    .help-content h4 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 4px;
+    }
+
+    .help-content p {
+        font-size: 0.9375rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .help-button {
+        padding: 12px 24px;
+        background: var(--primary);
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .help-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* ==================== Responsive ==================== */
+    @media (max-width: 991.98px) {
+        .success-card {
+            padding: 48px 32px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+        }
+
+        .amount-value {
+            font-size: 2.5rem;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .success-page {
+            padding: 40px 0;
+        }
+
+        .success-card {
+            padding: 40px 24px;
+            border-radius: 24px;
+        }
+
+        .success-icon-wrapper {
+            width: 160px;
+            height: 160px;
+            margin-bottom: 32px;
+        }
+
+        .success-circle {
+            width: 120px;
+            height: 120px;
+        }
+
+        .success-checkmark,
+        .checkmark {
+            width: 120px;
+            height: 120px;
+        }
+
+        .success-title {
+            font-size: 2rem;
+        }
+
+        .success-subtitle {
+            font-size: 1rem;
+        }
+
+        .transaction-badge {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .detail-card {
+            padding: 24px;
+        }
+
+        .amount-value {
+            font-size: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            max-width: 100%;
+        }
+
+        .help-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+@keyframes slideInUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutDown {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+    }

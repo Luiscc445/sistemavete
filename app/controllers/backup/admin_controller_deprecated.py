@@ -1,4 +1,4 @@
-Ôªø"""
+"""
 Controlador de Administrador con funcionalidades completas
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
@@ -17,14 +17,14 @@ from app.models import (
 admin_bp = Blueprint('admin', __name__)
 
 # --- TU REQUERIMIENTO: Lista de especialidades ---
-# El admin ahora seleccionar√° de esta lista.
+# El admin ahora seleccionar· de esta lista.
 LISTA_ESPECIALIDADES = [
     'Medicina General',
-    'Cirug√≠a',
-    'Dermatolog√≠a',
-    'Cardiolog√≠a',
-    'Oncolog√≠a',
-    'Animales Ex√≥ticos',
+    'CirugÌa',
+    'DermatologÌa',
+    'CardiologÌa',
+    'OncologÌa',
+    'Animales ExÛticos',
     'Fisioterapia'
 ]
 # -------------------------------------------------
@@ -35,18 +35,18 @@ def admin_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
         if not current_user.is_admin():
-            flash('No tienes permisos para acceder a esta p√°gina', 'danger')
-            return redirect(url_for('index')) # Redirige a la p√°gina principal
+            flash('No tienes permisos para acceder a esta p·gina', 'danger')
+            return redirect(url_for('index')) # Redirige a la p·gina principal
         return f(*args, **kwargs)
     return decorated_function
 
 def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anteriores=None, datos_nuevos=None):
-    """Registra una acci√≥n en el sistema de auditor√≠a"""
-    # Esta funci√≥n es importante para el control
+    """Registra una acciÛn en el sistema de auditorÌa"""
+    # Esta funciÛn es importante para el control
     import json
     try:
         # Convertir datos a JSON string si no son None (SQL Server compatibility)
-        # Para None, usar None expl√≠citamente (columnas marcadas como nullable en el modelo)
+        # Para None, usar None explÌcitamente (columnas marcadas como nullable en el modelo)
         datos_ant_str = json.dumps(datos_anteriores) if datos_anteriores is not None else None
         datos_new_str = json.dumps(datos_nuevos) if datos_nuevos is not None else None
 
@@ -65,7 +65,7 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
             user_agent=user_agent
         )
         db.session.add(auditoria)
-        # El commit se har√° junto con la operaci√≥n principal
+        # El commit se har· junto con la operaciÛn principal
     except Exception as e:
         print(f"Error al registrar auditoria: {e}")
 
@@ -73,12 +73,12 @@ def registrar_auditoria(accion, entidad, entidad_id, descripcion, datos_anterior
 @admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
-    """Dashboard principal del administrador con estad√≠sticas"""
+    """Dashboard principal del administrador con estadÌsticas"""
     stats = {}
     ultimos_tutores = []
     proximas_citas = []
     try:
-        # Estad√≠sticas generales
+        # EstadÌsticas generales
         stats = {
             'total_usuarios': Usuario.query.count(),
             'total_veterinarios': Usuario.query.filter_by(rol='veterinario').count(),
@@ -91,10 +91,10 @@ def dashboard():
             ).count()
         }
 
-        # √öltimos tutores
+        # ⁄ltimos tutores
         ultimos_tutores = Usuario.query.filter_by(rol='tutor').order_by(Usuario.fecha_registro.desc()).limit(5).all()
 
-        # Pr√≥ximas citas de hoy
+        # PrÛximas citas de hoy
         proximas_citas = Cita.query.filter(
             func.cast(Cita.fecha, db.Date) == date.today(),
             Cita.estado.in_(['pendiente', 'confirmada'])
@@ -110,7 +110,7 @@ def dashboard():
                          ultimos_tutores=ultimos_tutores,
                          proximas_citas=proximas_citas)
 
-# --- SECCI√ìN DE TUTORES (CRUD COMPLETO) ---
+# --- SECCI”N DE TUTORES (CRUD COMPLETO) ---
 
 @admin_bp.route('/tutores')
 @admin_required
@@ -166,8 +166,8 @@ def ver_tutor(tutor_id):
         ).order_by(Cita.fecha).first()
     }
     
-    registrar_auditoria('ver_tutor', 'usuario', tutor_id, f'Visualizaci√≥n de tutor: {tutor.nombre_completo}')
-    db.session.commit() # Commit de la auditor√≠a
+    registrar_auditoria('ver_tutor', 'usuario', tutor_id, f'VisualizaciÛn de tutor: {tutor.nombre_completo}')
+    db.session.commit() # Commit de la auditorÌa
     
     return render_template('admin/tutores/ver.html',
                          tutor=tutor,
@@ -189,11 +189,11 @@ def nuevo_tutor():
         direccion = request.form.get('direccion')
         
         if Usuario.query.filter_by(username=username).first():
-            flash('El nombre de usuario ya est√° registrado', 'danger')
+            flash('El nombre de usuario ya est· registrado', 'danger')
             return render_template('admin/tutores/nuevo.html')
         
         if Usuario.query.filter_by(email=email).first():
-            flash('El email ya est√° registrado', 'danger')
+            flash('El email ya est· registrado', 'danger')
             return render_template('admin/tutores/nuevo.html')
 
         if not all([username, email, password, nombre, apellido]):
@@ -203,7 +203,7 @@ def nuevo_tutor():
         nuevo_tutor = Usuario(
             username=username,
             email=email,
-            password=password, # El modelo Usuario (user.py) hashea la contrase√±a autom√°ticamente
+            password=password, # El modelo Usuario (user.py) hashea la contraseÒa autom·ticamente
             nombre=nombre,
             apellido=apellido,
             telefono=telefono,
@@ -216,7 +216,7 @@ def nuevo_tutor():
         try:
             db.session.add(nuevo_tutor)
             db.session.flush() # Para obtener el ID del nuevo tutor
-            registrar_auditoria('crear_tutor', 'usuario', nuevo_tutor.id, f'Admin cre√≥ nuevo tutor: {nuevo_tutor.nombre_completo}')
+            registrar_auditoria('crear_tutor', 'usuario', nuevo_tutor.id, f'Admin creÛ nuevo tutor: {nuevo_tutor.nombre_completo}')
             db.session.commit()
             flash('Tutor creado exitosamente', 'success')
             return redirect(url_for('admin.tutores'))
@@ -245,10 +245,10 @@ def editar_tutor(tutor_id):
         
         nueva_password = request.form.get('nueva_password')
         if nueva_password:
-            tutor.set_password(nueva_password) # Hashear la nueva contrase√±a
+            tutor.set_password(nueva_password) # Hashear la nueva contraseÒa
             
         try:
-            registrar_auditoria('editar_tutor', 'usuario', tutor.id, f'Admin edit√≥ al tutor: {tutor.nombre_completo}')
+            registrar_auditoria('editar_tutor', 'usuario', tutor.id, f'Admin editÛ al tutor: {tutor.nombre_completo}')
             db.session.commit()
             flash('Tutor actualizado exitosamente', 'success')
             return redirect(url_for('admin.ver_tutor', tutor_id=tutor.id))
@@ -274,7 +274,7 @@ def eliminar_tutor(tutor_id):
         nombre_tutor = tutor.nombre_completo
         total_mascotas = tutor.mascotas.count()
         
-        # Eliminar mascotas asociadas (esto tambi√©n eliminar√° citas, historiales, etc. por CASCADE)
+        # Eliminar mascotas asociadas (esto tambiÈn eliminar· citas, historiales, etc. por CASCADE)
         for mascota in tutor.mascotas:
             db.session.delete(mascota)
         
@@ -285,12 +285,12 @@ def eliminar_tutor(tutor_id):
         # Eliminar el tutor
         db.session.delete(tutor)
         
-        # Registrar auditor√≠a
+        # Registrar auditorÌa
         registrar_auditoria(
             'eliminar_tutor', 
             'usuario', 
             tutor_id, 
-            f'Admin elimin√≥ al tutor: {nombre_tutor} (con {total_mascotas} mascotas)'
+            f'Admin eliminÛ al tutor: {nombre_tutor} (con {total_mascotas} mascotas)'
         )
         
         db.session.commit()
@@ -303,24 +303,24 @@ def eliminar_tutor(tutor_id):
     
     return redirect(url_for('admin.tutores'))
 
-# --- SECCI√ìN DE VETERINARIOS (CRUD COMPLETO) ---
+# --- SECCI”N DE VETERINARIOS (CRUD COMPLETO) ---
 
 @admin_bp.route('/veterinarios')
 @admin_required
 def veterinarios():
-    """Lista de veterinarios con estad√≠sticas"""
+    """Lista de veterinarios con estadÌsticas"""
     page = request.args.get('page', 1, type=int)
     veterinarios = Usuario.query.filter_by(rol='veterinario').order_by(Usuario.nombre).paginate(
         page=page, per_page=10, error_out=False
     )
 
-    # Obtener estad√≠sticas de forma segura
+    # Obtener estadÌsticas de forma segura
     if veterinarios.items:
         for vet in veterinarios.items:
             try:
                 vet.stats = vet.get_estadisticas_veterinario()
             except Exception as e:
-                print(f"Error al obtener estad√≠sticas del veterinario {vet.id}: {e}")
+                print(f"Error al obtener estadÌsticas del veterinario {vet.id}: {e}")
                 vet.stats = {
                     'citas_completadas': 0,
                     'citas_pendientes': 0,
@@ -342,7 +342,7 @@ def nuevo_veterinario():
         telefono = request.form.get('telefono')
         licencia = request.form.get('licencia_profesional')
         
-        # --- L√ìGICA DE ESPECIALIDAD MEJORADA ---
+        # --- L”GICA DE ESPECIALIDAD MEJORADA ---
         especialidad = request.form.get('especialidad')
         especialidad_otra = request.form.get('especialidad_otra')
         
@@ -351,14 +351,14 @@ def nuevo_veterinario():
         elif especialidad == 'otra':
             flash('Debe especificar la "otra" especialidad.', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
-        # --- FIN L√ìGICA ---
+        # --- FIN L”GICA ---
             
         if Usuario.query.filter_by(username=username).first():
-            flash('El nombre de usuario ya est√° registrado', 'danger')
+            flash('El nombre de usuario ya est· registrado', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
         
         if Usuario.query.filter_by(email=email).first():
-            flash('El email ya est√° registrado', 'danger')
+            flash('El email ya est· registrado', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
 
         if not all([username, email, password, nombre, apellido]):
@@ -368,7 +368,7 @@ def nuevo_veterinario():
         nuevo_vet = Usuario(
             username=username,
             email=email,
-            password=password, # El modelo Usuario (user.py) hashea la contrase√±a autom√°ticamente
+            password=password, # El modelo Usuario (user.py) hashea la contraseÒa autom·ticamente
             nombre=nombre,
             apellido=apellido,
             telefono=telefono,
@@ -382,7 +382,7 @@ def nuevo_veterinario():
         try:
             db.session.add(nuevo_vet)
             db.session.flush() # Para obtener el ID del nuevo veterinario
-            registrar_auditoria('crear_veterinario', 'usuario', nuevo_vet.id, f'Admin cre√≥ nuevo veterinario: {nuevo_vet.nombre_completo}')
+            registrar_auditoria('crear_veterinario', 'usuario', nuevo_vet.id, f'Admin creÛ nuevo veterinario: {nuevo_vet.nombre_completo}')
             db.session.commit()
             flash('Veterinario creado exitosamente', 'success')
             return redirect(url_for('admin.veterinarios'))
@@ -406,12 +406,12 @@ def ver_veterinario(vet_id):
     citas = veterinario.citas_como_veterinario.order_by(Cita.fecha.desc()).limit(10).all()
     stats = veterinario.get_estadisticas_veterinario()
     
-    registrar_auditoria('ver_veterinario', 'usuario', vet_id, f'Visualizaci√≥n de veterinario: {veterinario.nombre_completo}')
-    db.session.commit() # Commit de la auditor√≠a
+    registrar_auditoria('ver_veterinario', 'usuario', vet_id, f'VisualizaciÛn de veterinario: {veterinario.nombre_completo}')
+    db.session.commit() # Commit de la auditorÌa
     
             db.session.add(nuevo_tutor)
             db.session.flush() # Para obtener el ID del nuevo tutor
-            registrar_auditoria('crear_tutor', 'usuario', nuevo_tutor.id, f'Admin cre√≥ nuevo tutor: {nuevo_tutor.nombre_completo}')
+            registrar_auditoria('crear_tutor', 'usuario', nuevo_tutor.id, f'Admin creÛ nuevo tutor: {nuevo_tutor.nombre_completo}')
             db.session.commit()
             flash('Tutor creado exitosamente', 'success')
             return redirect(url_for('admin.tutores'))
@@ -440,10 +440,10 @@ def editar_tutor(tutor_id):
         
         nueva_password = request.form.get('nueva_password')
         if nueva_password:
-            tutor.set_password(nueva_password) # Hashear la nueva contrase√±a
+            tutor.set_password(nueva_password) # Hashear la nueva contraseÒa
             
         try:
-            registrar_auditoria('editar_tutor', 'usuario', tutor.id, f'Admin edit√≥ al tutor: {tutor.nombre_completo}')
+            registrar_auditoria('editar_tutor', 'usuario', tutor.id, f'Admin editÛ al tutor: {tutor.nombre_completo}')
             db.session.commit()
             flash('Tutor actualizado exitosamente', 'success')
             return redirect(url_for('admin.ver_tutor', tutor_id=tutor.id))
@@ -469,7 +469,7 @@ def eliminar_tutor(tutor_id):
         nombre_tutor = tutor.nombre_completo
         total_mascotas = tutor.mascotas.count()
         
-        # Eliminar mascotas asociadas (esto tambi√©n eliminar√° citas, historiales, etc. por CASCADE)
+        # Eliminar mascotas asociadas (esto tambiÈn eliminar· citas, historiales, etc. por CASCADE)
         for mascota in tutor.mascotas:
             db.session.delete(mascota)
         
@@ -480,12 +480,12 @@ def eliminar_tutor(tutor_id):
         # Eliminar el tutor
         db.session.delete(tutor)
         
-        # Registrar auditor√≠a
+        # Registrar auditorÌa
         registrar_auditoria(
             'eliminar_tutor', 
             'usuario', 
             tutor_id, 
-            f'Admin elimin√≥ al tutor: {nombre_tutor} (con {total_mascotas} mascotas)'
+            f'Admin eliminÛ al tutor: {nombre_tutor} (con {total_mascotas} mascotas)'
         )
         
         db.session.commit()
@@ -498,24 +498,24 @@ def eliminar_tutor(tutor_id):
     
     return redirect(url_for('admin.tutores'))
 
-# --- SECCI√ìN DE VETERINARIOS (CRUD COMPLETO) ---
+# --- SECCI”N DE VETERINARIOS (CRUD COMPLETO) ---
 
 @admin_bp.route('/veterinarios')
 @admin_required
 def veterinarios():
-    """Lista de veterinarios con estad√≠sticas"""
+    """Lista de veterinarios con estadÌsticas"""
     page = request.args.get('page', 1, type=int)
     veterinarios = Usuario.query.filter_by(rol='veterinario').order_by(Usuario.nombre).paginate(
         page=page, per_page=10, error_out=False
     )
 
-    # Obtener estad√≠sticas de forma segura
+    # Obtener estadÌsticas de forma segura
     if veterinarios.items:
         for vet in veterinarios.items:
             try:
                 vet.stats = vet.get_estadisticas_veterinario()
             except Exception as e:
-                print(f"Error al obtener estad√≠sticas del veterinario {vet.id}: {e}")
+                print(f"Error al obtener estadÌsticas del veterinario {vet.id}: {e}")
                 vet.stats = {
                     'citas_completadas': 0,
                     'citas_pendientes': 0,
@@ -537,7 +537,7 @@ def nuevo_veterinario():
         telefono = request.form.get('telefono')
         licencia = request.form.get('licencia_profesional')
         
-        # --- L√ìGICA DE ESPECIALIDAD MEJORADA ---
+        # --- L”GICA DE ESPECIALIDAD MEJORADA ---
         especialidad = request.form.get('especialidad')
         especialidad_otra = request.form.get('especialidad_otra')
         
@@ -546,14 +546,14 @@ def nuevo_veterinario():
         elif especialidad == 'otra':
             flash('Debe especificar la "otra" especialidad.', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
-        # --- FIN L√ìGICA ---
+        # --- FIN L”GICA ---
             
         if Usuario.query.filter_by(username=username).first():
-            flash('El nombre de usuario ya est√° registrado', 'danger')
+            flash('El nombre de usuario ya est· registrado', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
         
         if Usuario.query.filter_by(email=email).first():
-            flash('El email ya est√° registrado', 'danger')
+            flash('El email ya est· registrado', 'danger')
             return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
 
         if not all([username, email, password, nombre, apellido]):
@@ -563,7 +563,7 @@ def nuevo_veterinario():
         nuevo_vet = Usuario(
             username=username,
             email=email,
-            password=password, # El modelo Usuario (user.py) hashea la contrase√±a autom√°ticamente
+            password=password, # El modelo Usuario (user.py) hashea la contraseÒa autom·ticamente
             nombre=nombre,
             apellido=apellido,
             telefono=telefono,
@@ -577,7 +577,7 @@ def nuevo_veterinario():
         try:
             db.session.add(nuevo_vet)
             db.session.flush() # Para obtener el ID del nuevo veterinario
-            registrar_auditoria('crear_veterinario', 'usuario', nuevo_vet.id, f'Admin cre√≥ nuevo veterinario: {nuevo_vet.nombre_completo}')
+            registrar_auditoria('crear_veterinario', 'usuario', nuevo_vet.id, f'Admin creÛ nuevo veterinario: {nuevo_vet.nombre_completo}')
             db.session.commit()
             flash('Veterinario creado exitosamente', 'success')
             return redirect(url_for('admin.veterinarios'))
@@ -601,8 +601,8 @@ def ver_veterinario(vet_id):
     citas = veterinario.citas_como_veterinario.order_by(Cita.fecha.desc()).limit(10).all()
     stats = veterinario.get_estadisticas_veterinario()
     
-    registrar_auditoria('ver_veterinario', 'usuario', vet_id, f'Visualizaci√≥n de veterinario: {veterinario.nombre_completo}')
-    db.session.commit() # Commit de la auditor√≠a
+    registrar_auditoria('ver_veterinario', 'usuario', vet_id, f'VisualizaciÛn de veterinario: {veterinario.nombre_completo}')
+    db.session.commit() # Commit de la auditorÌa
     
     return render_template('admin/veterinarios/ver.html',
                          veterinario=veterinario,
@@ -626,7 +626,7 @@ def editar_veterinario(vet_id):
         veterinario.licencia_profesional = request.form.get('licencia_profesional')
         veterinario.activo = request.form.get('activo') == 'on'
         
-        # --- L√ìGICA DE ESPECIALIDAD MEJORADA ---
+        # --- L”GICA DE ESPECIALIDAD MEJORADA ---
         especialidad = request.form.get('especialidad')
         especialidad_otra = request.form.get('especialidad_otra')
         
@@ -637,14 +637,14 @@ def editar_veterinario(vet_id):
             return render_template('admin/veterinarios/editar.html', veterinario=veterinario, especialidades=LISTA_ESPECIALIDADES)
         else:
             veterinario.especialidad = especialidad
-        # --- FIN L√ìGICA ---
+        # --- FIN L”GICA ---
         
         nueva_password = request.form.get('nueva_password')
         if nueva_password:
-            veterinario.set_password(nueva_password) # Hashear la nueva contrase√±a
+            veterinario.set_password(nueva_password) # Hashear la nueva contraseÒa
             
         try:
-            registrar_auditoria('editar_veterinario', 'usuario', veterinario.id, f'Admin edit√≥ al veterinario: {veterinario.nombre_completo}')
+            registrar_auditoria('editar_veterinario', 'usuario', veterinario.id, f'Admin editÛ al veterinario: {veterinario.nombre_completo}')
             db.session.commit()
             flash('Veterinario actualizado exitosamente', 'success')
             return redirect(url_for('admin.ver_veterinario', vet_id=veterinario.id))
@@ -675,12 +675,12 @@ def eliminar_veterinario(vet_id):
         # Eliminar el veterinario
         db.session.delete(veterinario)
         
-        # Registrar auditor√≠a
+        # Registrar auditorÌa
         registrar_auditoria(
             'eliminar_veterinario', 
             'usuario', 
             vet_id, 
-            f'Admin elimin√≥ al veterinario: {nombre_vet} (con {total_citas} citas)'
+            f'Admin eliminÛ al veterinario: {nombre_vet} (con {total_citas} citas)'
         )
         
         db.session.commit()
@@ -694,7 +694,7 @@ def eliminar_veterinario(vet_id):
     return redirect(url_for('admin.veterinarios'))
 
 
-# --- SECCI√ìN DE MASCOTAS ---
+# --- SECCI”N DE MASCOTAS ---
 
 @admin_bp.route('/mascota/<int:mascota_id>')
 @admin_required
@@ -707,8 +707,8 @@ def ver_mascota(mascota_id):
     citas = mascota.citas.order_by(Cita.fecha.desc()).limit(10).all()
     documentos = mascota.documentos.order_by(DocumentoMascota.fecha_subida.desc()).all()
     
-    registrar_auditoria('ver_mascota', 'mascota', mascota_id, f'Visualizaci√≥n de mascota: {mascota.nombre}')
-    db.session.commit() # Commit de la auditor√≠a
+    registrar_auditoria('ver_mascota', 'mascota', mascota_id, f'VisualizaciÛn de mascota: {mascota.nombre}')
+    db.session.commit() # Commit de la auditorÌa
     
     return render_template('admin/mascotas/ver.html',
                          mascota=mascota,
@@ -717,24 +717,24 @@ def ver_mascota(mascota_id):
                          citas=citas,
                          documentos=documentos)
 
-# --- Rutas de API (para futuros gr√°ficos) ---
+# --- Rutas de API (para futuros gr·ficos) ---
 
 @admin_bp.route('/api/estadisticas/citas-mes')
 @admin_required
 def api_estadisticas_citas_mes():
-    """API para obtener estad√≠sticas de citas del mes actual"""
+    """API para obtener estadÌsticas de citas del mes actual"""
     mes_actual = datetime.now().month
-    a√±o_actual = datetime.now().year
+    aÒo_actual = datetime.now().year
     
     dias_mes = []
-    # (L√≥gica para obtener citas por d√≠a)
+    # (LÛgica para obtener citas por dÌa)
     
     return jsonify(dias_mes)
 
 @admin_bp.route('/api/estadisticas/especies')
 @admin_required
 def api_estadisticas_especies():
-    """API para obtener distribuci√≥n de especies"""
+    """API para obtener distribuciÛn de especies"""
     especies = db.session.query(
         Mascota.especie,
         func.count(Mascota.id).label('cantidad')

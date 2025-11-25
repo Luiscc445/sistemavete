@@ -44,7 +44,7 @@ def dashboard():
         flash(f'Error al cargar el dashboard: {e}', 'danger')
         print(f"Error en dashboard: {e}")
     
-    return render_template('admin/dashboard.html',
+    return render_template('dashboards/admin/admin_dashboard.html',
                          stats=stats,
                          ultimos_tutores=ultimos_tutores,
                          proximas_citas=proximas_citas)

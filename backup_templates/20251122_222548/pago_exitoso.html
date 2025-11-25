@@ -1,0 +1,1147 @@
+{% extends "dashboards/tutor_base.html" %}
+{% block title %}Pago Exitoso - Rambopet{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <!-- Success Hero Section -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Main Success Card -->
+                <div class="success-card" data-aos="zoom-in">
+                    <!-- Animated Success Icon -->
+                    <div class="success-icon-wrapper">
+                        <div class="success-checkmark-simple">
+                            <div class="checkmark-circle-bg"></div>
+                            <div class="checkmark-icon">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="success-message">
+                        <h1 class="success-title">¡Pago Exitoso!</h1>
+                        <p class="success-subtitle">Tu cita ha sido confirmada y reservada correctamente</p>
+                    </div>
+
+                    <!-- Transaction Info Badge -->
+                    <div class="transaction-badge">
+                        <div class="badge-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="badge-content">
+                            <span class="badge-label">Código de Transacción</span>
+                            <span class="badge-code">{{ pago.codigo_pago }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="details-grid">
+                        <!-- Appointment Details Card -->
+                        <div class="detail-card appointment-card" data-aos="fade-right" data-aos-delay="100">
+                            <div class="detail-card-header">
+                                <div class="header-icon bg-gradient-primary">
+                                    <i class="bi bi-calendar-check-fill"></i>
+                                </div>
+                                <h3>Detalles de la Cita</h3>
+                            </div>
+                            <div class="detail-card-body">
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Fecha y Hora</span>
+                                        <span class="detail-value">{{ pago.cita.fecha.strftime('%d/%m/%Y') }}</span>
+                                        <span class="detail-time">{{ pago.cita.fecha.strftime('%H:%M') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-person-badge"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Veterinario</span>
+                                        <span class="detail-value">Dr. {{ pago.cita.veterinario.nombre_completo
+                                            }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-clipboard2-pulse"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Tipo de Servicio</span>
+                                        <span class="detail-value">{{ pago.cita.tipo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Details Card -->
+                        <div class="detail-card payment-card" data-aos="fade-left" data-aos-delay="200">
+                            <div class="detail-card-header">
+                                <div class="header-icon bg-gradient-success">
+                                    <i class="bi bi-credit-card-fill"></i>
+                                </div>
+                                <h3>Información de Pago</h3>
+                            </div>
+                            <div class="detail-card-body">
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-wallet2"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Método de Pago</span>
+                                        <span class="detail-value text-capitalize">{{ pago.metodo_pago.replace('_', ' ')
+                                            }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Fecha de Pago</span>
+                                        <span class="detail-value">{{ pago.fecha_pago.strftime('%d/%m/%Y') }}</span>
+                                        <span class="detail-time">{{ pago.fecha_pago.strftime('%H:%M') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-icon">
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    </div>
+                                    <div class="detail-content">
+                                        <span class="detail-label">Estado</span>
+                                        <span class="status-badge success">
+                                            <i class="bi bi-check-lg me-1"></i>Aprobado
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amount Summary -->
+                    <div class="amount-summary" data-aos="fade-up" data-aos-delay="300">
+                        <div class="amount-content">
+                            <span class="amount-label">Monto Total Pagado</span>
+                            <div class="amount-value">Bs. {{ "%.2f"|format(pago.monto) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons" data-aos="fade-up" data-aos-delay="400">
+                        <a href="{{ url_for('tutor.dashboard') }}" class="btn-action btn-secondary">
+                            <i class="bi bi-house-door me-2"></i>
+                            <span>Ir al Inicio</span>
+                        </a>
+                        <a href="{{ url_for('tutor.ver_cita', id=pago.cita_id) }}" class="btn-action btn-primary">
+                            <i class="bi bi-ticket-detailed me-2"></i>
+                            <span>Ver Detalles de Cita</span>
+                            <div class="btn-shine"></div>
+                        </a>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="additional-info" data-aos="fade-up" data-aos-delay="500">
+                        <div class="info-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>Se ha enviado un comprobante a tu correo electrónico</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-bell"></i>
+                            <span>Recibirás un recordatorio 24 horas antes de tu cita</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="help-section" data-aos="fade-up" data-aos-delay="600">
+                    <div class="help-card">
+                        <div class="help-icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <div class="help-content">
+                            <h4>¿Necesitas ayuda?</h4>
+                            <p>Si tienes alguna pregunta o necesitas modificar tu cita, contáctanos</p>
+                        </div>
+                        <a href="#" class="help-button">
+                            <i class="bi bi-telephone"></i>
+                            <span>Contactar</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ==================== Variables ==================== */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --success: #10b981;
+        --success-light: #d1fae5;
+        --warning: #f59e0b;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ==================== Success Page ==================== */
+    .success-page {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+        padding: 60px 0;
+    }
+
+    /* ==================== Success Card ==================== */
+    .success-card {
+        background: white;
+        border-radius: 32px;
+        padding: 64px 48px;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+        animation: pulse-bg 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-bg {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    }
+
+    /* ==================== Success Icon ==================== */
+    .success-icon-wrapper {
+        position: relative;
+        margin: 0 auto 48px;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-checkmark-simple {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .checkmark-circle-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--success);
+        border-radius: 50%;
+        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        animation: pulseSuccess 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseSuccess {
+
+        0%,
+        100% {
+            transform: scale(1);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.6);
+        }
+    }
+
+    .checkmark-circle-bg::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border: 3px solid rgba(16, 185, 129, 0.3);
+        border-radius: 50%;
+        animation: ringPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.5;
+        }
+    }
+
+    .checkmark-icon {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 5rem;
+        animation: checkAppear 0.5s ease-out 0.3s both;
+    }
+
+    @keyframes checkAppear {
+        0% {
+            transform: scale(0) rotate(-45deg);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    /* ==================== Success Message ==================== */
+    .success-message {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .success-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+    }
+
+    .success-subtitle {
+        font-size: 1.25rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* ==================== Transaction Badge ==================== */
+    .transaction-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 20px 32px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        border-radius: 20px;
+        margin-bottom: 48px;
+    }
+
+    .badge-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .badge-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .badge-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-code {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--dark);
+        font-family: 'Courier New', monospace;
+    }
+
+    /* ==================== Details Grid ==================== */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .detail-card {
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 24px;
+        padding: 32px;
+        transition: all 0.3s ease;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .detail-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .bg-gradient-primary {
+        background: var(--gradient-primary);
+    }
+
+    .bg-gradient-success {
+        background: var(--gradient-success);
+    }
+
+    .detail-card-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .detail-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        background: var(--light);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+        background: #e0e7ff;
+        transform: translateX(4px);
+    }
+
+    .detail-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .detail-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 700;
+    }
+
+    .detail-time {
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.success {
+        background: var(--success-light);
+        color: var(--success);
+    }
+
+    /* ==================== Amount Summary ==================== */
+    .amount-summary {
+        padding: 32px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border: 3px solid var(--success);
+        border-radius: 24px;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .amount-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .amount-label {
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .amount-value {
+        font-size: 3rem;
+        font-weight: 900;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ==================== Action Buttons ==================== */
+    .action-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
+
+    .btn-action {
+        flex: 1;
+        max-width: 280px;
+        padding: 18px 32px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-action.btn-secondary {
+        background: white;
+        color: var(--dark);
+        border: 2px solid var(--border);
+    }
+
+    .btn-action.btn-secondary:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .btn-action.btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-action.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-shine {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        to {
+            left: 100%;
+        }
+    }
+
+    /* ==================== Additional Info ==================== */
+    .additional-info {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 24px;
+        background: rgba(99, 102, 241, 0.05);
+        border-radius: 16px;
+        margin-bottom: 32px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9375rem;
+        color: #64748b;
+    }
+
+    .info-item i {
+        font-size: 1.25rem;
+        color: var(--primary);
+    }
+
+    /* ==================== Help Section ==================== */
+    .help-section {
+        margin-top: 32px;
+    }
+
+    .help-card {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 24px 32px;
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .help-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .help-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .help-content {
+        flex: 1;
+    }
+
+    .help-content h4 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 4px;
+    }
+
+    .help-content p {
+        font-size: 0.9375rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .help-button {
+        padding: 12px 24px;
+        background: var(--primary);
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .help-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* ==================== Responsive ==================== */
+    @media (max-width: 991.98px) {
+        .success-card {
+            padding: 48px 32px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+        }
+
+        .amount-value {
+            font-size: 2.5rem;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .success-page {
+            padding: 40px 0;
+        }
+
+        .success-card {
+            padding: 40px 24px;
+            border-radius: 24px;
+        }
+
+        .success-icon-wrapper {
+            width: 160px;
+            height: 160px;
+            margin-bottom: 32px;
+        }
+
+        .success-circle {
+            width: 120px;
+            height: 120px;
+        }
+
+        .success-checkmark,
+        .checkmark {
+            width: 120px;
+            height: 120px;
+        }
+
+        .success-title {
+            font-size: 2rem;
+        }
+
+        .success-subtitle {
+            font-size: 1rem;
+        }
+
+        .transaction-badge {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .detail-card {
+            padding: 24px;
+        }
+
+        .amount-value {
+            font-size: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            max-width: 100%;
+        }
+
+        .help-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<!-- AOS Library (Add to base template if not present) -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 50
+    });
+
+    // Auto-descargar recibo PDF
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            generarReciboPDF();
+        }, 2000); // Espera 2 segundos después de la animación
+    });
+
+    function generarReciboPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Colores
+        const primary = [99, 102, 241];
+        const success = [16, 185, 129];
+        const dark = [30, 41, 59];
+        const gray = [100, 116, 139];
+        const lightGray = [226, 232, 240];
+
+        let y = 20;
+
+        // ==================== HEADER ====================
+        // Fondo del header
+        doc.setFillColor(primary[0], primary[1], primary[2]);
+        doc.rect(0, 0, 210, 45, 'F');
+
+        // Logo/Título
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(28);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RAMBOPET', 105, 20, { align: 'center' });
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Veterinaria', 105, 28, { align: 'center' });
+
+        doc.setFontSize(11);
+        doc.text('COMPROBANTE DE PAGO', 105, 38, { align: 'center' });
+
+        y = 60;
+
+        // ==================== ESTADO DE PAGO ====================
+        doc.setFillColor(success[0], success[1], success[2]);
+        doc.roundedRect(15, y, 180, 18, 3, 3, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PAGO APROBADO', 105, y + 12, { align: 'center' });
+
+        // Checkmark
+        doc.setFontSize(20);
+        doc.text('✓', 25, y + 12);
+
+        y = 85;
+
+        // ==================== CÓDIGO DE TRANSACCIÓN ====================
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(15, y, 180, 20, 2, 2, 'F');
+
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('CODIGO DE TRANSACCION', 20, y + 7);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(14);
+        doc.setFont('courier', 'bold');
+        doc.text('{{ pago.codigo_pago }}', 20, y + 15);
+
+        y = 115;
+
+        // ==================== DETALLES DE LA CITA ====================
+        // Título sección
+        doc.setFillColor(primary[0], primary[1], primary[2]);
+        doc.rect(15, y, 85, 8, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DETALLES DE LA CITA', 20, y + 6);
+
+        y += 15;
+
+        // Contenido
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(15, y, 85, 55, 2, 2, 'F');
+
+        let detailY = y + 8;
+
+        // Fecha y Hora
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Fecha y Hora', 20, detailY);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('{{ pago.cita.fecha.strftime("%d/%m/%Y") }}', 20, detailY + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.text('{{ pago.cita.fecha.strftime("%H:%M") }}', 20, detailY + 10);
+
+        detailY += 20;
+
+        // Veterinario
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Veterinario', 20, detailY);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Dr. {{ pago.cita.veterinario.nombre_completo }}', 20, detailY + 5);
+
+        detailY += 15;
+
+        // Servicio
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Tipo de Servicio', 20, detailY);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('{{ pago.cita.tipo }}', 20, detailY + 5);
+
+        // ==================== INFORMACIÓN DE PAGO ====================
+        y = 130;
+
+        // Título sección
+        doc.setFillColor(success[0], success[1], success[2]);
+        doc.rect(110, y, 85, 8, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('INFORMACION DE PAGO', 115, y + 6);
+
+        y += 15;
+
+        // Contenido
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(110, y, 85, 55, 2, 2, 'F');
+
+        let paymentY = y + 8;
+
+        // Método de Pago
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Metodo de Pago', 115, paymentY);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        const metodoPago = '{{ pago.metodo_pago }}'.replace('_', ' ').split(' ').map(w =>
+            w.charAt(0).toUpperCase() + w.slice(1)
+        ).join(' ');
+        doc.text(metodoPago, 115, paymentY + 5);
+
+        paymentY += 20;
+
+        // Fecha de Pago
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Fecha de Pago', 115, paymentY);
+
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('{{ pago.fecha_pago.strftime("%d/%m/%Y") }}', 115, paymentY + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.text('{{ pago.fecha_pago.strftime("%H:%M") }}', 115, paymentY + 10);
+
+        paymentY += 20;
+
+        // Estado
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Estado', 115, paymentY);
+
+        doc.setTextColor(success[0], success[1], success[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('APROBADO', 115, paymentY + 5);
+
+        // ==================== MONTO TOTAL ====================
+        y = 200;
+
+        doc.setDrawColor(success[0], success[1], success[2]);
+        doc.setLineWidth(3);
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(15, y, 180, 30, 3, 3, 'FD');
+
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('MONTO TOTAL PAGADO', 105, y + 12, { align: 'center' });
+
+        doc.setTextColor(success[0], success[1], success[2]);
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Bs. {{ "%.2f"|format(pago.monto) }}', 105, y + 24, { align: 'center' });
+
+        // ==================== FOOTER ====================
+        y = 240;
+
+        // Línea divisoria
+        doc.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
+        doc.setLineWidth(0.5);
+        doc.line(15, y, 195, y);
+
+        // Información de contacto
+        doc.setTextColor(gray[0], gray[1], gray[2]);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Rambopet Veterinaria - La Paz, Bolivia', 105, y + 8, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.text('Email: info@rambopet.com | Tel: +591 XXX XXXX', 105, y + 14, { align: 'center' });
+
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Este documento es un comprobante valido de pago', 105, y + 20, { align: 'center' });
+
+        // Fecha de generación
+        const fechaActual = new Date().toLocaleDateString('es-BO');
+        doc.text('Generado el: ' + fechaActual, 105, y + 26, { align: 'center' });
+
+        // ==================== MARCA DE AGUA ====================
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({ opacity: 0.1 }));
+        doc.setTextColor(200, 200, 200);
+        doc.setFontSize(50);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PAGADO', 105, 150, {
+            align: 'center',
+            angle: 45
+        });
+        doc.restoreGraphicsState();
+
+        // ==================== GENERAR Y DESCARGAR ====================
+        const filename = 'Recibo_Pago_{{ pago.codigo_pago }}.pdf';
+        doc.save(filename);
+
+        // Notificación
+        mostrarNotificacion('Recibo descargado exitosamente', 'success');
+    }
+
+    function mostrarNotificacion(mensaje, tipo) {
+        const colores = {
+            success: '#10b981',
+            info: '#6366f1'
+        };
+
+        const notif = document.createElement('div');
+        notif.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: ${colores[tipo] || colores.success};
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideInUp 0.3s ease;
+            font-weight: 600;
+        `;
+        notif.innerHTML = `<i class="bi bi-download me-2"></i>${mensaje}`;
+        document.body.appendChild(notif);
+
+        setTimeout(() => {
+            notif.style.animation = 'slideOutDown 0.3s ease';
+            setTimeout(() => notif.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<style>
+    @keyframes slideInUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutDown {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+    }
+</style>
+
+{% endblock %}

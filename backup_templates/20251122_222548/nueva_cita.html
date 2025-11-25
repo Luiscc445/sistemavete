@@ -1,0 +1,219 @@
+{% extends "dashboards/tutor_base.html" %}
+{% block title %}Nueva Cita{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+    <!-- Header -->
+    <div class="text-center mb-5 animate-fade-up">
+        <h2 class="fw-bold mb-2">Solicitar Nueva Cita</h2>
+        <p class="text-muted">Agenda una consulta médica para tu mascota en pocos pasos</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 animate-fade-up delay-100">
+            <form method="POST" class="needs-validation" novalidate>
+                <!-- Step 1: Pet Selection -->
+                <div class="card-modern mb-4">
+                    <div class="card-header-modern bg-soft-primary">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-white p-2 shadow-sm text-primary">
+                                <i class="bi bi-heart-fill fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0">1. Selecciona tu Mascota</h5>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Mascota</label>
+                            <select class="form-select form-select-lg border-2" name="mascota_id" required>
+                                <option value="">Seleccione una mascota...</option>
+                                {% for mascota in mascotas %}
+                                <option value="{{ mascota.id }}">
+                                    {{ mascota.nombre }} - {{ mascota.especie }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">¿Para quién es la consulta?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Service & Vet -->
+                <div class="card-modern mb-4">
+                    <div class="card-header-modern bg-soft-success">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-white p-2 shadow-sm text-success">
+                                <i class="bi bi-clipboard-pulse fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0">2. Detalles de la Consulta</h5>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Tipo de Servicio</label>
+                                <select class="form-select form-select-lg border-2" name="servicio_id" id="servicio_id"
+                                    required onchange="updatePrice()">
+                                    <option value="" data-precio="0">Seleccione un servicio...</option>
+                                    {% for servicio in servicios %}
+                                    <option value="{{ servicio.id }}" data-precio="{{ servicio.precio }}"
+                                        data-nombre="{{ servicio.nombre }}">
+                                        {{ servicio.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Veterinario</label>
+                                <select class="form-select form-select-lg border-2" name="veterinario_id"
+                                    id="veterinario_id" required>
+                                    <option value="">Seleccione un veterinario...</option>
+                                    {% for vet in veterinarios %}
+                                    <option value="{{ vet.id }}" data-especialidad="{{ vet.especialidad }}">
+                                        Dr. {{ vet.nombre_completo }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price Preview -->
+                        <div class="mt-4 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                            <span class="text-muted fw-medium">Costo Estimado:</span>
+                            <span class="fs-4 fw-bold text-primary" id="precioEstimado">Bs. 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Date & Time -->
+                <div class="card-modern mb-4">
+                    <div class="card-header-modern bg-soft-info">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-white p-2 shadow-sm text-info">
+                                <i class="bi bi-calendar-event fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0">3. Fecha y Hora</h5>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Fecha</label>
+                                <input type="date" class="form-control form-control-lg border-2" name="fecha" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Hora</label>
+                                <input type="time" class="form-control form-control-lg border-2" name="hora" required>
+                                <div class="form-text">Horario: 08:00 - 18:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Reason -->
+                <div class="card-modern mb-5">
+                    <div class="card-header-modern bg-soft-warning">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-white p-2 shadow-sm text-warning">
+                                <i class="bi bi-chat-left-text fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0">4. Motivo (Opcional)</h5>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <textarea class="form-control border-2" name="motivo" rows="3"
+                            placeholder="Describe brevemente los síntomas o razón de la visita..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 justify-content-end">
+                    <a href="{{ url_for('tutor.citas') }}" class="btn btn-light btn-lg rounded-pill px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">
+                        Confirmar Cita
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updatePrice() {
+        const select = document.getElementById('servicio_id');
+        const option = select.options[select.selectedIndex];
+        const precio = option.getAttribute('data-precio');
+        const nombreServicio = option.getAttribute('data-nombre');
+
+        // Actualizar precio
+        const display = document.getElementById('precioEstimado');
+        if (precio) {
+            display.textContent = 'Bs. ' + parseFloat(precio).toFixed(2);
+        } else {
+            display.textContent = 'Bs. 0.00';
+        }
+
+        // Filtrar veterinarios
+        filterVeterinarians(nombreServicio);
+    }
+
+    function filterVeterinarians(servicioNombre) {
+        const vetSelect = document.getElementById('veterinario_id');
+        const options = vetSelect.querySelectorAll('option');
+        let foundSpecialist = false;
+        let firstVisible = null;
+
+        // Reset selection
+        vetSelect.value = "";
+
+        options.forEach(opt => {
+            if (opt.value === "") return; // Skip placeholder
+
+            const especialidad = opt.getAttribute('data-especialidad');
+
+            // Lógica de filtrado
+            if (!servicioNombre) {
+                opt.style.display = "";
+            } else {
+                const sName = servicioNombre.toLowerCase();
+                const vSpec = (especialidad || "").toLowerCase();
+                let match = false;
+
+                // Casos especiales
+                if (sName.includes('dental') && vSpec.includes('odontolog')) match = true;
+                else if ((sName.includes('hueso') || sName.includes('fractura')) && vSpec.includes('traumatolog')) match = true;
+                else if ((sName.includes('ojo') || sName.includes('vista')) && vSpec.includes('oftalmol')) match = true;
+                else if ((sName.includes('nervio') || sName.includes('cerebro')) && vSpec.includes('neurolog')) match = true;
+                else if ((sName.includes('cancer') || sName.includes('tumor')) && vSpec.includes('oncolog')) match = true;
+                else if ((sName.includes('eco') || sName.includes('rayos')) && vSpec.includes('imagenolog')) match = true;
+                else if (vSpec.includes(sName) || sName.includes(vSpec)) match = true;
+
+                if (match) {
+                    opt.style.display = "";
+                    foundSpecialist = true;
+                    if (!firstVisible) firstVisible = opt;
+                } else {
+                    opt.style.display = "none";
+                }
+            }
+        });
+
+        // Fallback
+        if (servicioNombre && !foundSpecialist) {
+            options.forEach(opt => {
+                if (opt.value === "") return;
+                const vSpec = (opt.getAttribute('data-especialidad') || "").toLowerCase();
+                if (vSpec.includes('general') || vSpec === "") {
+                    opt.style.display = "";
+                    if (!firstVisible) firstVisible = opt;
+                }
+            });
+        }
+
+        // Auto-select
+        if (firstVisible) {
+            vetSelect.value = firstVisible.value;
+        }
+    }
+</script>
+{% endblock %}

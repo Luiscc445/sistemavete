@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Portal Tutor{% endblock %} | Rambopet</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <link href="{{ url_for('static', filename='css/tutor_modern.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/shared.css') }}" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f0f2f5;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --footer-bg: #1e293b;
+            --footer-text: #cbd5e1;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        /* Navbar Desktop - MÁS COMPACTO */
+        .navbar-modern {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 0.3rem 0 !important;
+        }
+
+        .navbar-modern .navbar-brand {
+            font-size: 1.1rem !important;
+            padding: 0.3rem 0;
+        }
+
+        .navbar-modern .navbar-brand .bg-primary {
+            padding: 0.4rem !important;
+        }
+
+        .navbar-modern .navbar-brand i {
+            font-size: 1rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s;
+            border-radius: 8px;
+            padding: 6px 14px !important;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #4f46e5;
+            background: #eef2ff;
+        }
+
+        .navbar-modern .dropdown-toggle {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.85rem;
+        }
+
+        .navbar-modern .dropdown-toggle img {
+            width: 28px !important;
+            height: 28px !important;
+        }
+
+        /* Navbar Inferior Móvil */
+        .bottom-navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--glass-border);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 1040;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                padding-bottom: 85px;
+            }
+        }
+
+        .bottom-nav-link {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 10px 0;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .bottom-nav-link.active {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .bottom-nav-link i {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 2px;
+            transition: transform 0.2s;
+        }
+
+        .bottom-nav-link.active i {
+            transform: translateY(-2px);
+        }
+
+        /* Botón Flotante Central */
+        .fab-container {
+            position: relative;
+            top: -25px;
+        }
+
+        .fab-center {
+            background: var(--primary-gradient);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+            border: 4px solid var(--bg-body);
+            transition: transform 0.2s;
+        }
+
+        .fab-center:active {
+            transform: scale(0.95);
+        }
+
+        /* FOOTER PROFESIONAL */
+        .footer-modern {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding-top: 3rem;
+            padding-bottom: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .footer-modern a {
+            color: var(--footer-text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-modern a:hover {
+            color: #ffffff;
+        }
+
+        .footer-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand i {
+            color: #ef4444;
+            font-size: 1.8rem;
+        }
+
+        .footer-description {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-links a i {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .footer-contact-item i {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin-top: 2px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .footer-badge i {
+            color: #667eea;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 991.98px) {
+            .footer-modern {
+                padding-bottom: 120px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .footer-modern {
+                text-align: center;
+            }
+
+            .footer-contact-item {
+                justify-content: center;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Navbar Desktop -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top d-none d-lg-block">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2"
+                href="{{ url_for('tutor.dashboard') }}">
+                <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                    <i class="bi bi-heart-pulse-fill text-danger"></i>
+                </div>
+                <span>Rambo<span class="text-primary">pet</span></span>
+            </a>
+
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto gap-1">
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'tutor.dashboard' }}"
+                            href="{{ url_for('tutor.dashboard') }}">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'tutor.mascotas' }}"
+                            href="{{ url_for('tutor.mascotas') }}">Mascotas</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'tutor.citas' }}"
+                            href="{{ url_for('tutor.citas') }}">Citas</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'tutor.quienes_somos' }}"
+                            href="{{ url_for('tutor.quienes_somos') }}">Quiénes Somos</a></li>
+                </ul>
+
+                <div class="dropdown">
+                    <a href="#"
+                        class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark fw-bold bg-white px-3 py-2 rounded-pill shadow-sm border"
+                        data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}+{{ current_user.apellido }}&background=random"
+                            class="rounded-circle me-2" width="32" height="32">
+                        <span class="small">{{ current_user.nombre }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2">
+                        <li>
+                            <h6 class="dropdown-header">Mi Cuenta</h6>
+                        </li>
+                        <li><a class="dropdown-item rounded-3" href="{{ url_for('tutor.perfil') }}"><i
+                                    class="bi bi-person me-2"></i>Mi Perfil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item rounded-3 text-danger" href="{{ url_for('auth.logout') }}"><i
+                                    class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Navbar Mobile Top - EXTRA COMPACTO -->
+    <nav class="navbar fixed-top d-lg-none bg-white shadow-sm" style="height: 50px; padding: 0.25rem 0;">
+        <div class="container d-flex justify-content-between align-items-center h-100">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('tutor.dashboard') }}"
+                style="font-size: 1rem; margin: 0;">
+                <i class="bi bi-heart-pulse-fill text-danger" style="font-size: 1.2rem;"></i>
+                Rambo<span class="text-primary">pet</span>
+            </a>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="{{ url_for('tutor.quienes_somos') }}"
+                    class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px; padding: 0;">
+                    <i class="bi bi-info-circle text-primary" style="font-size: 0.9rem;"></i>
+                </a>
+                <a href="{{ url_for('tutor.perfil') }}">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}+{{ current_user.apellido }}&background=random"
+                        class="rounded-circle border" width="30" height="30">
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="margin-top: 60px; margin-bottom: 20px; width: 100%;">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 rounded-4 mt-3"
+                role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER PROFESIONAL -->
+    <footer class="footer-modern d-none d-lg-block">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Columna 1: Marca e Info -->
+                <div class="col-lg-4">
+                    <div class="footer-brand">
+                        <i class="bi bi-heart-pulse-fill"></i> Rambopet
+                    </div>
+                    <p class="footer-description">
+                        Plataforma integral de gestión veterinaria. Cuidamos de tus mascotas con profesionalismo,
+                        tecnología y amor. Tu compañero de confianza en salud animal.
+                    </p>
+                    <div class="footer-badge">
+                        <i class="bi bi-shield-check"></i>
+                        Sistema Seguro y Confiable
+                    </div>
+                    <div class="footer-social">
+                        <a href="#" class="social-icon" aria-label="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Email">
+                            <i class="bi bi-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Enlaces Rápidos -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="footer-title">Navegación</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('tutor.dashboard') }}">
+                                <i class="bi bi-chevron-right"></i> Inicio
+                            </a></li>
+                        <li><a href="{{ url_for('tutor.mascotas') }}">
+                                <i class="bi bi-chevron-right"></i> Mis Mascotas
+                            </a></li>
+                        <li><a href="{{ url_for('tutor.citas') }}">
+                                <i class="bi bi-chevron-right"></i> Mis Citas
+                            </a></li>
+                        <li><a href="{{ url_for('tutor.quienes_somos') }}">
+                                <i class="bi bi-chevron-right"></i> Quiénes Somos
+                            </a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna 3: Servicios -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="footer-title">Nuestros Servicios</h6>
+                    <ul class="footer-links">
+                        <li><a href="#">
+                                <i class="bi bi-chevron-right"></i> Consulta Veterinaria
+                            </a></li>
+                        <li><a href="#">
+                                <i class="bi bi-chevron-right"></i> Vacunación
+                            </a></li>
+                        <li><a href="#">
+                                <i class="bi bi-chevron-right"></i> Cirugía
+                            </a></li>
+                        <li><a href="#">
+                                <i class="bi bi-chevron-right"></i> Emergencias 24/7
+                            </a></li>
+                        <li><a href="#">
+                                <i class="bi bi-chevron-right"></i> Laboratorio
+                            </a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna 4: Contacto -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="footer-title">Contáctanos</h6>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <strong>Dirección</strong><br>
+                            La Paz, Bolivia
+                        </div>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-telephone-fill"></i>
+                        <div>
+                            <strong>Teléfono</strong><br>
+                            +591 123 456 789
+                        </div>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-envelope-fill"></i>
+                        <div>
+                            <strong>Email</strong><br>
+                            contacto@rambopet.com
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>&copy; 2025 Rambopet. Todos los derechos reservados. Desarrollado con <i
+                        class="bi bi-heart-fill text-danger"></i> en Bolivia</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Navbar Inferior Móvil -->
+    <nav class="navbar fixed-bottom bottom-navbar d-lg-none">
+        <div class="container-fluid px-0">
+            <ul class="navbar-nav w-100 flex-row justify-content-between px-2 text-center align-items-end">
+                <li class="nav-item flex-fill">
+                    <a class="nav-link bottom-nav-link {{ 'active' if request.endpoint == 'tutor.dashboard' }}"
+                        href="{{ url_for('tutor.dashboard') }}">
+                        <i class="bi bi-grid{{ '-fill' if request.endpoint == 'tutor.dashboard' else '' }}"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li class="nav-item flex-fill">
+                    <a class="nav-link bottom-nav-link {{ 'active' if request.endpoint == 'tutor.mascotas' }}"
+                        href="{{ url_for('tutor.mascotas') }}">
+                        <i class="bi bi-heart{{ '-fill' if request.endpoint == 'tutor.mascotas' else '' }}"></i>
+                        <span>Mascotas</span>
+                    </a>
+                </li>
+                <li class="nav-item flex-fill d-flex justify-content-center">
+                    <div class="fab-container">
+                        <a href="{{ url_for('tutor.nueva_cita') }}" class="fab-center text-decoration-none">
+                            <i class="bi bi-plus-lg fs-3"></i>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-item flex-fill">
+                    <a class="nav-link bottom-nav-link {{ 'active' if request.endpoint == 'tutor.citas' }}"
+                        href="{{ url_for('tutor.citas') }}">
+                        <i class="bi bi-calendar-event{{ '-fill' if request.endpoint == 'tutor.citas' else '' }}"></i>
+                        <span>Citas</span>
+                    </a>
+                </li>
+                <li class="nav-item flex-fill">
+                    <a class="nav-link bottom-nav-link {{ 'active' if request.endpoint == 'tutor.perfil' }}"
+                        href="{{ url_for('tutor.perfil') }}">
+                        <i class="bi bi-person{{ '-fill' if request.endpoint == 'tutor.perfil' else '' }}"></i>
+                        <span>Perfil</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

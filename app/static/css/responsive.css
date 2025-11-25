@@ -1,0 +1,381 @@
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE OPTIMIZATIONS
+   ======================================== */
+
+/* Overlay para cerrar sidebar en móvil */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1039;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar-overlay[style*="display: block"] {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ========================================
+   TABLETS Y MÓVILES (< 992px)
+   ======================================== */
+@media (max-width: 991.98px) {
+
+    /* Sidebar como overlay en móvil */
+    #layoutSidenav #layoutSidenav_nav {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1040;
+        width: 280px;
+    }
+
+    body.sb-sidenav-toggled #layoutSidenav #layoutSidenav_nav {
+        transform: translateX(0);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Contenido principal ocupa todo el ancho */
+    #layoutSidenav #layoutSidenav_content {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* Botón hamburguesa más visible */
+    .sb-topnav #sidebarToggle {
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Nombre de usuario más corto en topbar */
+    .sb-topnav .navbar-nav .nav-link {
+        font-size: 0.9rem;
+    }
+
+    /* Ajustar página header para móvil */
+    .page-header-modern {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem 1rem;
+    }
+
+    .page-header-content {
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .page-header-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
+    .page-header-title-modern {
+        font-size: 1.5rem;
+    }
+
+    .page-header-subtitle-modern {
+        font-size: 0.875rem;
+    }
+
+    .page-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .page-header-actions .btn-primary-modern,
+    .page-header-actions .dashboard-date {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Tarjetas de estadísticas - 2 columnas en tablet */
+    .row.g-3 .col-xl-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* Botones de acción más grandes para touch */
+    .action-btn-modern {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+
+    /* Tablas con scroll horizontal */
+    .table-responsive,
+    .modern-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-modern {
+        min-width: 600px;
+    }
+
+    /* Formularios más cómodos en móvil */
+    .form-control,
+    .form-select {
+        font-size: 16px;
+        /* Evita zoom en iOS */
+        padding: 0.75rem;
+    }
+
+    /* Botones más grandes */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    /* Modales a pantalla completa en móvil */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+}
+
+/* ========================================
+   MÓVILES PEQUEÑOS (< 576px)
+   ======================================== */
+@media (max-width: 575.98px) {
+
+    /* Container con padding reducido */
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Títulos más pequeños */
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Tarjetas de estadísticas - 1 columna */
+    .row.g-3 .col-xl-3,
+    .row.g-3 .col-lg-3,
+    .row.g-3 .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Stat cards más compactas */
+    .modern-stat-card .stat-value {
+        font-size: 1.75rem;
+    }
+
+    .modern-stat-card .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    /* Page header más compacto */
+    .page-header-modern {
+        padding: 1rem;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .page-header-title-modern {
+        font-size: 1.25rem;
+    }
+
+    .page-header-subtitle-modern {
+        font-size: 0.8rem;
+    }
+
+    /* Breadcrumb más pequeño */
+    .breadcrumb {
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Cards con padding reducido */
+    .card-body {
+        padding: 1rem;
+    }
+
+    .modern-activity-card .card-header {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Botones de header de card apilados */
+    .card-header.d-flex {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-header .btn {
+        width: 100%;
+    }
+
+    /* Tablas con texto más pequeño */
+    .table-modern {
+        font-size: 0.85rem;
+    }
+
+    .table-modern thead th,
+    .table-modern tbody td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    /* Activity items más compactos */
+    .activity-item {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .activity-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    /* Footer simplificado */
+    footer .d-flex {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    /* Formularios */
+    .row.g-3,
+    .row.g-4 {
+        gap: 0.75rem !important;
+    }
+
+    .col-md-6,
+    .col-md-4,
+    .col-md-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Modales a pantalla completa */
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100vh;
+    }
+
+    .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+
+    /* Botones de acción en tablas */
+    .d-flex.gap-2 {
+        gap: 0.5rem !important;
+    }
+}
+
+/* ========================================
+   TOU CH IMPROVEMENTS
+   ======================================== */
+@media (hover: none) and (pointer: coarse) {
+    /* Dispositivos táctiles */
+
+    /* Áreas de toque más grandes */
+    .nav-link,
+    .btn,
+    .action-btn-modern,
+    .dropdown-item {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Eliminar hover effects que no funcionan en touch */
+    .table-modern tbody tr:hover {
+        background-color: transparent;
+    }
+
+    .action-btn-modern:hover {
+        transform: none;
+    }
+
+    /* Mejor feedback visual para touch */
+    .btn:active,
+    .nav-link:active,
+    .action-btn-modern:active {
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+}
+
+/* ========================================
+   LANDSCAPE MÓVIL
+   ======================================== */
+@media (max-width: 991.98px) and (orientation: landscape) {
+
+    /* Reducir altura de elementos en landscape */
+    .page-header-modern {
+        padding: 1rem;
+    }
+
+    .modern-stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-icon-wrapper {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+
+    /* Ocultar navegación al imprimir */
+    .sb-topnav,
+    #layoutSidenav_nav,
+    .sidebar-overlay,
+    footer,
+    .btn,
+    .action-btn-modern {
+        display: none !important;
+    }
+
+    /* Contenido a ancho completo */
+    #layoutSidenav_content {
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Quitar sombnras y fondos de color */
+    .card,
+    .modern-stat-card,
+    .modern-activity-card {
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+
+    /* Asegurar que las tablas se vean bien */
+    .table-modern {
+        font-size: 10pt;
+    }
+}

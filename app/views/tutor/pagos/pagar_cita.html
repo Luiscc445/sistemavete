@@ -1,0 +1,481 @@
+﻿{% extends "dashboards/tutor_base.html" %}
+{% block title %}Pagar Cita{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tutor/pagar_cita.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+    <!-- Progress Steps -->
+    <div class="container mb-5">
+        <div class="payment-steps">
+            <div class="step-item active completed">
+                <div class="step-circle">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+                <span class="step-label">Reservar</span>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step-item active">
+                <div class="step-circle">2</div>
+                <span class="step-label">Pagar</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item">
+                <div class="step-circle">3</div>
+                <span class="step-label">Confirmar</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        <div class="row g-4">
+            <!-- Left Column: Order Summary -->
+            <div class="col-lg-5">
+                <div class="summary-card" data-aos="fade-right">
+                    <div class="summary-header">
+                        <div class="icon-badge">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <h3>Resumen de tu Cita</h3>
+                    </div>
+
+                    <!-- Pet Info Card -->
+                    <div class="pet-info-card">
+                        <div class="pet-avatar-wrapper">
+                            {% if cita.mascota.foto %}
+                            <img src="data:image/jpeg;base64,{{ cita.mascota.foto }}" alt="{{ cita.mascota.nombre }}"
+                                class="pet-avatar">
+                            {% else %}
+                            <div class="pet-avatar-placeholder">
+                                <i class="bi bi-heart-fill"></i>
+                            </div>
+                            {% endif %}
+                            <div class="pet-avatar-badge">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                        </div>
+                        <div class="pet-info">
+                            <h4>{{ cita.mascota.nombre }}</h4>
+                            <span class="pet-species">{{ cita.mascota.especie }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Fecha de Cita</span>
+                                <span class="detail-value">{{ cita.fecha.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="bi bi-clock-fill"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Hora</span>
+                                <span class="detail-value">{{ cita.fecha.strftime('%H:%M') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Veterinario</span>
+                                <span class="detail-value">Dr. {{ cita.veterinario.nombre_completo }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>Consulta Veterinaria</span>
+                            <span>Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Descuento</span>
+                            <span class="text-success">- Bs. 0.00</span>
+                        </div>
+                        <div class="price-divider"></div>
+                        <div class="price-total">
+                            <span>Total a Pagar</span>
+                            <span class="total-amount">Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Trust Badges -->
+                    <div class="trust-badges">
+                        <div class="trust-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Pago Seguro</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-lock-fill"></i>
+                            <span>Encriptado SSL</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Garantizado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Payment Methods -->
+            <div class="col-lg-7">
+                <div class="payment-card" data-aos="fade-left">
+                    <div class="payment-header">
+                        <h3>Selecciona tu Método de Pago</h3>
+                        <p>Elige cómo prefieres pagar de forma segura</p>
+                    </div>
+
+                    <form method="POST" id="pagoForm">
+                        <div class="payment-methods">
+                            <!-- Credit Card Method -->
+                            <label class="payment-method-card" data-method="card">
+                                <input type="radio" name="metodo_pago" value="tarjeta_credito" required>
+                                <div class="method-content">
+                                    <div class="method-icon-wrapper">
+                                        <div class="method-icon bg-gradient-primary">
+                                            <i class="bi bi-credit-card-2-front"></i>
+                                        </div>
+                                    </div>
+                                    <div class="method-info">
+                                        <h5>Tarjeta de Crédito/Débito</h5>
+                                        <p>Visa, Mastercard, American Express</p>
+                                        <div class="method-badges">
+                                            <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" width="32">
+                                            <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard"
+                                                width="32">
+                                            <img src="https://img.icons8.com/color/48/amex.png" alt="Amex" width="32">
+                                        </div>
+                                    </div>
+                                    <div class="method-check">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <span class="method-badge recommended">Recomendado</span>
+                                </div>
+                            </label>
+
+                            <!-- QR Payment Method -->
+                            <label class="payment-method-card" data-method="qr">
+                                <input type="radio" name="metodo_pago" value="qr_bancario">
+                                <div class="method-content">
+                                    <div class="method-icon-wrapper">
+                                        <div class="method-icon bg-gradient-success">
+                                            <i class="bi bi-qr-code-scan"></i>
+                                        </div>
+                                    </div>
+                                    <div class="method-info">
+                                        <h5>Código QR</h5>
+                                        <p>Pago rápido con tu app bancaria</p>
+                                        <div class="method-badges">
+                                            <span class="badge-pill">Yape</span>
+                                            <span class="badge-pill">Simple</span>
+                                            <span class="badge-pill">QR Banco</span>
+                                        </div>
+                                    </div>
+                                    <div class="method-check">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <span class="method-badge instant">Instantáneo</span>
+                                </div>
+                            </label>
+
+                            <!-- Cash Payment Method -->
+                            <label class="payment-method-card" data-method="cash">
+                                <input type="radio" name="metodo_pago" value="efectivo">
+                                <div class="method-content">
+                                    <div class="method-icon-wrapper">
+                                        <div class="method-icon bg-gradient-warning">
+                                            <i class="bi bi-cash-stack"></i>
+                                        </div>
+                                    </div>
+                                    <div class="method-info">
+                                        <h5>Efectivo</h5>
+                                        <p>Paga directamente en el consultorio</p>
+                                        <div class="method-note">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            <span>Sin cargos adicionales</span>
+                                        </div>
+                                    </div>
+                                    <div class="method-check">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="payment-actions">
+                            <a href="{{ url_for('tutor.citas') }}" class="btn-secondary-custom">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Volver
+                            </a>
+                            <button type="button" class="btn-primary-custom" id="btnProcesar"
+                                onclick="handlePaymentProcess()">
+                                <span>Continuar al Pago</span>
+                                <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+
+                        <!-- Security Info -->
+                        <div class="security-info">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Tu información está protegida con encriptación de nivel bancario SSL de 256
+                                bits</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Credit Card Payment -->
+<div class="modal fade" id="modalCard" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content modal-modern">
+            <button type="button" class="btn-close-modern" data-bs-dismiss="modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <div class="modal-body-modern p-0">
+                <div class="row g-0">
+                    <!-- Left: Card Preview -->
+                    <div class="col-lg-5 card-preview-section">
+                        <div class="card-preview-content">
+                            <div class="preview-header">
+                                <h4>Vista Previa de Tarjeta</h4>
+                                <span class="preview-badge">
+                                    <i class="bi bi-shield-check me-1"></i>Seguro
+                                </span>
+                            </div>
+
+                            <!-- 3D Card -->
+                            <div class="card-3d-wrapper">
+                                <div class="card-3d" id="card3d">
+                                    <!-- Card Front -->
+                                    <div class="card-face card-front">
+                                        <div class="card-top">
+                                            <div class="card-chip">
+                                                <div class="chip"></div>
+                                            </div>
+                                            <div class="card-wireless">
+                                                <i class="bi bi-wifi"></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-number" id="displayNumber">
+                                            #### #### #### ####
+                                        </div>
+
+                                        <div class="card-bottom">
+                                            <div class="card-holder">
+                                                <label>Titular</label>
+                                                <div id="displayName">NOMBRE APELLIDO</div>
+                                            </div>
+                                            <div class="card-expiry">
+                                                <label>Vence</label>
+                                                <div id="displayExpiry">MM/AA</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Back -->
+                                    <div class="card-face card-back">
+                                        <div class="card-stripe"></div>
+                                        <div class="card-cvv-strip">
+                                            <label>CVV</label>
+                                            <div class="cvv-box" id="displayCvv">•••</div>
+                                        </div>
+                                        <div class="card-signature">
+                                            <p>Firma autorizada</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-amount-display">
+                                <span>Monto a pagar</span>
+                                <div class="amount">Bs. {{ "%.2f"|format(cita.costo) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Form -->
+                    <div class="col-lg-7 card-form-section">
+                        <div class="form-header">
+                            <h3>Información de Pago</h3>
+                            <p>Ingresa los datos de tu tarjeta de forma segura</p>
+                        </div>
+
+                        <div class="card-form">
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-credit-card me-2"></i>Número de Tarjeta
+                                </label>
+                                <input type="text" class="form-input-modern" id="numero_tarjeta"
+                                    placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+                                <div class="card-type-icons">
+                                    <img src="https://img.icons8.com/color/48/visa.png" alt="Visa">
+                                    <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard">
+                                </div>
+                            </div>
+
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-person me-2"></i>Nombre del Titular
+                                </label>
+                                <input type="text" class="form-input-modern" id="nombre_tarjeta"
+                                    placeholder="Como aparece en la tarjeta" autocomplete="cc-name">
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="bi bi-calendar-date me-2"></i>Fecha de Vencimiento
+                                        </label>
+                                        <input type="text" class="form-input-modern" id="fecha_vencimiento"
+                                            placeholder="MM/AA" maxlength="5" autocomplete="cc-exp">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="bi bi-lock me-2"></i>CVV
+                                            <span class="cvv-help" data-bs-toggle="tooltip"
+                                                title="Código de 3 dígitos al reverso">
+                                                <i class="bi bi-question-circle"></i>
+                                            </span>
+                                        </label>
+                                        <input type="password" class="form-input-modern" id="cvv" placeholder="•••"
+                                            maxlength="4" autocomplete="cc-csc">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-checkbox-modern">
+                                <input type="checkbox" id="saveCard">
+                                <label for="saveCard">
+                                    Guardar esta tarjeta para futuros pagos
+                                </label>
+                            </div>
+
+                            <button type="button" class="btn-pay-modern" onclick="processCardPayment()">
+                                <i class="bi bi-lock-fill me-2"></i>
+                                <span>Pagar Bs. {{ "%.2f"|format(cita.costo) }}</span>
+                                <div class="btn-shine"></div>
+                            </button>
+
+                            <div class="secure-payment-note">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Pago procesado de forma segura con encriptación SSL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: QR Payment -->
+<div class="modal fade" id="modalQR" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-modern">
+            <button type="button" class="btn-close-modern" data-bs-dismiss="modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <div class="modal-body-modern qr-modal-body">
+                <div class="qr-header">
+                    <div class="qr-icon">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    <h3>Escanea el Código QR</h3>
+                    <p>Usa tu aplicación bancaria para completar el pago</p>
+                </div>
+
+                <div class="qr-amount">
+                    <span>Monto a pagar</span>
+                    <div class="amount">Bs. {{ "%.2f"|format(cita.costo) }}</div>
+                </div>
+
+                <div class="qr-code-wrapper">
+                    <div class="qr-scanner-line"></div>
+                    <img src="{{ url_for('static', filename='images/qr_yape.png') }}" alt="Código QR"
+                        class="qr-code-image">
+                    <div class="qr-corner tl"></div>
+                    <div class="qr-corner tr"></div>
+                    <div class="qr-corner bl"></div>
+                    <div class="qr-corner br"></div>
+                </div>
+
+                <div class="qr-apps">
+                    <p>Apps compatibles:</p>
+                    <div class="app-badges">
+                        <span class="app-badge">
+                            <i class="bi bi-phone-fill"></i>Yape
+                        </span>
+                        <span class="app-badge">
+                            <i class="bi bi-phone-fill"></i>Simple
+                        </span>
+                        <span class="app-badge">
+                            <i class="bi bi-bank2"></i>Banca Móvil
+                        </span>
+                    </div>
+                </div>
+
+                <div class="qr-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <span>Abre tu app bancaria</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <span>Escanea el código QR</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <span>Confirma el pago</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-pay-modern" onclick="processQRPayment()">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span>Ya realicé el pago</span>
+                </button>
+
+                <button type="button" class="btn-cancel-modern" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h4>Procesando tu pago...</h4>
+        <p>Por favor espera un momento</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tutor/pagar_cita.js') }}"></script>
+{% endblock %}

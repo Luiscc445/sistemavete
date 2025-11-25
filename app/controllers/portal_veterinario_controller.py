@@ -80,7 +80,7 @@ def dashboard():
         estado='completado'
     ).count()
 
-    return render_template('veterinario/dashboard.html',
+    return render_template('dashboards/veterinario/veterinario_dashboard.html',
                          citas_pendientes=citas_pendientes,
                          citas_aceptadas=citas_aceptadas,
                          total_atendidas=total_atendidas,
@@ -95,18 +95,77 @@ def dashboard():
 def citas_pendientes():
     """Ver citas pendientes"""
     citas = Cita.query.filter_by(estado='pendiente').order_by(Cita.fecha.asc()).all()
-    return render_template('veterinario/citas_pendientes.html', citas=citas)
-
+    return render_template('veterinario/citas/citas_pendientes.html', citas=citas)
 
 @veterinario_bp.route('/citas/mis-citas')
 @veterinario_required
 def mis_citas():
     """Ver mis citas aceptadas y atendidas"""
-    citas = Cita.query.filter_by(veterinario_id=current_user.id).filter(
-        Cita.estado.in_(['confirmada', 'en_progreso', 'completada', 'pendiente'])
-    ).order_by(Cita.fecha.desc()).all()
+    # Obtener parámetros de filtro
+    estado_filtro = request.args.get('estado', 'todos')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    buscar = request.args.get('buscar', '')
+    
+    # Query base - todas las citas del veterinario
+    query = Cita.query.filter_by(veterinario_id=current_user.id)
+    
+    # Filtrar por estado si no es "todos"
+    if estado_filtro and estado_filtro != 'todos':
+        query = query.filter_by(estado=estado_filtro)
+    
+    # Filtrar por rango de fechas
+    if fecha_desde:
+        try:
+            fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+            query = query.filter(Cita.fecha >= fecha_desde_dt)
+        except ValueError:
+            pass
+    
+    if fecha_hasta:
+        try:
+            fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            # Agregar un día para incluir todo el día hasta
+            from datetime import timedelta
+            fecha_hasta_dt = fecha_hasta_dt + timedelta(days=1)
+            query = query.filter(Cita.fecha < fecha_hasta_dt)
+        except ValueError:
+            pass
+    
+    # Búsqueda por mascota o tutor
+    if buscar:
+        from app.models.mascota import Mascota
+        from app.models.usuario import Usuario
+        query = query.join(Mascota).join(Usuario, Mascota.tutor_id == Usuario.id).filter(
+            db.or_(
+                Mascota.nombre.ilike(f'%{buscar}%'),
+                Usuario.nombre.ilike(f'%{buscar}%'),
+                Usuario.apellido.ilike(f'%{buscar}%')
+            )
+        )
+    
+    # Ordenar por fecha descendente
+    citas = query.order_by(Cita.fecha.desc()).all()
+    
+    # Obtener citas agrupadas por mes para el calendario
+    citas_por_fecha = {}
+    for cita in Cita.query.filter_by(veterinario_id=current_user.id).all():
+        fecha_str = cita.fecha.strftime('%Y-%m-%d')
+        if fecha_str not in citas_por_fecha:
+            citas_por_fecha[fecha_str] = []
+        citas_por_fecha[fecha_str].append({
+            'estado': cita.estado,
+            'mascota': cita.mascota.nombre if cita.mascota else 'N/A'
+        })
 
-    return render_template('veterinario/mis_citas.html', citas=citas)
+    return render_template('veterinario/citas/mis_citas.html', 
+                         citas=citas,
+                         citas_por_fecha=citas_por_fecha,
+                         estado_filtro=estado_filtro,
+                         fecha_desde=fecha_desde,
+                         fecha_hasta=fecha_hasta,
+                         buscar=buscar)
+
 
 
 @veterinario_bp.route('/cita/<int:id>/aceptar', methods=['POST'])
@@ -121,8 +180,7 @@ def aceptar_cita(id):
 
     try:
         # Asignar veterinario y confirmar la cita
-        if not cita.veterinario_id:
-            cita.veterinario_id = current_user.id
+        cita.veterinario_id = current_user.id
         cita.confirmar()
         flash('Cita aceptada exitosamente.', 'success')
     except Exception as e:
@@ -149,7 +207,7 @@ def posponer_cita(id):
 
         if not motivo:
             flash('Debes proporcionar un motivo para posponer.', 'danger')
-            return render_template('veterinario/posponer_cita.html', cita=cita)
+            return render_template('veterinario/citas/posponer_cita.html', cita=cita)
 
         # Nueva fecha sugerida (opcional)
         nueva_fecha_hora = None
@@ -158,7 +216,7 @@ def posponer_cita(id):
                 nueva_fecha_hora = datetime.strptime(f"{nueva_fecha} {nueva_hora}", '%Y-%m-%d %H:%M')
             except ValueError:
                 flash('Formato de fecha u hora inválido.', 'danger')
-                return render_template('veterinario/posponer_cita.html', cita=cita)
+                return render_template('veterinario/citas/posponer_cita.html', cita=cita)
 
         try:
             if nueva_fecha_hora:
@@ -172,7 +230,7 @@ def posponer_cita(id):
             db.session.rollback()
             flash(f'Error al posponer cita: {str(e)}', 'danger')
 
-    return render_template('veterinario/posponer_cita.html', cita=cita)
+    return render_template('veterinario/citas/posponer_cita.html', cita=cita)
 
 
 @veterinario_bp.route('/cita/<int:id>/atender', methods=['GET', 'POST'])
@@ -201,7 +259,7 @@ def atender_cita(id):
         # Validaciones
         if not diagnostico or not tratamiento:
             flash('Diagnóstico y tratamiento son obligatorios.', 'danger')
-            return render_template('veterinario/atender_cita.html', cita=cita, medicamentos=medicamentos)
+            return render_template('veterinario/citas/atender_cita.html', cita=cita, medicamentos=medicamentos)
 
         try:
             # Iniciar atención si aún no se ha iniciado
@@ -255,7 +313,7 @@ def atender_cita(id):
             db.session.rollback()
             flash(f'Error al atender cita: {str(e)}', 'danger')
 
-    return render_template('veterinario/atender_cita.html', cita=cita, medicamentos=medicamentos)
+    return render_template('veterinario/citas/atender_cita.html', cita=cita, medicamentos=medicamentos)
 
 
 @veterinario_bp.route('/cita/<int:id>')
@@ -272,7 +330,7 @@ def ver_cita(id):
         flash('No tienes permiso para ver esta cita.', 'danger')
         return redirect(url_for('veterinario.dashboard'))
 
-    return render_template('veterinario/ver_cita.html', cita=cita)
+    return render_template('veterinario/citas/ver_cita.html', cita=cita)
 
 
 @veterinario_bp.route('/perfil', methods=['GET', 'POST'])

@@ -3,19 +3,29 @@ Controlador CRUD para Veterinarios
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from app import db
-from app.models import Usuario, Cita
-from .utils import admin_required, registrar_auditoria, LISTA_ESPECIALIDADES
+from app.models import Usuario, Cita, Servicio
+from .utils import admin_required, registrar_auditoria
 
 veterinarios_bp = Blueprint('admin_veterinarios', __name__)
 
 @veterinarios_bp.route('/veterinarios')
 @admin_required
 def lista():
-    """Lista de veterinarios con estadísticas"""
+    """Lista de veterinarios con estadísticas y filtrado"""
     page = request.args.get('page', 1, type=int)
-    veterinarios = Usuario.query.filter_by(rol='veterinario').order_by(Usuario.nombre).paginate(
+    especialidad_filtro = request.args.get('especialidad')
+    
+    query = Usuario.query.filter_by(rol='veterinario')
+    
+    if especialidad_filtro:
+        query = query.filter(Usuario.especialidad == especialidad_filtro)
+        
+    veterinarios = query.order_by(Usuario.nombre).paginate(
         page=page, per_page=10, error_out=False
     )
+    
+    # Obtener servicios para el filtro
+    servicios = Servicio.query.filter_by(activo=True).order_by(Servicio.nombre).all()
     
     # Obtener estadísticas de forma segura
     if veterinarios.items:
@@ -30,12 +40,18 @@ def lista():
                     'total_citas': 0
                 }
     
-    return render_template('admin/veterinarios/lista.html', veterinarios=veterinarios)
+    return render_template('admin/veterinarios/lista.html', 
+                         veterinarios=veterinarios,
+                         servicios=servicios,
+                         especialidad_actual=especialidad_filtro)
 
 @veterinarios_bp.route('/veterinario/nuevo', methods=['GET', 'POST'])
 @admin_required
 def nuevo():
     """Crear un nuevo veterinario"""
+    # Obtener servicios activos para el dropdown de especialidades
+    servicios = Servicio.query.filter_by(activo=True).order_by(Servicio.nombre).all()
+    
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -44,29 +60,20 @@ def nuevo():
         apellido = request.form.get('apellido')
         telefono = request.form.get('telefono')
         licencia = request.form.get('licencia_profesional')
-        
-        # Lógica de especialidad mejorada
         especialidad = request.form.get('especialidad')
-        especialidad_otra = request.form.get('especialidad_otra')
-        
-        if especialidad == 'otra' and especialidad_otra:
-            especialidad = especialidad_otra.strip()
-        elif especialidad == 'otra':
-            flash('Debe especificar la "otra" especialidad.', 'danger')
-            return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
         
         # Validaciones
         if Usuario.query.filter_by(username=username).first():
             flash('El nombre de usuario ya está registrado', 'danger')
-            return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
+            return render_template('admin/veterinarios/nuevo.html', servicios=servicios)
         
         if Usuario.query.filter_by(email=email).first():
             flash('El email ya está registrado', 'danger')
-            return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
+            return render_template('admin/veterinarios/nuevo.html', servicios=servicios)
         
-        if not all([username, email, password, nombre, apellido]):
+        if not all([username, email, password, nombre, apellido, especialidad]):
             flash('Por favor complete todos los campos obligatorios (*)', 'danger')
-            return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
+            return render_template('admin/veterinarios/nuevo.html', servicios=servicios)
         
         nuevo_vet = Usuario(
             username=username,
@@ -94,7 +101,7 @@ def nuevo():
             db.session.rollback()
             flash(f'Error al crear veterinario: {str(e)}', 'danger')
     
-    return render_template('admin/veterinarios/nuevo.html', especialidades=LISTA_ESPECIALIDADES)
+    return render_template('admin/veterinarios/nuevo.html', servicios=servicios)
 
 @veterinarios_bp.route('/veterinario/<int:vet_id>')
 @admin_required
@@ -124,6 +131,9 @@ def editar(vet_id):
     """Editar un veterinario existente"""
     veterinario = Usuario.query.get_or_404(vet_id)
     
+    # Obtener servicios activos para el dropdown
+    servicios = Servicio.query.filter_by(activo=True).order_by(Servicio.nombre).all()
+    
     if not veterinario.is_veterinario():
         flash('El usuario especificado no es un veterinario', 'warning')
         return redirect(url_for('admin_veterinarios.lista'))
@@ -135,20 +145,7 @@ def editar(vet_id):
         veterinario.telefono = request.form.get('telefono')
         veterinario.licencia_profesional = request.form.get('licencia_profesional')
         veterinario.activo = request.form.get('activo') == 'on'
-        
-        # Lógica de especialidad mejorada
-        especialidad = request.form.get('especialidad')
-        especialidad_otra = request.form.get('especialidad_otra')
-        
-        if especialidad == 'otra' and especialidad_otra:
-            veterinario.especialidad = especialidad_otra.strip()
-        elif especialidad == 'otra':
-            flash('Debe especificar la "otra" especialidad.', 'danger')
-            return render_template('admin/veterinarios/editar.html', 
-                                 veterinario=veterinario, 
-                                 especialidades=LISTA_ESPECIALIDADES)
-        else:
-            veterinario.especialidad = especialidad
+        veterinario.especialidad = request.form.get('especialidad')
         
         nueva_password = request.form.get('nueva_password')
         if nueva_password:
@@ -166,7 +163,7 @@ def editar(vet_id):
     
     return render_template('admin/veterinarios/editar.html', 
                          veterinario=veterinario, 
-                         especialidades=LISTA_ESPECIALIDADES)
+                         servicios=servicios)
 
 @veterinarios_bp.route('/veterinario/<int:vet_id>/eliminar', methods=['POST'])
 @admin_required

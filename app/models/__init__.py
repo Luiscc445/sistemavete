@@ -12,6 +12,7 @@ from .notificacion import Notificacion
 from .configuracion_sistema import ConfiguracionSistema
 from .auditoria_accion import AuditoriaAccion
 from .pago import Pago, HistorialPago
+from .lote import Lote
 
 __all__ = [
     'Usuario',
@@ -29,5 +30,6 @@ __all__ = [
     'ConfiguracionSistema',
     'AuditoriaAccion',
     'Pago',
-    'HistorialPago'
+    'HistorialPago',
+    'Lote'
 ]

@@ -45,12 +45,19 @@ def dashboard():
     ).filter(
         Cita.fecha >= datetime.now()
     ).order_by(Cita.fecha.asc()).limit(5).all()
+    
+    # Obtener mascotas para mostrar en el dashboard
+    mis_mascotas = Mascota.query.filter_by(
+        tutor_id=current_user.id,
+        activo=True
+    ).order_by(Mascota.nombre.asc()).limit(6).all()
 
-    return render_template('tutor/dashboard.html',
+    return render_template('dashboards/tutor/dashboard.html',
                          total_mascotas=total_mascotas,
                          total_citas=total_citas,
                          citas_pendientes=citas_pendientes,
-                         citas_proximas=citas_proximas)
+                         citas_proximas=citas_proximas,
+                         mis_mascotas=mis_mascotas)
 
 
 @tutor_bp.route('/mascotas')
@@ -62,7 +69,7 @@ def mascotas():
         activo=True
     ).order_by(Mascota.nombre.asc()).all()
 
-    return render_template('tutor/mascotas.html', mascotas=mis_mascotas)
+    return render_template('tutor/mascotas/mascotas.html', mascotas=mis_mascotas)
 
 
 @tutor_bp.route('/mascota/nueva', methods=['GET', 'POST'])
@@ -85,7 +92,7 @@ def nueva_mascota():
         # Validaciones
         if not nombre or not especie:
             flash('Nombre y especie son obligatorios.', 'danger')
-            return render_template('tutor/nueva_mascota.html')
+            return render_template('tutor/mascotas/nueva_mascota.html')
 
         # Convertir fecha
         fecha_nac = None
@@ -94,7 +101,7 @@ def nueva_mascota():
                 fecha_nac = datetime.strptime(fecha_nacimiento, '%Y-%m-%d').date()
             except ValueError:
                 flash('Formato de fecha inválido.', 'danger')
-                return render_template('tutor/nueva_mascota.html')
+                return render_template('tutor/mascotas/nueva_mascota.html')
 
         # Convertir peso
         peso_float = None
@@ -103,7 +110,7 @@ def nueva_mascota():
                 peso_float = float(peso)
             except ValueError:
                 flash('El peso debe ser un número válido.', 'danger')
-                return render_template('tutor/nueva_mascota.html')
+                return render_template('tutor/mascotas/nueva_mascota.html')
 
         # Crear mascota
         nueva_mascota = Mascota(
@@ -129,7 +136,7 @@ def nueva_mascota():
             db.session.rollback()
             flash(f'Error al registrar mascota: {str(e)}', 'danger')
 
-    return render_template('tutor/nueva_mascota.html')
+    return render_template('tutor/mascotas/nueva_mascota.html')
 
 
 @tutor_bp.route('/mascota/<int:id>')
@@ -146,7 +153,7 @@ def ver_mascota(id):
     # Obtener historial de citas
     citas = Cita.query.filter_by(mascota_id=id).order_by(Cita.fecha.desc()).all()
 
-    return render_template('tutor/ver_mascota.html', mascota=mascota, citas=citas)
+    return render_template('tutor/mascotas/ver_mascota.html', mascota=mascota, citas=citas)
 
 
 @tutor_bp.route('/mascota/<int:id>/editar', methods=['GET', 'POST'])
@@ -195,7 +202,7 @@ def editar_mascota(id):
             db.session.rollback()
             flash(f'Error al actualizar mascota: {str(e)}', 'danger')
 
-    return render_template('tutor/editar_mascota.html', mascota=mascota)
+    return render_template('tutor/mascotas/editar_mascota.html', mascota=mascota)
 
 
 @tutor_bp.route('/citas')
@@ -203,7 +210,7 @@ def editar_mascota(id):
 def citas():
     """Lista de citas del tutor"""
     mis_citas = Cita.query.filter_by(tutor_id=current_user.id).order_by(Cita.fecha.desc()).all()
-    return render_template('tutor/citas.html', citas=mis_citas)
+    return render_template('tutor/citas/citas.html', citas=mis_citas)
 
 
 @tutor_bp.route('/cita/nueva', methods=['GET', 'POST'])
@@ -219,65 +226,73 @@ def nueva_cita():
 
     # Obtener veterinarios activos
     veterinarios = Usuario.query.filter_by(rol='veterinario', activo=True).all()
+    
+    # Obtener servicios activos
+    from app.models.servicio import Servicio
+    servicios = Servicio.query.filter_by(activo=True).order_by(Servicio.nombre.asc()).all()
 
     if request.method == 'POST':
         mascota_id = request.form.get('mascota_id')
         veterinario_id = request.form.get('veterinario_id')
+        servicio_id = request.form.get('servicio_id')
         fecha = request.form.get('fecha')
         hora = request.form.get('hora')
         motivo = request.form.get('motivo')
 
         # Validaciones
-        if not all([mascota_id, veterinario_id, fecha, hora, motivo]):
-            flash('Por favor complete todos los campos.', 'danger')
-            return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+        if not all([mascota_id, veterinario_id, servicio_id, fecha, hora]):
+            flash('Por favor complete todos los campos obligatorios.', 'danger')
+            return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
         # Verificar que la mascota pertenece al tutor
         mascota = Mascota.query.get(mascota_id)
         if not mascota or mascota.tutor_id != current_user.id:
             flash('Mascota no válida.', 'danger')
-            return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+            return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
-        # Verificar que el veterinario existe
-        veterinario = Usuario.query.get(veterinario_id)
-        if not veterinario or veterinario.rol != 'veterinario':
-            flash('Veterinario no válido.', 'danger')
-            return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+        # Verificar servicio
+        servicio = Servicio.query.get(servicio_id)
+        if not servicio:
+            flash('Servicio no válido.', 'danger')
+            return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
         # Combinar fecha y hora
         try:
             fecha_hora = datetime.strptime(f"{fecha} {hora}", '%Y-%m-%d %H:%M')
         except ValueError:
             flash('Formato de fecha u hora inválido.', 'danger')
-            return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+            return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
         # Verificar que la fecha sea futura
         if fecha_hora < datetime.now():
             flash('La fecha de la cita debe ser futura.', 'danger')
-            return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+            return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
-        # Crear cita con veterinario asignado
+        # Crear cita con veterinario asignado pero en estado PENDIENTE
+        # El veterinario elegido debe aceptarla para confirmarla
+        motivo_final = motivo or servicio.descripcion or f"Consulta de {servicio.nombre}"
+        
         nueva_cita = Cita(
             mascota_id=mascota_id,
             tutor_id=current_user.id,
-            veterinario_id=veterinario_id,
+            veterinario_id=veterinario_id,  # Asignado pero pendiente de aceptación
             fecha=fecha_hora,
-            tipo='Consulta',
-            motivo=motivo,
-            estado='pendiente'
+            tipo=servicio.nombre,
+            motivo=motivo_final,
+            costo=servicio.precio,
+            estado='pendiente'  # Esperando que el veterinario acepte
         )
 
         try:
             db.session.add(nueva_cita)
             db.session.commit()
-            # Redirigir a página de pago para confirmar la cita
-            flash(f'Cita creada. Ahora procede con el pago para confirmarla.', 'info')
+            flash(f'Cita solicitada al Dr. elegido. Costo: Bs. {servicio.precio}. Esperando confirmación del veterinario.', 'success')
             return redirect(url_for('tutor.pagar_cita', cita_id=nueva_cita.id))
         except Exception as e:
             db.session.rollback()
             flash(f'Error al solicitar cita: {str(e)}', 'danger')
 
-    return render_template('tutor/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios)
+    return render_template('tutor/citas/nueva_cita.html', mascotas=mascotas, veterinarios=veterinarios, servicios=servicios)
 
 
 @tutor_bp.route('/cita/<int:id>')
@@ -291,7 +306,7 @@ def ver_cita(id):
         flash('No tienes permiso para ver esta cita.', 'danger')
         return redirect(url_for('tutor.citas'))
 
-    return render_template('tutor/ver_cita.html', cita=cita)
+    return render_template('tutor/citas/ver_cita.html', cita=cita)
 
 
 @tutor_bp.route('/pagar-cita/<int:cita_id>', methods=['GET', 'POST'])
@@ -317,25 +332,20 @@ def pagar_cita(cita_id):
 
     if request.method == 'POST':
         metodo_pago = request.form.get('metodo_pago')
-        monto = request.form.get('monto')
+        # El monto viene del formulario pero lo validamos con el costo de la cita
+        monto_form = request.form.get('monto')
+        
+        # Usamos el costo de la cita como autoridad, o el del form si es válido
+        monto_final = cita.costo if cita.costo > 0 else float(monto_form)
 
         # Validaciones
-        if not metodo_pago or not monto:
-            flash('Por favor complete todos los campos.', 'danger')
-            return render_template('tutor/pagar_cita.html', cita=cita)
-
-        try:
-            monto_float = float(monto)
-            if monto_float <= 0:
-                flash('El monto debe ser mayor a 0.', 'danger')
-                return render_template('tutor/pagar_cita.html', cita=cita)
-        except ValueError:
-            flash('Monto inválido.', 'danger')
-            return render_template('tutor/pagar_cita.html', cita=cita)
+        if not metodo_pago:
+            flash('Por favor seleccione un método de pago.', 'danger')
+            return render_template('tutor/pagos/pagar_cita.html', cita=cita)
 
         # Crear el pago
         nuevo_pago = Pago(
-            monto=monto_float,
+            monto=monto_final,
             metodo_pago=metodo_pago,
             estado='completado',  # Pago simulado, automáticamente completado
             descripcion=f'Pago de cita #{cita_id} - {cita.tipo}',
@@ -362,6 +372,9 @@ def pagar_cita(cita_id):
 
             # Confirmar automáticamente la cita
             cita.estado = 'confirmada'
+            # Asegurar que el costo final quede registrado en la cita si era 0
+            if cita.costo == 0:
+                cita.costo = monto_final
 
             db.session.commit()
 
@@ -371,7 +384,7 @@ def pagar_cita(cita_id):
             db.session.rollback()
             flash(f'Error al procesar el pago: {str(e)}', 'danger')
 
-    return render_template('tutor/pagar_cita.html', cita=cita)
+    return render_template('tutor/pagos/pagar_cita.html', cita=cita)
 
 
 @tutor_bp.route('/pago-exitoso/<int:pago_id>')
@@ -385,7 +398,7 @@ def pago_exitoso(pago_id):
         flash('No tienes permiso para ver este pago.', 'danger')
         return redirect(url_for('tutor.citas'))
 
-    return render_template('tutor/pago_exitoso.html', pago=pago)
+    return render_template('tutor/pagos/pago_exitoso.html', pago=pago)
 
 
 @tutor_bp.route('/perfil', methods=['GET', 'POST'])
@@ -429,3 +442,45 @@ def perfil():
             flash(f'Error al actualizar perfil: {str(e)}', 'danger')
 
     return render_template('tutor/perfil.html')
+
+
+@tutor_bp.route('/cambiar-password', methods=['POST'])
+@tutor_required
+def cambiar_password():
+    """Procesar cambio de contraseña"""
+    password_actual = request.form.get('password_actual')
+    password_nueva = request.form.get('password_nueva')
+    password_confirmar = request.form.get('password_confirmar')
+
+    if not all([password_actual, password_nueva, password_confirmar]):
+        flash('Todos los campos son obligatorios.', 'danger')
+        return redirect(url_for('tutor.perfil'))
+
+    if not current_user.check_password(password_actual):
+        flash('La contraseña actual es incorrecta.', 'danger')
+        return redirect(url_for('tutor.perfil'))
+
+    if password_nueva != password_confirmar:
+        flash('Las contraseñas nuevas no coinciden.', 'danger')
+        return redirect(url_for('tutor.perfil'))
+
+    if len(password_nueva) < 6:
+        flash('La contraseña debe tener al menos 6 caracteres.', 'danger')
+        return redirect(url_for('tutor.perfil'))
+
+    try:
+        current_user.set_password(password_nueva)
+        db.session.commit()
+        flash('Contraseña actualizada exitosamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al actualizar contraseña: {str(e)}', 'danger')
+
+    return redirect(url_for('tutor.perfil'))
+
+
+@tutor_bp.route('/quienes-somos')
+@tutor_required
+def quienes_somos():
+    """Página Quiénes Somos"""
+    return render_template('tutor/quienes_somos.html')

@@ -10,6 +10,9 @@ from app import db
 from app.models import Pago, HistorialPago, Cita, Usuario
 from io import BytesIO
 import base64
+import plotly.express as px
+import plotly.io as pio
+import pandas as pd
 
 pagos_bp = Blueprint('pagos', __name__)
 
@@ -116,6 +119,29 @@ def dashboard():
         )
     ).group_by(Pago.metodo_pago).all()
 
+    # Generar gráfico de Métodos de Pago con Plotly
+    if ingresos_por_metodo:
+        df_metodos = pd.DataFrame(ingresos_por_metodo, columns=['Metodo', 'Cantidad', 'Total'])
+        # Mapeo de nombres de métodos para mejor visualización
+        metodos_labels = {
+            'efectivo': 'Efectivo',
+            'tarjeta_credito': 'Tarjeta de Crédito',
+            'tarjeta_debito': 'Tarjeta de Débito',
+            'transferencia': 'Transferencia',
+            'qr_simple': 'QR Simple',
+            'qr_tigo_money': 'Tigo Money',
+            'qr_banco': 'QR Banco'
+        }
+        df_metodos['Metodo'] = df_metodos['Metodo'].map(lambda x: metodos_labels.get(x, x))
+        
+        fig_metodos = px.pie(df_metodos, values='Total', names='Metodo', hole=0.4,
+                             color_discrete_sequence=px.colors.qualitative.Pastel)
+        fig_metodos.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=350,
+                                  legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
+        graph_metodos = pio.to_html(fig_metodos, full_html=False, config={'displayModeBar': False})
+    else:
+        graph_metodos = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
+
     # Ingresos por día (últimos 30 días) - SOLO PORCIÓN DE LA EMPRESA
     ingresos_por_dia = db.session.query(
         func.cast(Pago.fecha_pago, db.Date).label('fecha'),
@@ -127,6 +153,21 @@ def dashboard():
             Pago.estado == 'completado'
         )
     ).group_by(func.cast(Pago.fecha_pago, db.Date)).order_by(func.cast(Pago.fecha_pago, db.Date)).all()
+
+    # Generar gráfico de Ingresos por Día con Plotly
+    if ingresos_por_dia:
+        df_dia = pd.DataFrame(ingresos_por_dia, columns=['Fecha', 'Total'])
+        fig_dia = px.line(df_dia, x='Fecha', y='Total', markers=True,
+                          line_shape='spline', render_mode='svg')
+        fig_dia.update_traces(line_color='#198754', line_width=3)
+        fig_dia.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350,
+                              xaxis_title=None, yaxis_title=None,
+                              plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+        fig_dia.update_xaxes(showgrid=False)
+        fig_dia.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+        graph_dia = pio.to_html(fig_dia, full_html=False, config={'displayModeBar': False})
+    else:
+        graph_dia = "<div class='text-center text-muted py-5'>No hay datos disponibles</div>"
 
     # Top 10 pagos más grandes
     top_pagos = Pago.query.filter(
@@ -143,8 +184,8 @@ def dashboard():
     return render_template(
         'admin/pagos/dashboard.html',
         stats=stats,
-        ingresos_por_metodo=ingresos_por_metodo,
-        ingresos_por_dia=ingresos_por_dia,
+        graph_metodos=graph_metodos,
+        graph_dia=graph_dia,
         top_pagos=top_pagos,
         pagos_recientes=pagos_recientes,
         fecha_inicio=fecha_inicio,

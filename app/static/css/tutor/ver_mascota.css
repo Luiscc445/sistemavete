@@ -1,0 +1,32 @@
+/* CSS extraido de ver_mascota.html */
+/* Generado automaticamente el 2025-11-22 22:25:48 */
+
+.timeline-modern {
+        position: relative;
+    }
+
+    .timeline-modern::before {
+        content: '';
+        position: absolute;
+        top: 2rem;
+        bottom: 2rem;
+        left: 3.2rem;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0 !important;
+    }
+
+    .bg-gradient-to-t {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+
+    .opacity-20 {
+        opacity: 0.2;
+    }

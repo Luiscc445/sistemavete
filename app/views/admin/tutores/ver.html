@@ -1,0 +1,385 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Ver Tutor{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-person-workspace"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Perfil del Tutor</h1>
+            <p class="page-header-subtitle-modern">Gestión de información y mascotas asociadas</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('admin_tutores.lista') }}" class="btn btn-secondary-modern me-2">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+        <a href="{{ url_for('admin_tutores.editar', tutor_id=tutor.id) }}" class="btn btn-primary-modern">
+            <i class="bi bi-pencil me-1"></i> Editar Perfil
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Sidebar: Perfil Compacto -->
+    <div class="col-lg-3">
+        <div class="card modern-activity-card sticky-top" style="top: 20px;">
+            <div class="card-body p-3">
+                <!-- Avatar y Nombre -->
+                <div class="text-center mb-3">
+                    <div class="position-relative d-inline-block">
+                        <div class="avatar-circle-lg bg-gradient text-white mx-auto d-flex align-items-center justify-content-center rounded-circle shadow"
+                            style="width: 100px; height: 100px; font-size: 2.5rem; background: linear-gradient(135deg, #26A69A 0%, #1E8E7E 100%);">
+                            {{ tutor.nombre_completo[:1] }}
+                        </div>
+                        <div class="position-absolute bottom-0 end-0">
+                            {% if tutor.activo %}
+                            <span class="badge rounded-pill bg-success border border-3 border-white p-2" title="Activo">
+                                <span class="visually-hidden">Activo</span>
+                            </span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-danger border border-3 border-white p-2"
+                                title="Inactivo">
+                                <span class="visually-hidden">Inactivo</span>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-center mb-1">{{ tutor.nombre_completo }}</h5>
+                <p class="text-muted text-center small mb-3">@{{ tutor.username }}</p>
+
+                <div class="text-center mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                        <i class="bi bi-person-badge me-1"></i>Tutor
+                    </span>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- Información de Contacto Compacta -->
+                <div class="contact-info-compact">
+                    <div class="d-flex align-items-start mb-2">
+                        <i class="bi bi-envelope text-primary me-2 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Email</small>
+                            <span class="small fw-medium text-break">{{ tutor.email }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-2">
+                        <i class="bi bi-telephone text-primary me-2 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Teléfono</small>
+                            <span class="small fw-medium">{{ tutor.telefono or 'No registrado' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-2">
+                        <i class="bi bi-geo-alt text-primary me-2 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Dirección</small>
+                            <span class="small fw-medium">{{ tutor.direccion or 'No especificada' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-calendar-event text-primary me-2 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Registrado</small>
+                            <span class="small fw-medium">{{
+                                tutor.fecha_registro.strftime('%d/%m/%Y') if tutor.fecha_registro else 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Estadísticas, Mascotas y Citas -->
+    <div class="col-lg-9">
+        <!-- Stats Cards en la parte superior -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="card modern-stat-card accent-primary h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label small">Mascotas</div>
+                                <div class="stat-value h3 mb-0">{{ stats.total_mascotas }}</div>
+                            </div>
+                            <div class="stat-icon-wrapper stat-icon-primary">
+                                <i class="bi bi-heart-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card modern-stat-card accent-info h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label small">Total Citas</div>
+                                <div class="stat-value h3 mb-0">{{ stats.total_citas }}</div>
+                            </div>
+                            <div class="stat-icon-wrapper stat-icon-info">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card modern-stat-card accent-success h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label small">Completadas</div>
+                                <div class="stat-value h3 mb-0">{{ stats.citas_completadas }}</div>
+                            </div>
+                            <div class="stat-icon-wrapper stat-icon-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card modern-stat-card accent-warning h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label small">Pendientes</div>
+                                <div class="stat-value h3 mb-0">{{ stats.citas_pendientes }}</div>
+                            </div>
+                            <div class="stat-icon-wrapper stat-icon-warning">
+                                <i class="bi bi-clock-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próxima Cita Destacada -->
+        {% if stats.proxima_cita %}
+        <div class="card modern-activity-card mb-3 border-warning">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="icon-box-lg bg-warning-subtle text-warning rounded-circle p-3">
+                            <i class="bi bi-calendar-event-fill" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h6 class="mb-1 fw-bold">Próxima Cita Programada</h6>
+                        <p class="mb-0 text-muted small">{{ stats.proxima_cita.motivo }}</p>
+                    </div>
+                    <div class="col-auto text-end">
+                        <div class="fw-bold text-dark">
+                            {% if stats.proxima_cita.fecha.strftime is defined %}
+                            {{ stats.proxima_cita.fecha.strftime('%d/%m/%Y') }}
+                            {% else %}
+                            {{ stats.proxima_cita.fecha[:10] if stats.proxima_cita.fecha else 'N/A' }}
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-warning-subtle text-warning">Aceptada</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sección de Mascotas -->
+        <div class="card modern-activity-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-heart-fill text-danger me-2"></i>Mascotas Registradas
+                </h5>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">
+                    {{ stats.total_mascotas }} Total
+                </span>
+            </div>
+            <div class="card-body p-3">
+                {% if mascotas %}
+                <div class="row g-2">
+                    {% for mascota in mascotas %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="mascota-card p-3 border rounded-3 bg-light h-100 hover-lift">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar-circle-sm bg-white text-primary shadow-sm me-2 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px; min-width: 40px;">
+                                    <i class="bi bi-paw-fill"></i>
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <h6 class="mb-0 fw-bold text-truncate">{{ mascota.nombre }}</h6>
+                                    <small class="text-muted">{{ mascota.especie }}</small>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-light border">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <span class="badge bg-white text-muted border fw-normal small">
+                                    {{ mascota.raza or 'Sin raza' }}
+                                </span>
+                                <span class="badge bg-white text-muted border fw-normal small">
+                                    {{ mascota.sexo or 'N/A' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3 text-muted opacity-50">
+                        <i class="bi bi-emoji-frown" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-muted">No hay mascotas registradas para este tutor.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Historial de Citas Recientes -->
+        <div class="card modern-activity-card">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-clock-history me-2 text-primary"></i>Historial de Citas
+                </h5>
+                <span class="badge bg-info-subtle text-info rounded-pill px-3">
+                    Últimas 10
+                </span>
+            </div>
+            <div class="card-body p-0">
+                {% if citas %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0 py-3">Fecha</th>
+                                <th class="border-0 py-3">Mascota</th>
+                                <th class="border-0 py-3">Motivo</th>
+                                <th class="border-0 py-3">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cita in citas %}
+                            <tr>
+                                <td class="py-3">
+                                    <i class="bi bi-calendar3 text-muted me-2"></i>
+                                    {% if cita.fecha.strftime is defined %}
+                                    {{ cita.fecha.strftime('%d/%m/%Y %H:%M') }}
+                                    {% else %}
+                                    {{ cita.fecha[:16] if cita.fecha else 'N/A' }}
+                                    {% endif %}
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-paw-fill text-primary me-2"></i>
+                                        <span class="fw-medium">{{ cita.mascota.nombre }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">{{ cita.motivo }}</td>
+                                <td class="py-3">
+                                    {% if cita.estado == 'completada' %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Completada
+                                    </span>
+                                    {% elif cita.estado == 'aceptada' %}
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        <i class="bi bi-calendar-check me-1"></i>Aceptada
+                                    </span>
+                                    {% elif cita.estado == 'pendiente' %}
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        <i class="bi bi-clock me-1"></i>Pendiente
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        {{ cita.estado }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3 text-muted opacity-50">
+                        <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-muted">No hay citas registradas aún.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .1) !important;
+    }
+
+    .mascota-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .mascota-card:hover {
+        background: white !important;
+        border-color: #26A69A !important;
+    }
+
+    .contact-info-compact i {
+        font-size: 0.9rem;
+    }
+
+    .icon-box-lg {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sticky-top {
+        position: sticky;
+    }
+
+    .min-w-0 {
+        min-width: 0;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #26A69A 0%, #1E8E7E 100%);
+    }
+
+    @media (max-width: 991px) {
+        .sticky-top {
+            position: relative !important;
+        }
+    }
+</style>
+{% endblock %}

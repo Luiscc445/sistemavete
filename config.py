@@ -47,7 +47,7 @@ class Config:
     ITEMS_PER_PAGE = 10
     
     # Configuración de la aplicación
-    APP_NAME = 'Sistema Veterinario'
+    APP_NAME = 'Rambopet'
     APP_VERSION = '2.0.0'
     APP_DESCRIPTION = 'Sistema de Gestión Veterinaria Profesional'
     

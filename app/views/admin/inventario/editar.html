@@ -1,0 +1,186 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Editar Medicamento{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Editar Medicamento</h1>
+            <p class="page-header-subtitle-modern">Modificar información del medicamento</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('inventario.ver', med_id=medicamento.id) }}" class="btn btn-secondary-modern">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<div class="card modern-activity-card">
+    <div class="card-header">
+        <h5 class="mb-0 text-secondary">Editando: {{ medicamento.nombre }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <h6 class="border-bottom pb-2 mb-3">Información Básica</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="codigo">Código</label>
+                    <input type="text" class="form-control" id="codigo" name="codigo"
+                        value="{{ medicamento.codigo or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="nombre">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ medicamento.nombre }}"
+                        required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="principio_activo">Principio Activo</label>
+                    <input type="text" class="form-control" id="principio_activo" name="principio_activo"
+                        value="{{ medicamento.principio_activo or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="presentacion">Presentación</label>
+                    <input type="text" class="form-control" id="presentacion" name="presentacion"
+                        value="{{ medicamento.presentacion or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="concentracion">Concentración</label>
+                    <input type="text" class="form-control" id="concentracion" name="concentracion"
+                        value="{{ medicamento.concentracion or '' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="categoria">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option value="">Seleccione...</option>
+                        <option value="antibiotico" {% if medicamento.categoria=='antibiotico' %}selected{% endif %}>
+                            Antibiótico</option>
+                        <option value="analgesico" {% if medicamento.categoria=='analgesico' %}selected{% endif %}>
+                            Analgésico</option>
+                        <option value="antiinflamatorio" {% if medicamento.categoria=='antiinflamatorio' %}selected{%
+                            endif %}>Antiinflamatorio</option>
+                        <option value="vacuna" {% if medicamento.categoria=='vacuna' %}selected{% endif %}>Vacuna
+                        </option>
+                        <option value="antiparasitario" {% if medicamento.categoria=='antiparasitario' %}selected{%
+                            endif %}>Antiparasitario</option>
+                        <option value="vitamina" {% if medicamento.categoria=='vitamina' %}selected{% endif %}>Vitamina
+                        </option>
+                        <option value="suplemento" {% if medicamento.categoria=='suplemento' %}selected{% endif %}>
+                            Suplemento</option>
+                        <option value="otro" {% if medicamento.categoria=='otro' %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="via_administracion">Vía de Administración</label>
+                    <select class="form-select" id="via_administracion" name="via_administracion">
+                        <option value="">Seleccione...</option>
+                        <option value="oral" {% if medicamento.via_administracion=='oral' %}selected{% endif %}>Oral
+                        </option>
+                        <option value="inyectable" {% if medicamento.via_administracion=='inyectable' %}selected{% endif
+                            %}>Inyectable</option>
+                        <option value="topico" {% if medicamento.via_administracion=='topico' %}selected{% endif %}>
+                            Tópico</option>
+                        <option value="oftalmico" {% if medicamento.via_administracion=='oftalmico' %}selected{% endif
+                            %}>Oftálmico</option>
+                        <option value="otico" {% if medicamento.via_administracion=='otico' %}selected{% endif %}>Ótico
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Stock y Precios</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="stock_actual">Stock Actual</label>
+                    <input type="number" class="form-control" id="stock_actual" name="stock_actual"
+                        value="{{ medicamento.stock_actual }}" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="stock_minimo">Stock Mínimo</label>
+                    <input type="number" class="form-control" id="stock_minimo" name="stock_minimo"
+                        value="{{ medicamento.stock_minimo }}" min="0">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="unidad_medida">Unidad</label>
+                    <input type="text" class="form-control" id="unidad_medida" name="unidad_medida"
+                        value="{{ medicamento.unidad_medida or 'unid' }}">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="precio_compra">Precio Compra (Bs.)</label>
+                    <input type="number" class="form-control" id="precio_compra" name="precio_compra"
+                        value="{{ medicamento.precio_compra or 0 }}" step="0.01" min="0">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label" for="precio_venta">Precio Venta (Bs.)</label>
+                    <input type="number" class="form-control" id="precio_venta" name="precio_venta"
+                        value="{{ medicamento.precio_venta or 0 }}" step="0.01" min="0">
+                </div>
+            </div>
+
+            <h6 class="border-bottom pb-2 mb-3 mt-4">Información Adicional</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="laboratorio">Laboratorio</label>
+                    <input type="text" class="form-control" id="laboratorio" name="laboratorio"
+                        value="{{ medicamento.laboratorio or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="lote">Lote</label>
+                    <input type="text" class="form-control" id="lote" name="lote" value="{{ medicamento.lote or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="fecha_vencimiento">Fecha de Vencimiento</label>
+                    <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento"
+                        value="{% if medicamento.fecha_vencimiento %}{% if medicamento.fecha_vencimiento.strftime is defined %}{{ medicamento.fecha_vencimiento.strftime('%Y-%m-%d') }}{% else %}{{ medicamento.fecha_vencimiento[:10] }}{% endif %}{% endif %}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="ubicacion_almacen">Ubicación en Almacén</label>
+                    <input type="text" class="form-control" id="ubicacion_almacen" name="ubicacion_almacen"
+                        value="{{ medicamento.ubicacion_almacen or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="requiere_receta" name="requiere_receta" {%
+                            if medicamento.requiere_receta %}checked{% endif %}>
+                        <label class="form-check-label" for="requiere_receta">Requiere Receta</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="controlado" name="controlado" {% if
+                            medicamento.controlado %}checked{% endif %}>
+                        <label class="form-check-label" for="controlado">Medicamento Controlado</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="activo" name="activo" {% if
+                            medicamento.activo %}checked{% endif %}>
+                        <label class="form-check-label" for="activo">Medicamento Activo</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary-modern">
+                    <i class="bi bi-check-circle me-1"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('inventario.ver', med_id=medicamento.id) }}" class="btn btn-secondary-modern">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

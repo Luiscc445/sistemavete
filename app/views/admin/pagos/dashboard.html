@@ -1,0 +1,298 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Dashboard de Pagos e Ingresos{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-cash-coin"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Dashboard de Pagos e Ingresos</h1>
+            <p class="page-header-subtitle-modern">Control financiero y análisis de ingresos</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="dashboard-date">
+            <i class="bi bi-calendar-event me-2"></i> {{ now.strftime('%d %b, %Y') if now else 'Hoy' }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+
+<!-- Panel de Controles -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-sliders me-1"></i> Panel de Controles</h6>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-end">
+            <!-- Filtros de Fecha -->
+            <div class="col-md-8">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar3 me-1"></i> Fecha Inicio
+                        </label>
+                        <input type="date" class="form-control" name="fecha_inicio" value="{{ fecha_inicio }}" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-check me-1"></i> Fecha Fin
+                        </label>
+                        <input type="date" class="form-control" name="fecha_fin" value="{{ fecha_fin }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-success-modern w-100">
+                            <i class="bi bi-search me-1"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('pagos.crear') }}" class="btn btn-primary-modern btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i> Nuevo Pago
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información sobre División de Ingresos -->
+<div class="alert alert-info shadow-sm mb-4">
+    <h5 class="alert-heading">
+        <i class="bi bi-info-circle me-2"></i>División de Ingresos
+    </h5>
+    <p class="mb-2">
+        <strong>Los montos mostrados representan únicamente la porción de la empresa</strong>
+        (generalmente 57.14% de cada pago).
+    </p>
+    <hr>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <small class="text-muted">Total Recibido (Bruto)</small>
+            <div class="h4 mb-0">{{ stats.ingresos_totales_brutos|currency }}</div>
+        </div>
+        <div class="col-md-4">
+            <small class="text-muted">Porción de la Empresa</small>
+            <div class="h4 mb-0 text-success">{{ stats.ingresos_totales|currency }}</div>
+        </div>
+        <div class="col-md-4">
+            <small class="text-muted">Porción de Veterinarios</small>
+            <div class="h4 mb-0 text-primary">{{ stats.ingresos_veterinarios|currency }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <!-- Ingresos Totales (Empresa) -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Ingresos Empresa</div>
+                    <div class="stat-icon-wrapper stat-icon-success"><i class="bi bi-cash-stack"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.ingresos_totales|currency }}</div>
+                <div class="stat-trend text-success"><i class="bi bi-arrow-up-circle"></i> Tu porcentaje (57.14%)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos Completados -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Pagos Completados</div>
+                    <div class="stat-icon-wrapper stat-icon-primary"><i class="bi bi-check-circle"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_pagos_completados }}</div>
+                <div class="stat-trend">
+                    <a href="{{ url_for('pagos.listar', estado='completado') }}" class="text-decoration-none">
+                        Ver Lista <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos Pendientes -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Pagos Pendientes</div>
+                    <div class="stat-icon-wrapper stat-icon-warning"><i class="bi bi-clock-history"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_pagos_pendientes }}</div>
+                <div class="stat-trend">
+                    <a href="{{ url_for('pagos.listar', estado='pendiente') }}"
+                        class="text-decoration-none text-warning">
+                        Ver Pendientes <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monto Pendiente -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Monto Pendiente</div>
+                    <div class="stat-icon-wrapper stat-icon-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.pendientes_total|currency }}</div>
+                <div class="stat-trend text-danger"><i class="bi bi-bell"></i> {{ stats.total_vencidos }} vencidos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <!-- Ingresos por Día -->
+    <div class="col-xl-8 col-lg-8">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Ingresos por Día (Últimos 30 Días)
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {{ graph_dia | safe }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Métodos de Pago -->
+    <div class="col-xl-4 col-lg-4">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold">
+                    <i class="bi bi-pie-chart-fill me-2"></i>Métodos de Pago
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {{ graph_metodos | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagos Recientes y Top Pagos -->
+<div class="row mb-4">
+    <!-- Pagos Recientes -->
+    <div class="col-xl-7 col-lg-7">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold">
+                    <i class="bi bi-clock-history me-2"></i>Pagos Recientes
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Monto</th>
+                                <th>Método</th>
+                                <th class="text-center">Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in pagos_recientes %}
+                            <tr>
+                                <td><strong>{{ pago.codigo_pago }}</strong></td>
+                                <td>{{ pago.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ pago.usuario.nombre_completo }}</td>
+                                <td class="fw-bold">{{ pago.monto|currency }}</td>
+                                <td><small class="text-muted">{{ pago.metodo_pago_label }}</small></td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ pago.estado_badge_class }}">
+                                        {{ pago.estado|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('pagos.ver', pago_id=pago.id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0 text-end pb-4 pe-4">
+                <a href="{{ url_for('pagos.listar') }}" class="btn btn-sm btn-primary-modern">
+                    Ver Todos los Pagos <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Pagos Más Grandes -->
+    <div class="col-xl-5 col-lg-5">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold">
+                    <i class="bi bi-trophy-fill me-2"></i>Top 10 Pagos Más Grandes
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th class="text-end">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in top_pagos %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <small>{{ pago.usuario.nombre_completo }}</small>
+                                    <br>
+                                    <span class="text-muted" style="font-size: 0.75rem;">
+                                        {{ pago.codigo_pago }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">{{ pago.monto|currency }}</strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- No extra JS needed for Plotly as charts are rendered server-side -->
+{% endblock %}

@@ -1,0 +1,257 @@
+﻿{% extends "layouts/admin_base.html" %}
+{% block title %}Reportes y Estadísticas{% endblock %}
+
+{% block page_title %}
+<div class="page-header-modern">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="bi bi-bar-chart-fill"></i>
+        </div>
+        <div class="page-header-text">
+            <h1 class="page-header-title-modern">Reportes y Estadísticas</h1>
+            <p class="page-header-subtitle-modern">Panel de control y análisis de datos</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <div class="dashboard-date">
+            <i class="bi bi-calendar-event me-2"></i> {{ now.strftime('%d %b, %Y') if now else 'Hoy' }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Breadcrumb hidden in modern view -->
+{% endblock %}
+
+{% block content %}
+<!-- PANEL DE CONTROLES MODERNIZADO -->
+<div class="card modern-activity-card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0 text-secondary"><i class="bi bi-calendar-range me-1"></i> Panel de Controles</h6>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-end">
+            <!-- Filtros de Fecha -->
+            <div class="col-md-8">
+                <form method="GET" id="filtrosForm" class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold"><i class="bi bi-calendar3 me-1"></i> Fecha Inicio</label>
+                        <input type="date" class="form-control" name="fecha_inicio" value="{{ fecha_inicio }}" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold"><i class="bi bi-calendar-check me-1"></i> Fecha Fin</label>
+                        <input type="date" class="form-control" name="fecha_fin" value="{{ fecha_fin }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary-modern w-100"><i class="bi bi-search me-1"></i>
+                            Filtrar</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Botón de Exportar PDF -->
+            <div class="col-md-4 text-end">
+                <button id="exportarPDF" class="btn btn-danger-modern btn-lg"><i class="bi bi-file-pdf me-2"></i>
+                    Exportar a PDF</button>
+                <div id="loadingIndicator" class="mt-2" style="display: none;">
+                    <div class="spinner-border spinner-border-sm text-danger me-2" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="text-muted">Generando PDF...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ESTADÍSTICAS GENERALES -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Total Tutores</div>
+                    <div class="stat-icon-wrapper stat-icon-primary"><i class="bi bi-people"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_tutores }}</div>
+                <div class="stat-trend"><i class="bi bi-check-circle"></i> Registrados</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Total Veterinarios</div>
+                    <div class="stat-icon-wrapper stat-icon-success"><i class="bi bi-person-badge"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_veterinarios }}</div>
+                <div class="stat-trend"><i class="bi bi-check-circle"></i> Activos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Total Mascotas</div>
+                    <div class="stat-icon-wrapper stat-icon-warning"><i class="bi bi-heart-fill"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_mascotas }}</div>
+                <div class="stat-trend"><i class="bi bi-check-circle"></i> Registradas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Citas (Período)</div>
+                    <div class="stat-icon-wrapper stat-icon-info"><i class="bi bi-calendar-check"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_citas }}</div>
+                <div class="stat-trend text-info"><i class="bi bi-info-circle"></i> Del período</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Medicamentos</div>
+                    <div class="stat-icon-wrapper stat-icon-secondary"><i class="bi bi-capsule"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.total_medicamentos }}</div>
+                <div class="stat-trend"><i class="bi bi-box-seam"></i> En inventario</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Bajo Stock</div>
+                    <div class="stat-icon-wrapper stat-icon-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                </div>
+                <div class="stat-value">{{ medicamentos_bajo_stock }}</div>
+                <div class="stat-trend text-danger"><i class="bi bi-x-octagon"></i> Requiere atención</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+        <div class="card modern-stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-label">Citas Completadas</div>
+                    <div class="stat-icon-wrapper stat-icon-success"><i class="bi bi-check-circle"></i></div>
+                </div>
+                <div class="stat-value">{{ stats.citas_periodo }}</div>
+                <div class="stat-trend text-success"><i class="bi bi-check-all"></i> Finalizadas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICOS PRINCIPALES -->
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-pie-chart-fill me-2"></i>Distribución de Citas
+                    por Estado</h6>
+            </div>
+            <div class="card-body p-0">
+                {{ graph_estado | safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-6">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-graph-up me-2"></i>Tendencia de Citas por Mes
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {{ graph_mes | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-xl-8 col-lg-8">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-currency-dollar me-2"></i>Ingresos Mensuales
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {{ graph_ingresos | safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4">
+        <div class="card modern-activity-card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-trophy-fill me-2"></i>Top 5 Veterinarios Más
+                    Activos</h6>
+            </div>
+            <div class="card-body p-4">
+                {% if top_veterinarios %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Veterinario</th>
+                                <th class="text-center">Citas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vet in top_veterinarios %}
+                            <tr>
+                                <td><i class="bi bi-person-circle me-1"></i> {{ vet.nombre }} {{ vet.apellido }}</td>
+                                <td class="text-center"><span class="badge bg-success">{{ vet.total_citas }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-2"></i> No hay datos disponibles</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ACCESOS RÁPIDOS A REPORTES -->
+<div class="card modern-activity-card mb-4 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+        <h6 class="mb-0 text-secondary fw-bold"><i class="bi bi-file-earmark-text-fill me-2"></i>Reportes Disponibles
+        </h6>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('reportes.tutores') }}" class="btn btn-primary-modern w-100 py-3"><i
+                        class="bi bi-people me-2"></i>Reporte de Tutores</a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('reportes.veterinarios') }}" class="btn btn-success-modern w-100 py-3"><i
+                        class="bi bi-person-badge me-2"></i>Desempeño de Veterinarios</a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('reportes.inventario') }}" class="btn btn-warning-modern w-100 py-3"><i
+                        class="bi bi-box-seam me-2"></i>Reporte de Inventario</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- No extra JS needed for Plotly as charts are rendered server-side -->
+{% endblock %}

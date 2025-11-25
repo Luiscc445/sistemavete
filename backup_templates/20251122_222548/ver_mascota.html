@@ -1,0 +1,222 @@
+{% extends "dashboards/tutor_base.html" %}
+{% block title %}{{ mascota.nombre }} - Perfil{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 pb-5">
+    <!-- Cover Section -->
+    <div class="position-relative" style="height: 280px; margin-top: -1.5rem;">
+        <div class="w-100 h-100 bg-gradient-primary overflow-hidden position-relative">
+            <div class="position-absolute top-0 start-0 w-100 h-100 opacity-20"
+                style="background-image: url('https://img.freepik.com/free-vector/paw-print-background-vector-with-animal-footprint-pattern_53876-126442.jpg'); background-size: cover;">
+            </div>
+            <div class="position-absolute bottom-0 start-0 w-100 h-50 bg-gradient-to-t from-black-50"></div>
+        </div>
+    </div>
+
+    <div class="container position-relative" style="margin-top: -80px;">
+        <!-- Profile Header Card -->
+        <div class="card-modern mb-4 animate-fade-up">
+            <div class="card-body-modern p-4">
+                <div class="row align-items-end">
+                    <div class="col-lg-auto text-center text-lg-start mb-3 mb-lg-0">
+                        <div class="position-relative d-inline-block">
+                            {% if mascota.foto %}
+                            <img src="data:image/jpeg;base64,{{ mascota.foto }}"
+                                class="rounded-circle border border-4 border-white shadow-lg object-fit-cover"
+                                width="160" height="160">
+                            {% else %}
+                            <div class="rounded-circle border border-4 border-white shadow-lg bg-light d-flex align-items-center justify-content-center"
+                                style="width: 160px; height: 160px;">
+                                <i class="bi bi-heart-fill text-muted fs-1"></i>
+                            </div>
+                            {% endif %}
+                            <span class="position-absolute bottom-0 end-0 bg-white rounded-circle p-2 shadow-sm"
+                                title="{{ mascota.especie }}">
+                                {% if mascota.especie == 'Perro' %}🐶
+                                {% elif mascota.especie == 'Gato' %}🐱
+                                {% elif mascota.especie == 'Ave' %}🦜
+                                {% else %}🐾{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg flex-grow-1 text-center text-lg-start mb-3 mb-lg-0">
+                        <h1 class="fw-bold mb-1">{{ mascota.nombre }}</h1>
+                        <p class="text-muted mb-2">{{ mascota.raza or 'Raza no especificada' }} • {{ mascota.edad }}
+                            años</p>
+                        <div class="d-flex gap-2 justify-content-center justify-content-lg-start flex-wrap">
+                            {% if mascota.sexo %}
+                            <span class="badge bg-soft-info text-info rounded-pill px-3">
+                                <i
+                                    class="bi bi-gender-{{ 'male' if mascota.sexo == 'Macho' else 'female' }} me-1"></i>{{
+                                mascota.sexo }}
+                            </span>
+                            {% endif %}
+                            {% if mascota.peso %}
+                            <span class="badge bg-soft-success text-success rounded-pill px-3">
+                                <i class="bi bi-speedometer2 me-1"></i>{{ mascota.peso }} kg
+                            </span>
+                            {% endif %}
+                            {% if mascota.esterilizado %}
+                            <span class="badge bg-soft-warning text-warning rounded-pill px-3">
+                                <i class="bi bi-scissors me-1"></i>Esterilizado
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-auto d-flex gap-2 justify-content-center">
+                        <a href="{{ url_for('tutor.editar_mascota', id=mascota.id) }}"
+                            class="btn btn-light rounded-pill px-4 fw-bold">
+                            <i class="bi bi-pencil me-2"></i>Editar
+                        </a>
+                        <a href="{{ url_for('tutor.nueva_cita', mascota_id=mascota.id) }}"
+                            class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="bi bi-calendar-plus me-2"></i>Nueva Cita
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Details -->
+            <div class="col-lg-4 animate-fade-up delay-100">
+                <div class="card-modern mb-4">
+                    <div class="card-header-modern bg-white border-bottom">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>Información</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Color</span>
+                                <span class="fw-medium">{{ mascota.color or 'No registrado' }}</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Chip ID</span>
+                                <span class="fw-medium font-monospace">{{ mascota.chip_identificacion or 'No tiene'
+                                    }}</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Fecha Nacimiento</span>
+                                <span class="fw-medium">{{ mascota.fecha_nacimiento.strftime('%d/%m/%Y') if
+                                    mascota.fecha_nacimiento else 'Desconocida' }}</span>
+                            </li>
+                        </ul>
+
+                        {% if mascota.notas_comportamiento %}
+                        <div class="mt-4">
+                            <h6 class="fw-bold text-dark mb-2">Notas de Comportamiento</h6>
+                            <div class="bg-soft-warning p-3 rounded-3 text-warning-emphasis small">
+                                <i class="bi bi-sticky me-2"></i>{{ mascota.notas_comportamiento }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: History -->
+            <div class="col-lg-8 animate-fade-up delay-200">
+                <div class="card-modern">
+                    <div
+                        class="card-header-modern bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Historial Médico
+                        </h5>
+                        <span class="badge bg-light text-dark rounded-pill">{{ citas|length }} Visitas</span>
+                    </div>
+                    <div class="card-body-modern p-0">
+                        {% if citas %}
+                        <div class="timeline-modern p-4">
+                            {% for cita in citas %}
+                            <div class="timeline-item pb-4 position-relative">
+                                <div class="timeline-icon position-absolute start-0 bg-white rounded-circle border border-2 
+                                    {% if cita.estado == 'completada' %}border-success text-success
+                                    {% elif cita.estado == 'pendiente' %}border-warning text-warning
+                                    {% else %}border-secondary text-secondary{% endif %} d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px; z-index: 1;">
+                                    <i
+                                        class="bi bi-{% if cita.estado == 'completada' %}check-lg{% elif cita.estado == 'pendiente' %}clock{% else %}calendar{% endif %}"></i>
+                                </div>
+                                <div class="ps-5">
+                                    <div class="card border-0 bg-light rounded-4 p-3 hover-shadow transition-all">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="fw-bold mb-1">{{ cita.motivo }}</h6>
+                                                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{
+                                                    cita.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge {% if cita.estado == 'completada' %}bg-success{% elif cita.estado == 'pendiente' %}bg-warning{% else %}bg-secondary{% endif %} rounded-pill">
+                                                {{ cita.estado|title }}
+                                            </span>
+                                        </div>
+
+                                        {% if cita.diagnostico %}
+                                        <div class="mb-2">
+                                            <small class="fw-bold text-primary">Diagnóstico:</small>
+                                            <p class="small text-muted mb-0">{{ cita.diagnostico }}</p>
+                                        </div>
+                                        {% endif %}
+
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <small class="text-muted">Dr. {{ cita.veterinario.nombre_completo }}</small>
+                                            <a href="{{ url_for('tutor.ver_cita', id=cita.id) }}"
+                                                class="btn btn-sm btn-link text-decoration-none p-0">Ver Detalle <i
+                                                    class="bi bi-chevron-right"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center p-5">
+                            <div class="mb-3">
+                                <i class="bi bi-journal-medical text-muted opacity-25" style="font-size: 4rem;"></i>
+                            </div>
+                            <h5 class="fw-bold text-muted">Sin Historial Médico</h5>
+                            <p class="text-muted small mb-4">Aún no hay registros médicos para esta mascota.</p>
+                            <a href="{{ url_for('tutor.nueva_cita') }}"
+                                class="btn btn-primary rounded-pill btn-sm px-4">
+                                Agendar Primera Cita
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-modern {
+        position: relative;
+    }
+
+    .timeline-modern::before {
+        content: '';
+        position: absolute;
+        top: 2rem;
+        bottom: 2rem;
+        left: 3.2rem;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0 !important;
+    }
+
+    .bg-gradient-to-t {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+
+    .opacity-20 {
+        opacity: 0.2;
+    }
+</style>
+{% endblock %}

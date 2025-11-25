@@ -109,6 +109,7 @@ def ver(tutor_id):
         'total_mascotas': len(mascotas),
         'total_citas': tutor.citas_como_tutor.count(),
         'citas_pendientes': tutor.citas_como_tutor.filter_by(estado='pendiente').count(),
+        'citas_completadas': tutor.citas_como_tutor.filter_by(estado='completada').count(),
         'proxima_cita': tutor.citas_como_tutor.filter(
             Cita.fecha >= db.func.now(),
             Cita.estado == 'aceptada'
